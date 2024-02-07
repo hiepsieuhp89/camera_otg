@@ -7,8 +7,8 @@ import 'sample_feature/sample_item_list_view.dart';
 import 'settings/settings_controller.dart';
 import 'settings/settings_view.dart';
 
-class MyApp extends StatelessWidget {
-  const MyApp({
+class KyoryoApp extends StatelessWidget {
+  const KyoryoApp({
     super.key,
     required this.settingsController,
   });
