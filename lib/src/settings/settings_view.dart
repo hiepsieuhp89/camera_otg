@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'settings_controller.dart';
 
-/// Displays the various settings that can be customized by the user.
-///
-/// When a user changes a setting, the SettingsController is updated and
-/// Widgets that listen to the SettingsController are rebuilt.
+enum Prefectures {
+  aichi('愛知県', 'Aichi'),
+  akita('秋田県', 'Akita'),
+  aomori('青森県', 'Aomori');
+
+  const Prefectures(this.label, this.value);
+  final String label;
+  final String value;
+}
+
 class SettingsView extends StatelessWidget {
   const SettingsView({super.key, required this.controller});
 
@@ -17,35 +24,44 @@ class SettingsView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
+        title:
+            Text(AppLocalizations.of(context)!.pleaseSelectAreaAndContractor),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16),
-        // Glue the SettingsController to the theme selection DropdownButton.
-        //
-        // When a user selects a theme from the dropdown list, the
-        // SettingsController is updated, which rebuilds the MaterialApp.
-        child: DropdownButton<ThemeMode>(
-          // Read the selected themeMode from the controller
-          value: controller.themeMode,
-          // Call the updateThemeMode method any time the user selects a theme.
-          onChanged: controller.updateThemeMode,
-          items: const [
-            DropdownMenuItem(
-              value: ThemeMode.system,
-              child: Text('System Theme'),
-            ),
-            DropdownMenuItem(
-              value: ThemeMode.light,
-              child: Text('Light Theme'),
-            ),
-            DropdownMenuItem(
-              value: ThemeMode.dark,
-              child: Text('Dark Theme'),
-            )
-          ],
-        ),
-      ),
+          padding: const EdgeInsets.all(16),
+          child: Column(children: [
+            _areaSelect(),
+            const SizedBox(height: 24),
+            _contractorSelect(),
+          ])),
     );
+  }
+
+  Widget _areaSelect() {
+    return DropdownMenu(
+        expandedInsets: const EdgeInsets.all(0),
+        enableFilter: true,
+        menuStyle:
+            MenuStyle(backgroundColor: MaterialStateProperty.all(Colors.white)),
+        dropdownMenuEntries:
+            Prefectures.values.map<DropdownMenuEntry<Prefectures>>(
+          (Prefectures prefecture) {
+            return DropdownMenuEntry<Prefectures>(
+              value: prefecture,
+              label: prefecture.label,
+            );
+          },
+        ).toList());
+  }
+
+  Widget _contractorSelect() {
+    return const DropdownMenu(
+        expandedInsets: EdgeInsets.all(0),
+        initialSelection: 'A',
+        dropdownMenuEntries: [
+          DropdownMenuEntry<String>(value: 'A', label: 'A'),
+          DropdownMenuEntry<String>(value: 'B', label: 'B'),
+          DropdownMenuEntry<String>(value: 'C', label: 'C'),
+        ]);
   }
 }
