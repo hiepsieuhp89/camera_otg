@@ -4,8 +4,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'sample_feature/sample_item_details_view.dart';
 import 'sample_feature/sample_item_list_view.dart';
-import 'settings/settings_controller.dart';
-import 'settings/settings_view.dart';
+import 'features/settings/settings_controller.dart';
+import 'features/settings/settings_view.dart';
 
 class KyoryoApp extends StatelessWidget {
   const KyoryoApp({
