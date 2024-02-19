@@ -1,24 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-
-import 'settings_controller.dart';
-
-enum Prefectures {
-  aichi('愛知県', 'Aichi'),
-  akita('秋田県', 'Akita'),
-  aomori('青森県', 'Aomori');
-
-  const Prefectures(this.label, this.value);
-  final String label;
-  final String value;
-}
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kyoryo_flutter/src/models/municipality.dart';
+import 'package:kyoryo_flutter/src/providers/municipalitiy.provider.dart';
 
 class SettingsView extends StatelessWidget {
-  const SettingsView({super.key, required this.controller});
+  const SettingsView({super.key});
 
   static const routeName = '/settings';
-
-  final SettingsController controller;
 
   @override
   Widget build(BuildContext context) {
@@ -38,20 +27,26 @@ class SettingsView extends StatelessWidget {
   }
 
   Widget _areaSelect() {
-    return DropdownMenu(
-        expandedInsets: const EdgeInsets.all(0),
-        enableFilter: true,
-        menuStyle:
-            MenuStyle(backgroundColor: MaterialStateProperty.all(Colors.white)),
-        dropdownMenuEntries:
-            Prefectures.values.map<DropdownMenuEntry<Prefectures>>(
-          (Prefectures prefecture) {
-            return DropdownMenuEntry<Prefectures>(
-              value: prefecture,
-              label: prefecture.label,
-            );
-          },
-        ).toList());
+    return Consumer(
+      builder: (context, ref, child) {
+        final AsyncValue<List<Municipality>> municipalities =
+            ref.watch(municipalitiesProvider);
+
+        return DropdownMenu(
+            expandedInsets: const EdgeInsets.all(0),
+            menuStyle: MenuStyle(
+                backgroundColor: MaterialStateProperty.all(Colors.white)),
+            enableSearch: true,
+            dropdownMenuEntries: switch (municipalities) {
+              AsyncData(:final value) => value
+                  .map((municipality) => DropdownMenuEntry<String>(
+                      value: municipality.code, label: municipality.nameKanji))
+                  .toList(),
+              AsyncError() => [],
+              _ => [],
+            });
+      },
+    );
   }
 
   Widget _contractorSelect() {
