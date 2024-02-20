@@ -21,6 +21,7 @@ class BridgeFiltersView extends ConsumerWidget {
       appBar: AppBar(
         title:
             Text(AppLocalizations.of(context)!.pleaseSelectAreaAndContractor),
+        automaticallyImplyLeading: false,
       ),
       body: municipalities.maybeWhen(
         orElse: () => _loadingIndicator(),
