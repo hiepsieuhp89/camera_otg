@@ -52,16 +52,12 @@ class ErrorApp extends StatelessWidget {
     return MaterialApp(
       home: Scaffold(
         body: Center(
-            child:
-                Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          Text(message),
-          ElevatedButton(
-            onPressed: () {
-              onRetry();
-            },
-            child: const Text('retry'),
-          )
-        ])),
+            child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+              Text(message),
+              IconButton(onPressed: onRetry, icon: const Icon(Icons.refresh))
+            ])),
       ),
     );
   }
@@ -74,10 +70,6 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Glue the SettingsController to the MaterialApp.
-    //
-    // The ListenableBuilder Widget listens to the SettingsController for changes.
-    // Whenever the user updates their settings, the MaterialApp is rebuilt.
     return MaterialApp(
       restorationScopeId: 'app',
       localizationsDelegates: const [
