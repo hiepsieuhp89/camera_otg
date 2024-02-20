@@ -3,5 +3,6 @@
   "@appTitle": {
     "description": "Kyoryo"
   },
-  "pleaseSelectAreaAndContractor": "点検エリアを選択ください"
+  "pleaseSelectAreaAndContractor": "点検エリアを選択ください",
+  "showBridgeList": "橋リストを表示"
 }
