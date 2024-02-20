@@ -17,7 +17,10 @@ class KyoryoApp extends ConsumerWidget {
 
     return appStartupState.when(
       loading: () => const LoadingApp(),
-      error: (error, stackTrace) => const ErrorApp(),
+      error: (error, stackTrace) => ErrorApp(
+        message: error.toString(),
+        onRetry: () => ref.invalidate(appStartupProvider),
+      ),
       data: (_) => const MainApp(),
     );
   }
@@ -39,15 +42,22 @@ class LoadingApp extends StatelessWidget {
 }
 
 class ErrorApp extends StatelessWidget {
-  const ErrorApp({super.key});
+  const ErrorApp({super.key, required this.message, required this.onRetry});
+
+  final String message;
+  final Function() onRetry;
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       home: Scaffold(
         body: Center(
-          child: Text('Error'),
-        ),
+            child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+              Text(message),
+              IconButton(onPressed: onRetry, icon: const Icon(Icons.refresh))
+            ])),
       ),
     );
   }
@@ -60,10 +70,6 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Glue the SettingsController to the MaterialApp.
-    //
-    // The ListenableBuilder Widget listens to the SettingsController for changes.
-    // Whenever the user updates their settings, the MaterialApp is rebuilt.
     return MaterialApp(
       restorationScopeId: 'app',
       localizationsDelegates: const [
