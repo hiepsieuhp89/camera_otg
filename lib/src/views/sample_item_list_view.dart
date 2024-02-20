@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:kyoryo_flutter/src/views/settings_view.dart';
+import 'package:kyoryo_flutter/src/views/bridge_filters_view.dart';
 
 import '../ui/sample_item.dart';
 import 'sample_item_details_view.dart';
@@ -27,7 +27,8 @@ class SampleItemListView extends StatelessWidget {
               // Navigate to the settings page. If the user leaves and returns
               // to the app after it has been killed while running in the
               // background, the navigation stack is restored.
-              Navigator.restorablePushNamed(context, SettingsView.routeName);
+              Navigator.restorablePushNamed(
+                  context, BridgeFiltersView.routeName);
             },
           ),
         ],

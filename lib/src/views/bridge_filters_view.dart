@@ -5,10 +5,10 @@ import 'package:kyoryo_flutter/src/models/municipality.dart';
 import 'package:kyoryo_flutter/src/providers/current_municipalitiy.provider.dart';
 import 'package:kyoryo_flutter/src/providers/municipalities.provider.dart';
 
-class SettingsView extends ConsumerWidget {
-  const SettingsView({super.key});
+class BridgeFiltersView extends ConsumerWidget {
+  const BridgeFiltersView({super.key});
 
-  static const routeName = '/settings';
+  static const routeName = '/filters';
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
