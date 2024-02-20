@@ -4,11 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kyoryo_flutter/src/models/municipality.dart';
 import 'package:kyoryo_flutter/src/providers/current_municipalitiy.provider.dart';
 import 'package:kyoryo_flutter/src/providers/municipalities.provider.dart';
+import 'package:kyoryo_flutter/src/views/sample_item_list_view.dart';
 
-class SettingsView extends ConsumerWidget {
-  const SettingsView({super.key});
+class BridgeFiltersView extends ConsumerWidget {
+  const BridgeFiltersView({super.key});
 
-  static const routeName = '/settings';
+  static const routeName = '/filters';
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -20,35 +21,53 @@ class SettingsView extends ConsumerWidget {
       appBar: AppBar(
         title:
             Text(AppLocalizations.of(context)!.pleaseSelectAreaAndContractor),
+        automaticallyImplyLeading: false,
       ),
       body: municipalities.maybeWhen(
         orElse: () => _loadingIndicator(),
         data: (data) => Padding(
             padding: const EdgeInsets.all(16),
             child: Column(children: [
-              _municipalitySelect(municipality, municipalityNotifier, data),
+              _municipalityAutocomplete(
+                  municipality, municipalityNotifier, data),
               const SizedBox(height: 24),
               _contractorSelect(),
+              const SizedBox(height: 24),
+              _confirmButton(context),
             ])),
       ),
     );
   }
 
-  DropdownMenu<Municipality> _municipalitySelect(Municipality? municipality,
-      CurrentMunicipality municipalityNotifier, List<Municipality> data) {
-    return DropdownMenu<Municipality>(
-        expandedInsets: const EdgeInsets.all(0),
-        menuStyle:
-            MenuStyle(backgroundColor: MaterialStateProperty.all(Colors.white)),
-        enableSearch: true,
-        initialSelection: municipality,
-        onSelected: (value) {
-          municipalityNotifier.set(value);
-        },
-        dropdownMenuEntries: data
-            .map((municipality) => DropdownMenuEntry<Municipality>(
-                value: municipality, label: municipality.nameKanji))
-            .toList());
+  Autocomplete<Municipality> _municipalityAutocomplete(
+      Municipality? municipality,
+      CurrentMunicipality municipalityNotifier,
+      List<Municipality> data) {
+    return Autocomplete<Municipality>(
+        initialValue: TextEditingValue(text: municipality!.nameKanji),
+        onSelected: (option) => municipalityNotifier.set(option),
+        displayStringForOption: (option) => option.nameKanji,
+        optionsBuilder: (TextEditingValue textEditingValue) {
+          if (textEditingValue.text == '') {
+            return const Iterable<Municipality>.empty();
+          }
+          return data.where((Municipality option) {
+            return option.nameKanji
+                    .contains(textEditingValue.text.toLowerCase()) ||
+                option.nameRomaji!
+                    .contains(textEditingValue.text.toLowerCase());
+          });
+        });
+  }
+
+  Widget _confirmButton(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: TextButton(
+          onPressed: () => Navigator.pushReplacementNamed(
+              context, SampleItemListView.routeName),
+          child: Text(AppLocalizations.of(context)!.showBridgeList)),
+    );
   }
 
   DropdownMenu<String> _contractorSelect() {

@@ -4,7 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kyoryo_flutter/src/views/sample_item_list_view.dart';
 import 'package:kyoryo_flutter/src/views/sample_item_details_view.dart';
-import 'package:kyoryo_flutter/src/views/settings_view.dart';
+import 'package:kyoryo_flutter/src/views/bridge_filters_view.dart';
 
 import 'providers/app_start_up.provider.dart';
 
@@ -91,8 +91,8 @@ class MainApp extends StatelessWidget {
           settings: routeSettings,
           builder: (BuildContext context) {
             switch (routeSettings.name) {
-              case SettingsView.routeName:
-                return const SettingsView();
+              case BridgeFiltersView.routeName:
+                return const BridgeFiltersView();
               case SampleItemDetailsView.routeName:
                 return const SampleItemDetailsView();
               case SampleItemListView.routeName:
