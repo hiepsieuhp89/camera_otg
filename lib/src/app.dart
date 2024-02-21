@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kyoryo_flutter/src/views/sample_item_list_view.dart';
-import 'package:kyoryo_flutter/src/views/sample_item_details_view.dart';
+import 'package:kyoryo_flutter/src/views/bridge_list_view.dart';
+import 'package:kyoryo_flutter/src/views/bridge_details_view.dart';
 import 'package:kyoryo_flutter/src/views/bridge_filters_view.dart';
 
 import 'providers/app_start_up.provider.dart';
@@ -93,11 +93,11 @@ class MainApp extends StatelessWidget {
             switch (routeSettings.name) {
               case BridgeFiltersView.routeName:
                 return const BridgeFiltersView();
-              case SampleItemDetailsView.routeName:
-                return const SampleItemDetailsView();
-              case SampleItemListView.routeName:
+              case BridgeDetailsView.routeName:
+                return const BridgeDetailsView();
+              case BridgeListView.routeName:
               default:
-                return const SampleItemListView();
+                return const BridgeListView();
             }
           },
         );

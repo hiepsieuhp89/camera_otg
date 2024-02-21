@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kyoryo_flutter/src/models/municipality.dart';
 import 'package:kyoryo_flutter/src/providers/current_municipalitiy.provider.dart';
 import 'package:kyoryo_flutter/src/providers/municipalities.provider.dart';
-import 'package:kyoryo_flutter/src/views/sample_item_list_view.dart';
 
 class BridgeFiltersView extends ConsumerWidget {
   const BridgeFiltersView({super.key});
@@ -64,8 +63,7 @@ class BridgeFiltersView extends ConsumerWidget {
     return SizedBox(
       width: double.infinity,
       child: TextButton(
-          onPressed: () => Navigator.pushReplacementNamed(
-              context, SampleItemListView.routeName),
+          onPressed: () => Navigator.pop(context),
           child: Text(AppLocalizations.of(context)!.showBridgeList)),
     );
   }
