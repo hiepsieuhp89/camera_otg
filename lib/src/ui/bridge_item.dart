@@ -88,6 +88,13 @@ class BridgeItem extends StatelessWidget {
                 ),
               ),
             ),
+            Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  IconButton(
+                      icon: const Icon(Icons.manage_search_rounded),
+                      onPressed: () {})
+                ])
           ],
         ),
       ),
