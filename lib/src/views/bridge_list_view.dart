@@ -1,0 +1,64 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kyoryo_flutter/src/models/bridge.dart';
+import 'package:kyoryo_flutter/src/providers/bridges.provider.dart';
+import 'package:kyoryo_flutter/src/providers/current_municipalitiy.provider.dart';
+import 'package:kyoryo_flutter/src/ui/bridge_item.dart';
+import 'package:kyoryo_flutter/src/views/bridge_filters_view.dart';
+
+class BridgeListView extends ConsumerWidget {
+  const BridgeListView({
+    super.key,
+  });
+
+  static const routeName = '/';
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final municipality = ref.watch(currentMunicipalityProvider);
+    final bridges = ref.watch(bridgesProvider);
+
+    return Scaffold(
+        appBar: AppBar(
+          title: Text(AppLocalizations.of(context)!.bridgeListTitle),
+          actions: [
+            TextButton.icon(
+              icon: const Icon(Icons.map_outlined),
+              label: Text(municipality?.nameKanji ?? ''),
+              onPressed: () {
+                Navigator.restorablePushNamed(
+                    context, BridgeFiltersView.routeName);
+              },
+            ),
+          ],
+        ),
+        body: bridges.when(
+            data: (data) => _bridgeList(data),
+            loading: () => const CircularProgressIndicator(),
+            error: (error, stackTrace) => Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(AppLocalizations.of(context)!.unableToLoadBridges),
+                      IconButton(
+                        onPressed: () => ref.invalidate(bridgesProvider),
+                        icon: const Icon(Icons.refresh),
+                      ),
+                    ],
+                  ),
+                )));
+  }
+
+  ListView _bridgeList(List<Bridge> bridges) {
+    return ListView.builder(
+      restorationId: 'bridgeListView',
+      itemCount: bridges.length,
+      itemBuilder: (BuildContext context, int index) {
+        final bridge = bridges[index];
+
+        return BridgeItem(bridge: bridge);
+      },
+    );
+  }
+}
