@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:kyoryo/src/models/bridge.dart';
-import 'package:kyoryo/src/screens/take_picture_screen.dart';
+import 'package:photo_view/photo_view.dart';
 
 class BridgeItem extends StatelessWidget {
   final Bridge bridge;
@@ -12,18 +12,30 @@ class BridgeItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
-      child: GestureDetector(
-        onTap: () {
-          print('SizedBox tapped! TakePictureScreen.routeName');
-          // Add your onPressed functionality here
-          Navigator.pushNamed(context, TakePictureScreen.routeName);
-        },
-        child: SizedBox(
-          height: 100,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              AspectRatio(
+      child: SizedBox(
+        height: 100,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Scaffold(
+                      appBar: AppBar(
+                        title: Text(bridge.nameKanji),
+                      ),
+                      body: Center(
+                          child: PhotoView(
+                        imageProvider:
+                            const AssetImage('assets/images/bridge1.jpg'),
+                      )),
+                    ),
+                  ),
+                );
+              },
+              child: AspectRatio(
                 aspectRatio: 1.0,
                 child: Container(
                   decoration: const BoxDecoration(
@@ -36,47 +48,47 @@ class BridgeItem extends StatelessWidget {
                   ),
                 ),
               ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20.0, 0.0, 2.0, 0.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text(
-                        bridge.nameKanji,
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20.0, 0.0, 2.0, 0.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      bridge.nameKanji,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const Padding(padding: EdgeInsets.only(bottom: 2.0)),
+                    Expanded(
+                      child: Text(
+                        '橋梁管理番号:${bridge.managementNo}',
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          fontWeight: FontWeight.bold,
+                          fontSize: 12.0,
+                          color: Colors.black54,
                         ),
                       ),
-                      const Padding(padding: EdgeInsets.only(bottom: 2.0)),
-                      Expanded(
-                        child: Text(
-                          '橋梁管理番号:${bridge.managementNo}',
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 12.0,
-                            color: Colors.black54,
-                          ),
-                        ),
-                      ),
-                      bridge.lastInspectionDate != null
-                          ? Text(
-                              '最終点検日時：${DateFormat('yy年MM月dd日 HH:mm').format(bridge.lastInspectionDate!)}',
-                              style: const TextStyle(
-                                fontSize: 12.0,
-                                color: Colors.black54,
-                              ),
-                            )
-                          : const SizedBox.shrink(),
-                    ],
-                  ),
+                    ),
+                    bridge.lastInspectionDate != null
+                        ? Text(
+                            '最終点検日時：${DateFormat('yy年MM月dd日 HH:mm').format(bridge.lastInspectionDate!)}',
+                            style: const TextStyle(
+                              fontSize: 12.0,
+                              color: Colors.black54,
+                            ),
+                          )
+                        : const SizedBox.shrink(),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
