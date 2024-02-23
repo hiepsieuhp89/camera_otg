@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:kyoryo/src/models/bridge.dart';
 import 'package:photo_view/photo_view.dart';
 
-class BridgeItem extends StatelessWidget {
+import 'package:kyoryo/src/models/bridge.dart';
+import 'package:kyoryo/src/screens/bridge_inspection_screen.dart';
+
+class BridgeItem extends ConsumerWidget {
   final Bridge bridge;
 
   const BridgeItem({super.key, required this.bridge});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
       child: SizedBox(
@@ -93,7 +96,11 @@ class BridgeItem extends StatelessWidget {
                 children: <Widget>[
                   IconButton(
                       icon: const Icon(Icons.manage_search_rounded),
-                      onPressed: () {})
+                      onPressed: () {
+                        Navigator.pushNamed(
+                            context, BridgeInspectionScreen.routeName,
+                            arguments: bridge);
+                      })
                 ])
           ],
         ),
