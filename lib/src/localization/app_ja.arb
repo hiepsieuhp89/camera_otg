@@ -6,5 +6,6 @@
   "pleaseSelectAreaAndContractor": "点検エリアを選択ください",
   "showBridgeList": "橋リストを表示",
   "bridgeListTitle": "点検橋を選択ください",
-  "unableToLoadBridges": "橋をロードできません"
+  "unableToLoadBridges": "橋をロードできません",
+  "takePictureTitle": "写真撮影" 
 }

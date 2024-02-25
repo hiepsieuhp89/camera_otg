@@ -1,4 +1,4 @@
-import 'package:kyoryo_flutter/src/models/bridge.dart';
+import 'package:kyoryo/src/models/bridge.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'bridges.provider.g.dart';

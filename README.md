@@ -1,6 +1,4 @@
-# kyoryo_flutter
-
-
+# kyoryo
 
 ## Getting Started
 

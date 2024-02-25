@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kyoryo_flutter/src/models/bridge.dart';
-import 'package:kyoryo_flutter/src/providers/bridges.provider.dart';
-import 'package:kyoryo_flutter/src/providers/current_municipalitiy.provider.dart';
-import 'package:kyoryo_flutter/src/ui/bridge_item.dart';
-import 'package:kyoryo_flutter/src/views/bridge_filters_view.dart';
+import 'package:kyoryo/src/models/bridge.dart';
+import 'package:kyoryo/src/providers/bridges.provider.dart';
+import 'package:kyoryo/src/providers/current_municipalitiy.provider.dart';
+import 'package:kyoryo/src/screens/bridge_filters_screen.dart';
+import 'package:kyoryo/src/ui/bridge_item.dart';
 
-class BridgeListView extends ConsumerWidget {
-  const BridgeListView({
+class BridgeListScreen extends ConsumerWidget {
+  const BridgeListScreen({
     super.key,
   });
 
@@ -28,7 +28,7 @@ class BridgeListView extends ConsumerWidget {
               label: Text(municipality?.nameKanji ?? ''),
               onPressed: () {
                 Navigator.restorablePushNamed(
-                    context, BridgeFiltersView.routeName);
+                    context, BridgeFiltersScreen.routeName);
               },
             ),
           ],

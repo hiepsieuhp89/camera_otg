@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-import 'package:kyoryo_flutter/src/models/municipality.dart';
+import 'package:kyoryo/src/models/municipality.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'municipality.service.g.dart';

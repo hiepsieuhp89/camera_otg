@@ -1,5 +1,5 @@
-import 'package:kyoryo_flutter/src/constants/shared_keys.dart';
-import 'package:kyoryo_flutter/src/providers/shared_preferences.provider.dart';
+import 'package:kyoryo/src/constants/shared_keys.dart';
+import 'package:kyoryo/src/providers/shared_preferences.provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

@@ -1,4 +1,4 @@
-package com.example.kyoryo_flutter
+package com.delqui.kyoryo
 
 import io.flutter.embedding.android.FlutterActivity
 
