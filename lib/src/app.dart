@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kyoryo_flutter/src/views/bridge_list_view.dart';
-import 'package:kyoryo_flutter/src/views/bridge_details_view.dart';
-import 'package:kyoryo_flutter/src/views/bridge_filters_view.dart';
+import 'package:kyoryo/src/screens/bridge_details_screen.dart';
+import 'package:kyoryo/src/screens/bridge_filters_screen.dart';
+import 'package:kyoryo/src/screens/bridge_list_screen.dart';
+import 'package:kyoryo/src/screens/take_picture_screen.dart';
 
 import 'providers/app_start_up.provider.dart';
 
@@ -91,13 +92,15 @@ class MainApp extends StatelessWidget {
           settings: routeSettings,
           builder: (BuildContext context) {
             switch (routeSettings.name) {
-              case BridgeFiltersView.routeName:
-                return const BridgeFiltersView();
-              case BridgeDetailsView.routeName:
-                return const BridgeDetailsView();
-              case BridgeListView.routeName:
+              case BridgeFiltersScreen.routeName:
+                return const BridgeFiltersScreen();
+              case BridgeDetailsScreen.routeName:
+                return const BridgeDetailsScreen();
+              case TakePictureScreen.routeName:
+                return const TakePictureScreen();
+              case BridgeListScreen.routeName:
               default:
-                return const BridgeListView();
+                return const BridgeListScreen();
             }
           },
         );

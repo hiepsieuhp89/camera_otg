@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kyoryo_flutter/src/models/municipality.dart';
-import 'package:kyoryo_flutter/src/providers/current_municipalitiy.provider.dart';
-import 'package:kyoryo_flutter/src/providers/municipalities.provider.dart';
+import 'package:kyoryo/src/models/municipality.dart';
+import 'package:kyoryo/src/providers/current_municipalitiy.provider.dart';
+import 'package:kyoryo/src/providers/municipalities.provider.dart';
 
-class BridgeFiltersView extends ConsumerWidget {
-  const BridgeFiltersView({super.key});
+class BridgeFiltersScreen extends ConsumerWidget {
+  const BridgeFiltersScreen({super.key});
 
   static const routeName = '/filters';
 

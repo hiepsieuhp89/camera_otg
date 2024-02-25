@@ -1,4 +1,4 @@
-import 'package:kyoryo_flutter/src/providers/current_municipalitiy.provider.dart';
+import 'package:kyoryo/src/providers/current_municipalitiy.provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'shared_preferences.provider.dart';

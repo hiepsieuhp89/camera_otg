@@ -1,6 +1,6 @@
-import 'package:kyoryo_flutter/src/models/municipality.dart';
-import 'package:kyoryo_flutter/src/services/municipality.service.dart';
-import 'package:kyoryo_flutter/src/services/settings.service.dart';
+import 'package:kyoryo/src/models/municipality.dart';
+import 'package:kyoryo/src/services/municipality.service.dart';
+import 'package:kyoryo/src/services/settings.service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'current_municipalitiy.provider.g.dart';
