@@ -27,5 +27,7 @@
     "placeholders": {
       "dateTime": {}
     }
-  }
+  },
+  "municipalityName": "市町村",
+  "contractorName": "点検業者"
 }
