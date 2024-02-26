@@ -12,7 +12,7 @@ class TakePictureScreen extends StatefulWidget {
   static const routeName = '/take-picture';
 
   @override
-  _TakePictureScreenState createState() => _TakePictureScreenState();
+  State<TakePictureScreen> createState() => _TakePictureScreenState();
 }
 
 class _TakePictureScreenState extends State<TakePictureScreen> {
