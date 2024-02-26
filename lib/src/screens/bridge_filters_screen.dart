@@ -30,7 +30,7 @@ class BridgeFiltersScreen extends ConsumerWidget {
               _municipalityAutocomplete(
                   municipality, municipalityNotifier, data),
               const SizedBox(height: 24),
-              _contractorSelect(),
+              _contractorSelect(context),
               const SizedBox(height: 24),
               _confirmButton(context),
             ])),
@@ -46,6 +46,27 @@ class BridgeFiltersScreen extends ConsumerWidget {
         initialValue: TextEditingValue(text: municipality?.nameKanji ?? ''),
         onSelected: (option) => municipalityNotifier.set(option),
         displayStringForOption: (option) => option.nameKanji,
+        fieldViewBuilder: (BuildContext context,
+            TextEditingController textEditingController,
+            FocusNode focusNode,
+            VoidCallback onFieldSubmitted) {
+          return TextFormField(
+            controller: textEditingController,
+            focusNode: focusNode,
+            onFieldSubmitted: (_) => onFieldSubmitted(),
+            decoration: InputDecoration(
+              labelText: AppLocalizations.of(context)!.municipalityName,
+              border: OutlineInputBorder(),
+              suffixIcon: IconButton(
+                icon: const Icon(Icons.clear),
+                onPressed: () {
+                  textEditingController.clear();
+                  municipalityNotifier.set(null);
+                },
+              ),
+            ),
+          );
+        },
         optionsBuilder: (TextEditingValue textEditingValue) {
           if (textEditingValue.text == '') {
             return const Iterable<Municipality>.empty();
@@ -59,24 +80,21 @@ class BridgeFiltersScreen extends ConsumerWidget {
         });
   }
 
-  Widget _confirmButton(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      child: TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(AppLocalizations.of(context)!.showBridgeList)),
+  DropdownMenu<String> _contractorSelect(BuildContext context) {
+    return DropdownMenu(
+      label: Text(AppLocalizations.of(context)!.contractorName),
+      enabled: false,
+      expandedInsets: const EdgeInsets.all(0),
+      dropdownMenuEntries: const [],
     );
   }
 
-  DropdownMenu<String> _contractorSelect() {
-    return const DropdownMenu(
-        expandedInsets: EdgeInsets.all(0),
-        initialSelection: 'A',
-        dropdownMenuEntries: [
-          DropdownMenuEntry<String>(value: 'A', label: 'A'),
-          DropdownMenuEntry<String>(value: 'B', label: 'B'),
-          DropdownMenuEntry<String>(value: 'C', label: 'C'),
-        ]);
+  Widget _confirmButton(BuildContext context) {
+    return FilledButton(
+      onPressed: () => Navigator.pop(context),
+      style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(55)),
+      child: Text(AppLocalizations.of(context)!.showBridgeList),
+    );
   }
 
   Widget _loadingIndicator() {
