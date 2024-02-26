@@ -1,0 +1,128 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kyoryo/src/models/bridge.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:kyoryo/src/models/bridge_element.dart';
+import 'package:kyoryo/src/services/bridge.service.dart';
+import 'package:kyoryo/src/ui/bridge_element_list_item.dart';
+
+class BridgeInspectionScreen extends ConsumerStatefulWidget {
+  const BridgeInspectionScreen({
+    super.key,
+    required this.bridge,
+  });
+
+  final Bridge bridge;
+  static const routeName = '/bridge-inspection';
+
+  @override
+  ConsumerState<BridgeInspectionScreen> createState() =>
+      _BridgeInspectionScreenState();
+}
+
+class _BridgeInspectionScreenState
+    extends ConsumerState<BridgeInspectionScreen> {
+  bool _isInspecting = false;
+  bool _isLoading = true;
+  List<BridgeElement> _elements = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchElements();
+  }
+
+  void _setInspecting(bool value) {
+    setState(() {
+      _isInspecting = value;
+    });
+  }
+
+  void _fetchElements() async {
+    _isLoading = true;
+    final elements =
+        await ref.read(bridgeServiceProvider).fetchBridgeElements();
+
+    setState(() {
+      _elements = elements;
+      _isLoading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+          appBar: AppBar(
+              bottom: TabBar(tabs: [
+                Tab(
+                  text: AppLocalizations.of(context)!.generalInspection,
+                  icon: const Icon(Icons.generating_tokens_outlined),
+                ),
+                Tab(
+                  text: AppLocalizations.of(context)!.damangeInspection,
+                  icon: const Icon(Icons.broken_image),
+                )
+              ]),
+              title: Row(
+                children: <Widget>[
+                  Text(widget.bridge.nameKanji),
+                  IconButton(
+                      onPressed: () {},
+                      icon: const Icon(Icons.info_outline_rounded)),
+                ],
+              )),
+          body: TabBarView(
+            children: [
+              _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : ListView.builder(
+                      itemCount: _elements.length,
+                      itemBuilder: (context, index) {
+                        return BridgeElementListItem(
+                            element: _elements[index],
+                            isInspecting: _isInspecting);
+                      }),
+              Center(
+                child: Text(AppLocalizations.of(context)!.noDamageFound,
+                    style: Theme.of(context).textTheme.bodySmall),
+              ),
+            ],
+          ),
+          bottomSheet: BottomAppBar(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Text(_isInspecting
+                    ? AppLocalizations.of(context)!.finishedTasks(0, 10)
+                    : ''),
+                Row(
+                  children: _isInspecting
+                      ? [
+                          IconButton(
+                              onPressed: () {
+                                _setInspecting(false);
+                              },
+                              icon: const Icon(Icons.close)),
+                          FilledButton.icon(
+                              onPressed: null,
+                              icon: const Icon(Icons.check),
+                              label: Text(AppLocalizations.of(context)!
+                                  .finishInspection))
+                        ]
+                      : [
+                          FilledButton.icon(
+                            onPressed: () => _setInspecting(true),
+                            icon: const Icon(Icons.add),
+                            label: Text(
+                                AppLocalizations.of(context)!.startInspection),
+                          )
+                        ],
+                )
+              ],
+            ),
+          )),
+    );
+  }
+}
