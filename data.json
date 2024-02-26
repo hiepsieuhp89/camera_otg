@@ -286,5 +286,20 @@
       "prefecture_kana": "ほっかいどう",
       "prefecture_romaji": "Hokkaido"
     }
-  ]
+  ],
+  "bridges": [{
+    "name_kanji": "八ヶ山1号橋",
+    "bridge_no": "2925",
+    "management_no": "1050150511",
+    "name_kana": "ｶﾐﾑﾗ9ｺﾞｳｷｮｳ",
+    "condition": "開水路:排水路",
+    "last_inspection_date": "2016-03-31"
+  }, {
+    "name_kanji": "八ヶ山1号橋",
+    "bridge_no": "2925",
+    "management_no": "1050150511",
+    "name_kana": "ｶﾐﾑﾗ9ｺﾞｳｷｮｳ",
+    "condition": "開水路:排水路",
+    "last_inspection_date": "2016-03-31"
+  }]
 }

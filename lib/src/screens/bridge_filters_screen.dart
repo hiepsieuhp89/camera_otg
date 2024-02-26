@@ -43,7 +43,7 @@ class BridgeFiltersScreen extends ConsumerWidget {
       CurrentMunicipality municipalityNotifier,
       List<Municipality> data) {
     return Autocomplete<Municipality>(
-        initialValue: TextEditingValue(text: municipality!.nameKanji),
+        initialValue: TextEditingValue(text: municipality?.nameKanji ?? ''),
         onSelected: (option) => municipalityNotifier.set(option),
         displayStringForOption: (option) => option.nameKanji,
         optionsBuilder: (TextEditingValue textEditingValue) {

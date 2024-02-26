@@ -5,7 +5,7 @@ import 'package:kyoryo/src/models/bridge.dart';
 import 'package:kyoryo/src/providers/bridges.provider.dart';
 import 'package:kyoryo/src/providers/current_municipalitiy.provider.dart';
 import 'package:kyoryo/src/screens/bridge_filters_screen.dart';
-import 'package:kyoryo/src/ui/bridge_item.dart';
+import 'package:kyoryo/src/ui/bridge_list_item.dart';
 
 class BridgeListScreen extends ConsumerWidget {
   const BridgeListScreen({
@@ -57,7 +57,7 @@ class BridgeListScreen extends ConsumerWidget {
       itemBuilder: (BuildContext context, int index) {
         final bridge = bridges[index];
 
-        return BridgeItem(bridge: bridge);
+        return BridgeListItem(bridge: bridge);
       },
     );
   }
