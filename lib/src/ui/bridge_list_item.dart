@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:photo_view/photo_view.dart';
 
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:kyoryo/src/models/bridge.dart';
 import 'package:kyoryo/src/screens/bridge_inspection_screen.dart';
 
@@ -72,19 +73,15 @@ class BridgeListItem extends ConsumerWidget {
                         '橋梁管理番号:${bridge.managementNo}',
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 12.0,
-                          color: Colors.black54,
-                        ),
+                        style: Theme.of(context).textTheme.bodySmall,
                       ),
                     ),
                     bridge.lastInspectionDate != null
                         ? Text(
-                            '最終点検日時：${DateFormat('yy年MM月dd日 HH:mm').format(bridge.lastInspectionDate!)}',
-                            style: const TextStyle(
-                              fontSize: 12.0,
-                              color: Colors.black54,
-                            ),
+                            AppLocalizations.of(context)!.lastInspectionDate(
+                                DateFormat('yy年MM月dd日 HH:mm')
+                                    .format(bridge.lastInspectionDate!)),
+                            style: Theme.of(context).textTheme.bodySmall,
                           )
                         : const SizedBox.shrink(),
                   ],

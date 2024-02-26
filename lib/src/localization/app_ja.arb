@@ -10,5 +10,22 @@
   "takePictureTitle": "写真撮影" ,
   "generalInspection": "現況写真",
   "damangeInspection": "損傷写真",
-  "noDamageFound": "損傷なし"
+  "noDamageFound": "損傷なし",
+  "finishedTasks": "{finished}/{total} 完了",
+  "@finishedTasks": {
+    "description": "The number of tasks finished out of total",
+    "placeholders": {
+      "finished": {},
+      "total": {}
+    }
+  },
+  "startInspection": "点検開始",
+  "finishInspection": "点検終了",
+  "lastInspectionDate": "最終点検日時：{dateTime}",
+  "@lastInspectionDate": {
+    "description": "Last inspection date and time",
+    "placeholders": {
+      "dateTime": {}
+    }
+  }
 }
