@@ -45,6 +45,8 @@ abstract class BaseApiService {
       case 200:
       case 201:
         return json.decode(utf8.decode(response.bodyBytes));
+      case 204:
+        return null;
       default:
         throw Exception(
             'Error: ${response.statusCode}, Body: ${response.body}');
