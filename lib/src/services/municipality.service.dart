@@ -1,7 +1,5 @@
-import 'dart:convert';
-
-import 'package:http/http.dart' as http;
 import 'package:kyoryo/src/models/municipality.dart';
+import 'package:kyoryo/src/services/base.service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'municipality.service.g.dart';
@@ -11,35 +9,22 @@ MunicipalityService municipalityService(MunicipalityServiceRef ref) {
   return MunicipalityService();
 }
 
-class MunicipalityService {
+class MunicipalityService extends BaseApiService {
   Future<Municipality?> getMunicipalityByCode(String code) async {
-    final response = await http
-        .get(Uri.http('10.0.2.2:3000', '/municipalities', {'code': code}));
+    final jsonResponse = await get('municipalities', query: {'code': code});
 
-    if (response.statusCode == 200) {
-      List<dynamic> jsonArray = json.decode(utf8.decode(response.bodyBytes));
-
-      if (jsonArray.isEmpty) {
-        return null;
-      }
-
-      return Municipality.fromJson(jsonArray.first);
-    } else {
-      throw Exception('Failed to load municipality');
+    if ((jsonResponse as List).isEmpty) {
+      return null;
     }
+
+    return Municipality.fromJson((jsonResponse).first);
   }
 
   Future<List<Municipality>> fetchMunicipalities() async {
-    final response =
-        await http.get(Uri.http('10.0.2.2:3000', '/municipalities'));
+    final jsonResponse = await get('municipalities');
 
-    if (response.statusCode == 200) {
-      List<dynamic> jsonArray = json.decode(utf8.decode(response.bodyBytes));
-      return jsonArray
-          .map((jsonItem) => Municipality.fromJson(jsonItem))
-          .toList();
-    } else {
-      throw Exception('Failed to load municipality');
-    }
+    return (jsonResponse as List)
+        .map((municipality) => Municipality.fromJson(municipality))
+        .toList();
   }
 }

@@ -1,8 +1,6 @@
-import "dart:convert";
-
-import "package:http/http.dart" as http;
 import "package:kyoryo/src/models/bridge.dart";
 import "package:kyoryo/src/models/bridge_element.dart";
+import "package:kyoryo/src/services/base.service.dart";
 import "package:riverpod_annotation/riverpod_annotation.dart";
 
 part 'bridge.service.g.dart';
@@ -12,29 +10,20 @@ BridgeService bridgeService(BridgeServiceRef ref) {
   return BridgeService();
 }
 
-class BridgeService {
+class BridgeService extends BaseApiService {
   Future<List<Bridge>> fetchBridges() async {
-    final response = await http.get(Uri.http('10.0.2.2:3000', '/bridges'));
+    final jsonResponse = await get('bridges');
 
-    if (response.statusCode == 200) {
-      List<dynamic> jsonArray = json.decode(utf8.decode(response.bodyBytes));
-      return jsonArray.map((jsonItem) => Bridge.fromJson(jsonItem)).toList();
-    } else {
-      throw Exception('Failed to get bridges');
-    }
+    return (jsonResponse as List)
+        .map((bridge) => Bridge.fromJson(bridge))
+        .toList();
   }
 
   Future<List<BridgeElement>> fetchBridgeElements() async {
-    final response =
-        await http.get(Uri.http('10.0.2.2:3000', '/bridge_elements'));
+    final jsonResponse = await get('bridge_elements');
 
-    if (response.statusCode == 200) {
-      List<dynamic> jsonArray = json.decode(utf8.decode(response.bodyBytes));
-      return jsonArray
-          .map((jsonItem) => BridgeElement.fromJson(jsonItem))
-          .toList();
-    } else {
-      throw Exception('Failed to get bridges');
-    }
+    return (jsonResponse as List)
+        .map((bridgeElement) => BridgeElement.fromJson(bridgeElement))
+        .toList();
   }
 }

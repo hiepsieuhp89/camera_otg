@@ -2,6 +2,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:kyoryo/src/screens/preview_pictures_screen.dart';
 import 'package:kyoryo/src/utilities/image_utils.dart';
 
 class TakePictureScreen extends StatefulWidget {
@@ -18,6 +19,10 @@ class TakePictureScreen extends StatefulWidget {
 class _TakePictureScreenState extends State<TakePictureScreen> {
   CameraController? _controller;
   Future<void>? _initializeControllerFuture;
+
+  List<String> capturedImages = [];
+
+  bool _isCapturing = false;
 
   @override
   void initState() {
@@ -57,6 +62,49 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
     ]);
   }
 
+  void _takePicture() async {
+    setState(() {
+      _isCapturing = true;
+    });
+    try {
+      await _initializeControllerFuture;
+
+      // Capture the image and get an XFile
+      final XFile rawImage = await _controller!.takePicture();
+
+      // Compress the image and get a new XFile
+      final XFile? compressedImage = await compressImage(rawImage.path, 70);
+
+      if (compressedImage != null) {
+        capturedImages.add(compressedImage.path);
+      }
+    } catch (e) {
+      print(e);
+    } finally {
+      setState(() {
+        _isCapturing = false;
+      });
+    }
+  }
+
+  void _navigateToPreview() {
+    Navigator.pushNamed(
+      context,
+      PreviewPicturesScreen.routeName,
+      arguments: capturedImages,
+    ).then((updatedImages) {
+      if (updatedImages != null) {
+        setState(() {
+          capturedImages = updatedImages as List<String>;
+        });
+      }
+    });
+  }
+
+  void _navigateToReportScreen() {
+    // TODO
+  }
+
   @override
   void dispose() {
     _resetOrientation();
@@ -67,8 +115,20 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar:
-          AppBar(title: Text(AppLocalizations.of(context)!.takePictureTitle)),
+      appBar: AppBar(
+        title: Text(AppLocalizations.of(context)!.takePictureTitle),
+        actions: [
+          TextButton.icon(
+            icon: const Icon(Icons.check, color: Colors.black),
+            label: Text(AppLocalizations.of(context)!.takePictureDone,
+                style: const TextStyle(color: Colors.black)),
+            onPressed: _navigateToReportScreen,
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.black,
+            ),
+          ),
+        ],
+      ),
       body: FutureBuilder<void>(
         future: _initializeControllerFuture,
         builder: (context, snapshot) {
@@ -106,28 +166,23 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
                         ),
                       ),
                       Positioned(
+                        right: 90,
+                        bottom: 20,
+                        child: FloatingActionButton(
+                          heroTag: "preview-pictures",
+                          onPressed: _isCapturing ? null : _navigateToPreview,
+                          child: Icon(Icons.photo_library,
+                              color: _isCapturing ? Colors.grey : Colors.black),
+                        ),
+                      ),
+                      Positioned(
                         right: 20,
                         bottom: 20,
                         child: FloatingActionButton(
-                          onPressed: () async {
-                            try {
-                              await _initializeControllerFuture;
-
-                              // Capture the image and get an XFile
-                              final XFile rawImage =
-                                  await _controller!.takePicture();
-
-                              // Compress the image and get a new XFile
-                              final XFile? compressedImage =
-                                  await compressImage(rawImage.path, 70);
-
-                              // Display or use the compressed XFile as needed
-                              // For example, update your UI or state here
-                            } catch (e) {
-                              print(e);
-                            }
-                          },
-                          child: const Icon(Icons.camera_alt),
+                          heroTag: "take-picture",
+                          onPressed: _isCapturing ? null : _takePicture,
+                          child: Icon(Icons.camera_alt,
+                              color: _isCapturing ? Colors.grey : Colors.black),
                         ),
                       ),
                     ],

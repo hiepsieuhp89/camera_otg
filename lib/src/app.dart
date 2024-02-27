@@ -6,6 +6,7 @@ import 'package:kyoryo/src/models/bridge.dart';
 import 'package:kyoryo/src/screens/bridge_filters_screen.dart';
 import 'package:kyoryo/src/screens/bridge_inspection_screen.dart';
 import 'package:kyoryo/src/screens/bridge_list_screen.dart';
+import 'package:kyoryo/src/screens/preview_pictures_screen.dart';
 import 'package:kyoryo/src/screens/take_picture_screen.dart';
 
 import 'providers/app_start_up.provider.dart';
@@ -101,6 +102,9 @@ class MainApp extends StatelessWidget {
                 return BridgeInspectionScreen(bridge: bridge);
               case TakePictureScreen.routeName:
                 return const TakePictureScreen();
+              case PreviewPicturesScreen.routeName:
+                final images = routeSettings.arguments as List<String>? ?? [];
+                return PreviewPicturesScreen(imagePaths: images);
               case BridgeListScreen.routeName:
               default:
                 return const BridgeListScreen();
