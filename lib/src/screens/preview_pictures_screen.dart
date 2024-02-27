@@ -71,6 +71,7 @@ class _PreviewPicturesScreenState extends State<PreviewPicturesScreen> {
                       right: 0,
                       bottom: 0,
                       child: FloatingActionButton.small(
+                        heroTag: 'image-$index',
                         onPressed: () => removeImage(imagePaths[index]),
                         child: const Icon(Icons.delete, color: Colors.red),
                       ),

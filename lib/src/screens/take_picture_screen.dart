@@ -169,6 +169,7 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
                         right: 90,
                         bottom: 20,
                         child: FloatingActionButton(
+                          heroTag: "preview-pictures",
                           onPressed: _isCapturing ? null : _navigateToPreview,
                           child: Icon(Icons.photo_library,
                               color: _isCapturing ? Colors.grey : Colors.black),
@@ -178,6 +179,7 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
                         right: 20,
                         bottom: 20,
                         child: FloatingActionButton(
+                          heroTag: "take-picture",
                           onPressed: _isCapturing ? null : _takePicture,
                           child: Icon(Icons.camera_alt,
                               color: _isCapturing ? Colors.grey : Colors.black),
