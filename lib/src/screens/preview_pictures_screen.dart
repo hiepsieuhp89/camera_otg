@@ -11,7 +11,7 @@ class PreviewPicturesScreen extends StatefulWidget {
   const PreviewPicturesScreen({super.key, required this.imagePaths});
 
   @override
-  _PreviewPicturesScreenState createState() => _PreviewPicturesScreenState();
+  State<PreviewPicturesScreen> createState() => _PreviewPicturesScreenState();
 }
 
 class _PreviewPicturesScreenState extends State<PreviewPicturesScreen> {
