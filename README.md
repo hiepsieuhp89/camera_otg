@@ -5,7 +5,7 @@
 ### To run automatic build on code changes
 
 ``` bash
-flutter pub run build_runner watch
+dart run build_runner watch
 ```
 
 ### To build localization file
