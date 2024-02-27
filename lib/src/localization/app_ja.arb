@@ -29,5 +29,8 @@
     }
   },
   "municipalityName": "市町村",
-  "contractorName": "点検業者"
+  "contractorName": "点検業者",
+  "cancelInspectionConfirm": "キャンセルすると、完了した橋梁要素の検査が削除されます。 続行しますか?",
+  "cancelInspection": "点検キャンセル",
+  "cancel": "キャンセル"
 }

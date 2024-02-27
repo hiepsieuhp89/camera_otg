@@ -49,6 +49,30 @@ class _BridgeInspectionScreenState
     });
   }
 
+  Future<void> _confirmCancelDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(AppLocalizations.of(context)!.cancelInspection),
+          content: SingleChildScrollView(
+            child: Text(AppLocalizations.of(context)!.cancelInspectionConfirm),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text(AppLocalizations.of(context)!.cancel),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _setInspecting(false);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -101,9 +125,7 @@ class _BridgeInspectionScreenState
                   children: _isInspecting
                       ? [
                           IconButton(
-                              onPressed: () {
-                                _setInspecting(false);
-                              },
+                              onPressed: _confirmCancelDialog,
                               icon: const Icon(Icons.close)),
                           FilledButton.icon(
                               onPressed: null,

@@ -35,7 +35,9 @@ class BridgeListScreen extends ConsumerWidget {
         ),
         body: bridges.when(
             data: (data) => _bridgeList(data),
-            loading: () => const CircularProgressIndicator(),
+            loading: () => const Center(
+                  child: CircularProgressIndicator(),
+                ),
             error: (error, stackTrace) => Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
