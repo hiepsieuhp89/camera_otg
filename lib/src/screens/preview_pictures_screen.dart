@@ -32,9 +32,11 @@ class _PreviewPicturesScreenState extends State<PreviewPicturesScreen> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: true,
+      canPop: false,
       onPopInvoked: (didPoke) {
-        Navigator.pop(context, imagePaths);
+        if (!didPoke) {
+          Navigator.pop(context, imagePaths);
+        }
       },
       child: Scaffold(
         appBar: AppBar(

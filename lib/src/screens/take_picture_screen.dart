@@ -2,14 +2,15 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:kyoryo/src/models/bridge_element.dart';
+import 'package:kyoryo/src/screens/bridge_inspection_evaluation_screen.dart';
 import 'package:kyoryo/src/screens/preview_pictures_screen.dart';
 import 'package:kyoryo/src/utilities/image_utils.dart';
 
 class TakePictureScreen extends StatefulWidget {
-  const TakePictureScreen({
-    super.key,
-  });
+  const TakePictureScreen({super.key, required this.bridgeElement});
 
+  final BridgeElement bridgeElement;
   static const routeName = '/take-picture';
 
   @override
@@ -40,10 +41,8 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
     );
 
     setState(() {
-      _controller = CameraController(
-        backCamera,
-        ResolutionPreset.medium,
-      );
+      _controller = CameraController(backCamera, ResolutionPreset.medium,
+          enableAudio: false);
       _initializeControllerFuture = _controller?.initialize();
     });
   }
@@ -102,7 +101,9 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
   }
 
   void _navigateToReportScreen() {
-    // TODO
+    Navigator.pushNamed(context, BridgeInspectionEvaluationScreen.routeName,
+        arguments: BridgeInspectionEvaluationScreenArguments(
+            element: widget.bridgeElement, capturedImages: capturedImages));
   }
 
   @override

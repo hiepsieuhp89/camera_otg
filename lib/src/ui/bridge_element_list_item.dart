@@ -45,7 +45,8 @@ class BridgeElementListItem extends StatelessWidget {
                     onPressed: isInspecting
                         ? () {
                             Navigator.pushNamed(
-                                context, TakePictureScreen.routeName);
+                                context, TakePictureScreen.routeName,
+                                arguments: element);
                           }
                         : null,
                     icon: const Icon(Icons.photo_camera))
