@@ -56,7 +56,7 @@ class BridgeFiltersScreen extends ConsumerWidget {
             onFieldSubmitted: (_) => onFieldSubmitted(),
             decoration: InputDecoration(
               labelText: AppLocalizations.of(context)!.municipalityName,
-              border: OutlineInputBorder(),
+              border: const OutlineInputBorder(),
               suffixIcon: IconButton(
                 icon: const Icon(Icons.clear),
                 onPressed: () {
