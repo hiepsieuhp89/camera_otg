@@ -29,15 +29,13 @@ class _PreviewPicturesScreenState extends State<PreviewPicturesScreen> {
     });
   }
 
-  Future<bool> _onWillPop() async {
-    Navigator.pop(context, imagePaths);
-    return true;
-  }
-
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: _onWillPop,
+    return PopScope(
+      canPop: true,
+      onPopInvoked: (didPoke) {
+        Navigator.pop(context, imagePaths);
+      },
       child: Scaffold(
         appBar: AppBar(
           title: Text(AppLocalizations.of(context)!.previewPicturesTitle),
