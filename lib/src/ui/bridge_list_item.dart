@@ -33,7 +33,7 @@ class BridgeListItem extends ConsumerWidget {
                       body: Center(
                           child: PhotoView(
                         imageProvider:
-                            const AssetImage('assets/images/bridge1.jpg'),
+                        NetworkImage(bridge.photoLink),
                       )),
                     ),
                   ),
@@ -42,13 +42,13 @@ class BridgeListItem extends ConsumerWidget {
               child: AspectRatio(
                 aspectRatio: 1.0,
                 child: Container(
-                  decoration: const BoxDecoration(
+                  decoration:  BoxDecoration(
                     color: Colors.blue,
                     image: DecorationImage(
-                      image: AssetImage('assets/images/bridge1.jpg'),
+                      image: NetworkImage(bridge.photoLink),
                       fit: BoxFit.cover,
                     ),
-                    borderRadius: BorderRadius.all(Radius.circular(12.0)),
+                    borderRadius: const BorderRadius.all(Radius.circular(12.0)),
                   ),
                 ),
               ),
