@@ -12,6 +12,7 @@ class Bridge with _$Bridge {
     @JsonKey(name: 'bridge_no') required String bridgeNo,
     @JsonKey(name: 'management_no') required String managementNo,
     @JsonKey(name: 'name_kana') String? nameKana,
+    @JsonKey(name: 'photo_link') required String photoLink,
     @JsonKey(name: 'name_kanji') required String nameKanji,
     @JsonKey(name: 'last_inspection_date') DateTime? lastInspectionDate,
   }) = _Bridge;
