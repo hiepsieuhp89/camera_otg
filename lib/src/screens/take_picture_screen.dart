@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:kyoryo/src/models/bridge_element.dart';
-import 'package:kyoryo/src/screens/bridge_inspection_evaluation_screen.dart';
+import 'package:kyoryo/src/screens/bridge_inspection_photo_select_screen.dart';
 import 'package:kyoryo/src/screens/preview_pictures_screen.dart';
 import 'package:kyoryo/src/utilities/image_utils.dart';
 
@@ -78,7 +78,7 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
         capturedImages.add(compressedImage.path);
       }
     } catch (e) {
-      print(e);
+      debugPrint(e.toString());
     } finally {
       setState(() {
         _isCapturing = false;
@@ -101,8 +101,9 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
   }
 
   void _navigateToReportScreen() {
-    Navigator.pushNamed(context, BridgeInspectionEvaluationScreen.routeName,
-        arguments: BridgeInspectionEvaluationScreenArguments(
+    _resetOrientation();
+    Navigator.pushNamed(context, BridgeInspectionPhotoSelectScreen.routeName,
+        arguments: BridgeInspectionPhotoSelectScreenArguments(
             element: widget.bridgeElement, capturedImages: capturedImages));
   }
 
@@ -141,8 +142,9 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
               children: <Widget>[
                 Expanded(
                   flex: 4,
-                  child: Image.network('https://via.placeholder.com/150',
-                      fit: BoxFit.cover),
+                  child: widget.bridgeElement.imageUrl != null
+                      ? Image.network(widget.bridgeElement.imageUrl!)
+                      : const Placeholder(),
                 ),
                 Expanded(
                   flex: 8,
