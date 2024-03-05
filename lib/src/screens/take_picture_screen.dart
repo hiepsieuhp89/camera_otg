@@ -10,7 +10,7 @@ import 'package:kyoryo/src/utilities/image_utils.dart';
 class TakePictureScreen extends StatefulWidget {
   const TakePictureScreen({super.key, required this.inspectionPoint});
 
-  final InpsectionPoint inspectionPoint;
+  final InspectionPoint inspectionPoint;
   static const routeName = '/take-picture';
 
   @override

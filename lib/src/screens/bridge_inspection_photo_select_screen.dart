@@ -5,7 +5,7 @@ import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/screens/bridge_inspection_evaluation_screen.dart';
 
 class BridgeInspectionPhotoSelectScreenArguments {
-  final InpsectionPoint point;
+  final InspectionPoint point;
   final List<String> capturedImages;
 
   BridgeInspectionPhotoSelectScreenArguments({

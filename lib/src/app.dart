@@ -105,7 +105,7 @@ class MainApp extends StatelessWidget {
                 return BridgeInspectionScreen(bridge: bridge);
               case TakePictureScreen.routeName:
                 final inspectionPoint =
-                    routeSettings.arguments as InpsectionPoint;
+                    routeSettings.arguments as InspectionPoint;
 
                 return TakePictureScreen(inspectionPoint: inspectionPoint);
               case PreviewPicturesScreen.routeName:
