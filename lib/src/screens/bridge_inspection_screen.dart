@@ -24,7 +24,7 @@ class _BridgeInspectionScreenState
     extends ConsumerState<BridgeInspectionScreen> {
   bool _isInspecting = false;
   bool _isLoading = true;
-  List<InpsectionPoint> _points = [];
+  List<InspectionPoint> _points = [];
 
   @override
   void initState() {

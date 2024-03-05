@@ -5,7 +5,7 @@ import 'package:kyoryo/src/screens/take_picture_screen.dart';
 import 'package:photo_view/photo_view.dart';
 
 class InpsectionPointListItem extends StatelessWidget {
-  final InpsectionPoint point;
+  final InspectionPoint point;
   final bool isInspecting;
 
   const InpsectionPointListItem(
@@ -45,7 +45,8 @@ class InpsectionPointListItem extends StatelessWidget {
                     onPressed: isInspecting
                         ? () {
                             Navigator.pushNamed(
-                                context, TakePictureScreen.routeName);
+                                context, TakePictureScreen.routeName,
+                                arguments: point);
                           }
                         : null,
                     icon: const Icon(Icons.photo_camera))

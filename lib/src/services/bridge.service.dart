@@ -19,11 +19,11 @@ class BridgeService extends BaseApiService {
         .toList();
   }
 
-  Future<List<InpsectionPoint>> fetchInspectionPoints() async {
+  Future<List<InspectionPoint>> fetchInspectionPoints() async {
     final jsonResponse = await get('bridge_elements');
 
     return (jsonResponse as List)
-        .map((inspectionPoint) => InpsectionPoint.fromJson(inspectionPoint))
+        .map((inspectionPoint) => InspectionPoint.fromJson(inspectionPoint))
         .toList();
   }
 }

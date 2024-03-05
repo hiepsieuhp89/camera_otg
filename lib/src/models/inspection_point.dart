@@ -5,8 +5,8 @@ part 'inspection_point.freezed.dart';
 part 'inspection_point.g.dart';
 
 @freezed
-class InpsectionPoint with _$InpsectionPoint {
-  factory InpsectionPoint(
+class InspectionPoint with _$InspectionPoint {
+  factory InspectionPoint(
       {String? id,
       String? name,
       @JsonKey(name: 'image_url') String? imageUrl,
@@ -14,6 +14,6 @@ class InpsectionPoint with _$InpsectionPoint {
       @JsonKey(name: 'last_inspection_date')
       DateTime? lastInspectionDate}) = _InpsectionPoint;
 
-  factory InpsectionPoint.fromJson(Map<String, dynamic> json) =>
-      _$InpsectionPointFromJson(json);
+  factory InspectionPoint.fromJson(Map<String, dynamic> json) =>
+      _$InspectionPointFromJson(json);
 }
