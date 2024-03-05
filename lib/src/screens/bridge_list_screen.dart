@@ -38,18 +38,22 @@ class BridgeListScreen extends ConsumerWidget {
             loading: () => const Center(
                   child: CircularProgressIndicator(),
                 ),
-            error: (error, stackTrace) => Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(AppLocalizations.of(context)!.unableToLoadBridges),
-                      IconButton(
-                        onPressed: () => ref.invalidate(bridgesProvider),
-                        icon: const Icon(Icons.refresh),
-                      ),
-                    ],
-                  ),
-                )));
+            error: (error, stackTrace) {
+              debugPrint('Error: $error');
+
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(AppLocalizations.of(context)!.unableToLoadBridges),
+                    IconButton(
+                      onPressed: () => ref.invalidate(bridgesProvider),
+                      icon: const Icon(Icons.refresh),
+                    ),
+                  ],
+                ),
+              );
+            }));
   }
 
   ListView _bridgeList(List<Bridge> bridges) {

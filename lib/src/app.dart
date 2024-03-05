@@ -3,7 +3,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kyoryo/src/models/bridge.dart';
-import 'package:kyoryo/src/models/bridge_element.dart';
+import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/screens/bridge_filters_screen.dart';
 import 'package:kyoryo/src/screens/bridge_inspection_evaluation_screen.dart';
 import 'package:kyoryo/src/screens/bridge_inspection_photo_select_screen.dart';
@@ -104,9 +104,10 @@ class MainApp extends StatelessWidget {
 
                 return BridgeInspectionScreen(bridge: bridge);
               case TakePictureScreen.routeName:
-                final bridgeElement = routeSettings.arguments as BridgeElement;
+                final inspectionPoint =
+                    routeSettings.arguments as InpsectionPoint;
 
-                return TakePictureScreen(bridgeElement: bridgeElement);
+                return TakePictureScreen(inspectionPoint: inspectionPoint);
               case PreviewPicturesScreen.routeName:
                 final images = routeSettings.arguments as List<String>? ?? [];
 

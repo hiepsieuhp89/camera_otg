@@ -2,15 +2,15 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:kyoryo/src/models/bridge_element.dart';
+import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/screens/bridge_inspection_screen.dart';
 
 class BridgeInspectionEvaluationScreenArguments {
-  final BridgeElement element;
+  final InpsectionPoint point;
   final String selectedImage;
 
   BridgeInspectionEvaluationScreenArguments({
-    required this.element,
+    required this.point,
     required this.selectedImage,
   });
 }
@@ -37,7 +37,7 @@ class _BridgeInspectionEvaluationScreenState
   Widget build(BuildContext context) {
     return Scaffold(
         resizeToAvoidBottomInset: false,
-        appBar: AppBar(title: Text(widget.arguments.element.name!)),
+        appBar: AppBar(title: Text(widget.arguments.point.name!)),
         body: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
