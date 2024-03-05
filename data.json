@@ -293,14 +293,16 @@
     "management_no": "1050150511",
     "name_kana": "ｶﾐﾑﾗ9ｺﾞｳｷｮｳ",
     "condition": "開水路:排水路",
-    "last_inspection_date": "2016-03-31"
+    "last_inspection_date": "2016-03-31",
+    "photo_link": "https://m-stech.net/wp-content/uploads/2022/01/a89227c531b12a65c1bd851136baa9bb.jpeg"
   }, {
     "name_kanji": "八ヶ山1号橋",
     "bridge_no": "2925",
     "management_no": "1050150511",
     "name_kana": "ｶﾐﾑﾗ9ｺﾞｳｷｮｳ",
     "condition": "開水路:排水路",
-    "last_inspection_date": "2016-03-31"
+    "last_inspection_date": "2016-03-31",
+    "photo_link": "https://m-stech.net/wp-content/uploads/2022/01/a89227c531b12a65c1bd851136baa9bb.jpeg"
   }],
   "bridge_elements": [{
     "name": "橋梁デッキ",

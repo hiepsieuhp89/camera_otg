@@ -2,15 +2,15 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:kyoryo/src/models/bridge_element.dart';
+import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/screens/bridge_inspection_photo_select_screen.dart';
 import 'package:kyoryo/src/screens/preview_pictures_screen.dart';
 import 'package:kyoryo/src/utilities/image_utils.dart';
 
 class TakePictureScreen extends StatefulWidget {
-  const TakePictureScreen({super.key, required this.bridgeElement});
+  const TakePictureScreen({super.key, required this.inspectionPoint});
 
-  final BridgeElement bridgeElement;
+  final InpsectionPoint inspectionPoint;
   static const routeName = '/take-picture';
 
   @override
@@ -104,7 +104,7 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
     _resetOrientation();
     Navigator.pushNamed(context, BridgeInspectionPhotoSelectScreen.routeName,
         arguments: BridgeInspectionPhotoSelectScreenArguments(
-            element: widget.bridgeElement, capturedImages: capturedImages));
+            point: widget.inspectionPoint, capturedImages: capturedImages));
   }
 
   @override
@@ -142,8 +142,8 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
               children: <Widget>[
                 Expanded(
                   flex: 4,
-                  child: widget.bridgeElement.imageUrl != null
-                      ? Image.network(widget.bridgeElement.imageUrl!)
+                  child: widget.inspectionPoint.imageUrl != null
+                      ? Image.network(widget.inspectionPoint.imageUrl!)
                       : const Placeholder(),
                 ),
                 Expanded(

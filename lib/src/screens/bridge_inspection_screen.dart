@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kyoryo/src/models/bridge.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:kyoryo/src/models/bridge_element.dart';
+import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/services/bridge.service.dart';
-import 'package:kyoryo/src/ui/bridge_element_list_item.dart';
+import 'package:kyoryo/src/ui/inspection_point_list_item.dart';
 
 class BridgeInspectionScreen extends ConsumerStatefulWidget {
   const BridgeInspectionScreen({
@@ -24,7 +24,7 @@ class _BridgeInspectionScreenState
     extends ConsumerState<BridgeInspectionScreen> {
   bool _isInspecting = false;
   bool _isLoading = true;
-  List<BridgeElement> _elements = [];
+  List<InpsectionPoint> _points = [];
 
   @override
   void initState() {
@@ -41,10 +41,10 @@ class _BridgeInspectionScreenState
   void _fetchElements() async {
     _isLoading = true;
     final elements =
-        await ref.read(bridgeServiceProvider).fetchBridgeElements();
+        await ref.read(bridgeServiceProvider).fetchInspectionPoints();
 
     setState(() {
-      _elements = elements;
+      _points = elements;
       _isLoading = false;
     });
   }
@@ -103,11 +103,10 @@ class _BridgeInspectionScreenState
               _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : ListView.builder(
-                      itemCount: _elements.length,
+                      itemCount: _points.length,
                       itemBuilder: (context, index) {
-                        return BridgeElementListItem(
-                            element: _elements[index],
-                            isInspecting: _isInspecting);
+                        return InpsectionPointListItem(
+                            point: _points[index], isInspecting: _isInspecting);
                       }),
               Center(
                 child: Text(AppLocalizations.of(context)!.noDamageFound,

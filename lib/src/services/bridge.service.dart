@@ -1,5 +1,5 @@
 import "package:kyoryo/src/models/bridge.dart";
-import "package:kyoryo/src/models/bridge_element.dart";
+import "package:kyoryo/src/models/inspection_point.dart";
 import "package:kyoryo/src/services/base.service.dart";
 import "package:riverpod_annotation/riverpod_annotation.dart";
 
@@ -19,11 +19,11 @@ class BridgeService extends BaseApiService {
         .toList();
   }
 
-  Future<List<BridgeElement>> fetchBridgeElements() async {
+  Future<List<InpsectionPoint>> fetchInspectionPoints() async {
     final jsonResponse = await get('bridge_elements');
 
     return (jsonResponse as List)
-        .map((bridgeElement) => BridgeElement.fromJson(bridgeElement))
+        .map((inspectionPoint) => InpsectionPoint.fromJson(inspectionPoint))
         .toList();
   }
 }

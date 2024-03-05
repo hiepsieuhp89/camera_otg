@@ -1,15 +1,15 @@
 import 'dart:io';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
-import 'package:kyoryo/src/models/bridge_element.dart';
+import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/screens/bridge_inspection_evaluation_screen.dart';
 
 class BridgeInspectionPhotoSelectScreenArguments {
-  final BridgeElement element;
+  final InpsectionPoint point;
   final List<String> capturedImages;
 
   BridgeInspectionPhotoSelectScreenArguments({
-    required this.element,
+    required this.point,
     required this.capturedImages,
   });
 }
@@ -41,8 +41,7 @@ class _BridgeInspectionPhotoSelectScreenState
     if (selectedImage != null) {
       Navigator.pushNamed(context, BridgeInspectionEvaluationScreen.routeName,
           arguments: BridgeInspectionEvaluationScreenArguments(
-              element: widget.arguments.element,
-              selectedImage: selectedImage!));
+              point: widget.arguments.point, selectedImage: selectedImage!));
     }
   }
 
@@ -74,7 +73,7 @@ class _BridgeInspectionPhotoSelectScreenState
                         textAlign: TextAlign.left,
                       ),
                       const SizedBox(height: 8),
-                      Image.network(widget.arguments.element.imageUrl!),
+                      Image.network(widget.arguments.point.imageUrl!),
                     ],
                   )),
               Expanded(
