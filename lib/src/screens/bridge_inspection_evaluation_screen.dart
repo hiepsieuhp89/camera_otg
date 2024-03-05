@@ -1,17 +1,18 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/screens/bridge_inspection_screen.dart';
 
 class BridgeInspectionEvaluationScreenArguments {
   final InspectionPoint point;
-  final String selectedImage;
+  final List<String> capturedPhotos;
 
   BridgeInspectionEvaluationScreenArguments({
     required this.point,
-    required this.selectedImage,
+    required this.capturedPhotos,
   });
 }
 
@@ -53,15 +54,32 @@ class _BridgeInspectionEvaluationScreenState
                   ]),
                   const SizedBox(height: 8),
                   Expanded(
-                      child: Image(
-                          image:
-                              FileImage(File(widget.arguments.selectedImage)),
-                          fit: BoxFit.cover))
+                      child: CarouselSlider(
+                    options: CarouselOptions(
+                      viewportFraction: 0.6,
+                      initialPage: 0,
+                      enableInfiniteScroll: true,
+                      reverse: false,
+                      enlargeCenterPage: true,
+                      onPageChanged: (index, reason) {},
+                      scrollDirection: Axis.horizontal,
+                    ),
+                    items: widget.arguments.capturedPhotos.map((photo) {
+                      return Builder(
+                        builder: (BuildContext context) {
+                          return Image(
+                            image: FileImage(File(photo)),
+                            fit: BoxFit.cover,
+                          );
+                        },
+                      );
+                    }).toList(),
+                  ))
                 ]),
               ),
               const SizedBox(height: 16),
               Expanded(
-                  flex: 2,
+                  flex: 1,
                   child: Column(
                     children: [
                       Row(

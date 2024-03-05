@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
-import 'package:kyoryo/src/screens/bridge_inspection_photo_select_screen.dart';
+import 'package:kyoryo/src/screens/bridge_inspection_evaluation_screen.dart';
 import 'package:kyoryo/src/screens/preview_pictures_screen.dart';
 import 'package:kyoryo/src/utilities/image_utils.dart';
 
@@ -21,7 +21,7 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
   CameraController? _controller;
   Future<void>? _initializeControllerFuture;
 
-  List<String> capturedImages = [];
+  List<String> capturedPhotos = [];
 
   bool _isCapturing = false;
 
@@ -75,7 +75,7 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
       final XFile? compressedImage = await compressImage(rawImage.path, 70);
 
       if (compressedImage != null) {
-        capturedImages.add(compressedImage.path);
+        capturedPhotos.add(compressedImage.path);
       }
     } catch (e) {
       debugPrint(e.toString());
@@ -90,11 +90,11 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
     Navigator.pushNamed(
       context,
       PreviewPicturesScreen.routeName,
-      arguments: capturedImages,
+      arguments: capturedPhotos,
     ).then((updatedImages) {
       if (updatedImages != null) {
         setState(() {
-          capturedImages = updatedImages as List<String>;
+          capturedPhotos = updatedImages as List<String>;
         });
       }
     });
@@ -102,9 +102,9 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
 
   void _navigateToReportScreen() {
     _resetOrientation();
-    Navigator.pushNamed(context, BridgeInspectionPhotoSelectScreen.routeName,
-        arguments: BridgeInspectionPhotoSelectScreenArguments(
-            point: widget.inspectionPoint, capturedImages: capturedImages));
+    Navigator.pushNamed(context, BridgeInspectionEvaluationScreen.routeName,
+        arguments: BridgeInspectionEvaluationScreenArguments(
+            point: widget.inspectionPoint, capturedPhotos: capturedPhotos));
   }
 
   @override
