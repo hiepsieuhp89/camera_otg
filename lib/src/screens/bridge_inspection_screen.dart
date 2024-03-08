@@ -167,7 +167,7 @@ class _BridgeInspectionScreenState
             )
           ],
         ),
-        bottomSheet: BottomAppBar(
+        bottomNavigationBar: BottomAppBar(
           clipBehavior: Clip.none,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -183,7 +183,10 @@ class _BridgeInspectionScreenState
                             onPressed: _confirmCancelDialog,
                             icon: const Icon(Icons.close)),
                         FilledButton.icon(
-                            onPressed: null,
+                            onPressed: numberOfCreatedReports ==
+                                    inspectionPoints.value!.length
+                                ? _stopInspecting
+                                : null,
                             icon: const Icon(Icons.check),
                             label: Text(
                                 AppLocalizations.of(context)!.finishInspection))
@@ -191,7 +194,7 @@ class _BridgeInspectionScreenState
                     : [
                         FilledButton.icon(
                           onPressed: _startInspecting,
-                          icon: const Icon(Icons.add),
+                          icon: const Icon(Icons.play_arrow),
                           label: Text(
                               AppLocalizations.of(context)!.startInspection),
                         )
