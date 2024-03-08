@@ -39,7 +39,7 @@
   "damageType": "損傷種類",
   "damageDetails": "損傷内容",
   "damage": "損傷度",
-  "freeComment": "フリーコメント",
+  "remark": "備考",
   "assessment": "評価",
   "pleaseSelectAPhoto": "写真を選択ください",
   "failedToCreateInspectionReport": "点検報告書の作成に失敗しました",

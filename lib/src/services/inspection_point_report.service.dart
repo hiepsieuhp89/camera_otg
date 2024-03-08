@@ -12,9 +12,12 @@ InspectionPointReportService inspectionPointReportService(
 
 class InspectionPointReportService extends BaseApiService {
   Future<InspectionPointReport> createReport(
-      int pointId, String? damageTypeId, List<int> photoIds) async {
-    final jsonResponse = await post('inspection_points/$pointId/reports',
-        {'date': DateTime.now().toIso8601String(), 'photos_ids': photoIds});
+      int pointId, List<int> photoIds, Object? metadata) async {
+    final jsonResponse = await post('inspection_points/$pointId/reports', {
+      'date': DateTime.now().toIso8601String(),
+      'photos_ids': photoIds,
+      'meta_data': metadata
+    });
 
     return InspectionPointReport.fromJson(jsonResponse);
   }

@@ -32,7 +32,7 @@ class BridgeInspection extends _$BridgeInspection {
   }
 
   Future<void> createReport(
-      int pointId, List<String> capturedPhotoPaths) async {
+      int pointId, List<String> capturedPhotoPaths, Object? metadata) async {
     List<Future<Photo>> photoFutures = capturedPhotoPaths
         .map((path) => ref.read(photoServiceProvider).uploadPhoto(path))
         .toList();
@@ -44,7 +44,7 @@ class BridgeInspection extends _$BridgeInspection {
 
     final report = await ref
         .read(inspectionPointReportServiceProvider)
-        .createReport(pointId, null, photoIds);
+        .createReport(pointId, photoIds, metadata);
 
     addInspectionPointReport(pointId, report);
   }

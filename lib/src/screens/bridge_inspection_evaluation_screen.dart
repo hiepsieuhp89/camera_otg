@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kyoryo/src/models/damage_type.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
+import 'package:kyoryo/src/providers/misc.provider.dart';
 import 'package:kyoryo/src/screens/bridge_inspection_screen.dart';
 
 class BridgeInspectionEvaluationScreenArguments {
@@ -32,14 +34,22 @@ class BridgeInspectionEvaluationScreen extends ConsumerStatefulWidget {
 class BridgeInspectionEvaluationScreenState
     extends ConsumerState<BridgeInspectionEvaluationScreen> {
   Future<void>? _pendingSubmssion;
+  String? _selectedCategory;
+  String? _selectedHealthLevel;
+  DamageType? _selectedDamageType;
+  late TextEditingController _textEditingController;
 
   Future<void> submitInspection() async {
     final reportSubmission = ref
         .read(
             bridgeInspectionProvider(widget.arguments.point.bridgeId!).notifier)
         .createReport(
-            widget.arguments.point.id!, widget.arguments.capturedPhotos)
-        .then((_) {
+            widget.arguments.point.id!, widget.arguments.capturedPhotos, {
+      'damage_category': _selectedCategory ?? '',
+      'damage_type': _selectedDamageType?.nameJp ?? '',
+      'health_level': _selectedHealthLevel ?? '',
+      'remark': _textEditingController.text,
+    }).then((_) {
       Navigator.popUntil(
           context, ModalRoute.withName(BridgeInspectionScreen.routeName));
     });
@@ -50,7 +60,15 @@ class BridgeInspectionEvaluationScreenState
   }
 
   @override
+  void initState() {
+    super.initState();
+    _textEditingController = TextEditingController();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final damageTypes = ref.watch(damageTypesProvider);
+
     return Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: AppBar(title: Text(widget.arguments.point.name!)),
@@ -109,37 +127,78 @@ class BridgeInspectionEvaluationScreenState
                       Row(
                         children: [
                           Expanded(
-                              child: DropdownMenu(
+                              child: DropdownMenu<String>(
                             label:
                                 Text(AppLocalizations.of(context)!.damageType),
-                            enabled: false,
                             expandedInsets: const EdgeInsets.all(0),
-                            dropdownMenuEntries: const [],
+                            onSelected: (category) {
+                              setState(() {
+                                _selectedCategory = category;
+                                _selectedDamageType = null;
+                              });
+                            },
+                            dropdownMenuEntries: damageTypes.hasValue
+                                ? damageTypes.value!
+                                    .map((type) => type.category)
+                                    .toSet()
+                                    .map((category) {
+                                    return DropdownMenuEntry(
+                                      value: category,
+                                      label: category,
+                                    );
+                                  }).toList()
+                                : const [],
                           )),
                           const SizedBox(width: 8),
                           Expanded(
-                              child: DropdownMenu(
+                              child: DropdownMenu<DamageType>(
                             label: Text(
                                 AppLocalizations.of(context)!.damageDetails),
-                            enabled: false,
+                            enabled: _selectedCategory != null,
                             expandedInsets: const EdgeInsets.all(0),
-                            dropdownMenuEntries: const [],
+                            onSelected: (damageType) {
+                              setState(() {
+                                _selectedDamageType = damageType;
+                              });
+                            },
+                            dropdownMenuEntries: damageTypes.hasValue
+                                ? damageTypes.value!
+                                    .where((type) =>
+                                        type.category == _selectedCategory)
+                                    .map((type) {
+                                    return DropdownMenuEntry(
+                                      value: type,
+                                      label: type.nameJp,
+                                    );
+                                  }).toList()
+                                : const [],
                           ))
                         ],
                       ),
                       const SizedBox(height: 8),
-                      DropdownMenu(
+                      DropdownMenu<String>(
                         label: Text(AppLocalizations.of(context)!.damage),
-                        enabled: false,
                         expandedInsets: const EdgeInsets.all(0),
-                        dropdownMenuEntries: const [],
+                        onSelected: (healthLevel) {
+                          setState(() {
+                            _selectedHealthLevel = healthLevel;
+                          });
+                        },
+                        dropdownMenuEntries: const [
+                          DropdownMenuEntry(value: 'A', label: 'A'),
+                          DropdownMenuEntry(value: 'B', label: 'B'),
+                          DropdownMenuEntry(value: 'C', label: 'C'),
+                          DropdownMenuEntry(value: 'D', label: 'D'),
+                          DropdownMenuEntry(value: 'E', label: 'E'),
+                        ],
                       ),
                       const SizedBox(height: 8),
                       TextField(
+                          controller: _textEditingController,
                           decoration: InputDecoration(
-                        label: Text(AppLocalizations.of(context)!.freeComment),
-                        border: const OutlineInputBorder(),
-                      ))
+                            label: Text(AppLocalizations.of(context)!.remark),
+                            border: const OutlineInputBorder(),
+                          ))
                     ],
                   )),
               const SizedBox(height: 16),
