@@ -73,7 +73,7 @@ class BridgeInspectionEvaluationScreenState
                     options: CarouselOptions(
                       viewportFraction: 0.6,
                       initialPage: 0,
-                      enableInfiniteScroll: true,
+                      enableInfiniteScroll: false,
                       reverse: false,
                       enlargeCenterPage: true,
                       onPageChanged: (index, reason) {},

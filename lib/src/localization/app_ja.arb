@@ -47,5 +47,7 @@
   "allInspection": "全点検",
   "presentConditionInspection": "現況点検",
   "damageInspection": "損傷点検",
-  "finished": "完了"
+  "finished": "完了",
+  "capturedPhotos": "撮影写真",
+  "diagramPicture": "図面"
 }
