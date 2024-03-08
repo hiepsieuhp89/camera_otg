@@ -81,33 +81,48 @@ class _BridgeInspectionScreenState
         ref.watch(numberOfCreatedReportsProvider(widget.arguments.bridge.id!));
     final inspectionPoints =
         ref.watch(inspectionPointsProvider(widget.arguments.bridge.id!));
+    final filteredInspectionPoints = ref
+        .watch(filteredInspectionPointsProvider(widget.arguments.bridge.id!));
 
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-          resizeToAvoidBottomInset: false,
-          appBar: AppBar(
-              bottom: TabBar(tabs: [
-                Tab(
-                  text: AppLocalizations.of(context)!.generalInspection,
-                  icon: const Icon(Icons.generating_tokens_outlined),
-                ),
-                Tab(
-                  text: AppLocalizations.of(context)!.damangeInspection,
-                  icon: const Icon(Icons.broken_image),
-                )
-              ]),
-              title: Row(
-                children: <Widget>[
-                  Text(widget.arguments.bridge.nameKanji),
-                  IconButton(
-                      onPressed: () {},
-                      icon: const Icon(Icons.info_outline_rounded)),
+    return Scaffold(
+        resizeToAvoidBottomInset: false,
+        appBar: AppBar(
+            title: Row(
+          children: <Widget>[
+            Text(widget.arguments.bridge.nameKanji),
+            IconButton(
+                onPressed: () {}, icon: const Icon(Icons.info_outline_rounded)),
+          ],
+        )),
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: SegmentedButton<InspectionPointType?>(
+                onSelectionChanged: (Set<InspectionPointType?> value) {
+                  ref
+                      .watch(currentInspectionPointTypeProvider.notifier)
+                      .set(value.first);
+                },
+                selected: {ref.read(currentInspectionPointTypeProvider)},
+                segments: [
+                  ButtonSegment<InspectionPointType?>(
+                      label: Text(AppLocalizations.of(context)!.allInspection),
+                      value: null),
+                  ButtonSegment<InspectionPointType?>(
+                    label: Text(AppLocalizations.of(context)!
+                        .presentConditionInspection),
+                    value: InspectionPointType.presentCondition,
+                  ),
+                  ButtonSegment<InspectionPointType?>(
+                    label: Text(AppLocalizations.of(context)!.damageInspection),
+                    value: InspectionPointType.damage,
+                  )
                 ],
-              )),
-          body: TabBarView(
-            children: [
-              inspectionPoints.when(
+              ),
+            ),
+            Expanded(
+              child: filteredInspectionPoints.when(
                 data: (data) {
                   return ListView.builder(
                     restorationId: 'inspectionPointListView',
@@ -149,45 +164,41 @@ class _BridgeInspectionScreenState
                   );
                 },
               ),
-              Center(
-                child: Text(AppLocalizations.of(context)!.noDamageFound,
-                    style: Theme.of(context).textTheme.bodySmall),
-              ),
+            )
+          ],
+        ),
+        bottomSheet: BottomAppBar(
+          clipBehavior: Clip.none,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Text(_isInspecting && inspectionPoints.value!.isNotEmpty
+                  ? AppLocalizations.of(context)!.finishedTasks(
+                      numberOfCreatedReports, inspectionPoints.value!.length)
+                  : ''),
+              Row(
+                children: _isInspecting
+                    ? [
+                        IconButton(
+                            onPressed: _confirmCancelDialog,
+                            icon: const Icon(Icons.close)),
+                        FilledButton.icon(
+                            onPressed: null,
+                            icon: const Icon(Icons.check),
+                            label: Text(
+                                AppLocalizations.of(context)!.finishInspection))
+                      ]
+                    : [
+                        FilledButton.icon(
+                          onPressed: _startInspecting,
+                          icon: const Icon(Icons.add),
+                          label: Text(
+                              AppLocalizations.of(context)!.startInspection),
+                        )
+                      ],
+              )
             ],
           ),
-          bottomSheet: BottomAppBar(
-            clipBehavior: Clip.none,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Text(_isInspecting && inspectionPoints.value!.isNotEmpty
-                    ? AppLocalizations.of(context)!.finishedTasks(
-                        numberOfCreatedReports, inspectionPoints.value!.length)
-                    : ''),
-                Row(
-                  children: _isInspecting
-                      ? [
-                          IconButton(
-                              onPressed: _confirmCancelDialog,
-                              icon: const Icon(Icons.close)),
-                          FilledButton.icon(
-                              onPressed: null,
-                              icon: const Icon(Icons.check),
-                              label: Text(AppLocalizations.of(context)!
-                                  .finishInspection))
-                        ]
-                      : [
-                          FilledButton.icon(
-                            onPressed: _startInspecting,
-                            icon: const Icon(Icons.add),
-                            label: Text(
-                                AppLocalizations.of(context)!.startInspection),
-                          )
-                        ],
-                )
-              ],
-            ),
-          )),
-    );
+        ));
   }
 }

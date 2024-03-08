@@ -10,8 +10,6 @@
   "takePictureTitle": "写真撮影" ,
   "takePictureDone": "終わり",
   "previewPicturesTitle": "プレビュー画像" ,
-  "generalInspection": "現況写真",
-  "damangeInspection": "損傷写真",
   "noDamageFound": "損傷なし",
   "finishedTasks": "{finished}/{total} 完了",
   "@finishedTasks": {
@@ -45,5 +43,9 @@
   "assessment": "評価",
   "pleaseSelectAPhoto": "写真を選択ください",
   "failedToCreateInspectionReport": "点検報告書の作成に失敗しました",
-  "failedToGetInspectionPoints": "点検ポイントの取得に失敗しました"
+  "failedToGetInspectionPoints": "点検ポイントの取得に失敗しました",
+  "allInspection": "全点検",
+  "presentConditionInspection": "現況点検",
+  "damageInspection": "損傷点検",
+  "finished": "完了"
 }

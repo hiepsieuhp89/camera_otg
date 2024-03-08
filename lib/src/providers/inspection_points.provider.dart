@@ -11,3 +11,27 @@ class InspectionPoints extends _$InspectionPoints {
     return ref.watch(bridgeServiceProvider).fetchInspectionPoints(bridgeId);
   }
 }
+
+@riverpod
+class CurrentInspectionPointType extends _$CurrentInspectionPointType {
+  @override
+  InspectionPointType? build() {
+    return null;
+  }
+
+  void set(InspectionPointType? type) {
+    state = type;
+  }
+}
+
+@riverpod
+Future<List<InspectionPoint>> filteredInspectionPoints(
+    FilteredInspectionPointsRef ref, int bridgeId) {
+  final selectedType = ref.watch(currentInspectionPointTypeProvider);
+  final data = ref.watch(inspectionPointsProvider(bridgeId).selectAsync(
+      (points) => points
+          .where((point) => selectedType == null || selectedType == point.type)
+          .toList()));
+
+  return data;
+}

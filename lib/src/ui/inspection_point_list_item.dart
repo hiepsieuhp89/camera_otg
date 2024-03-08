@@ -57,15 +57,26 @@ class InpsectionPointListItem extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     createdReport != null
-                        ? Icon(Icons.check_circle,
-                            color: Theme.of(context).primaryColor)
-                        : IconButton(
+                        ? Chip(
+                            backgroundColor: Theme.of(context)
+                                .primaryColor
+                                .withOpacity(0.15),
+                            label: Row(
+                              children: [
+                                Icon(Icons.check,
+                                    color: Theme.of(context).primaryColor,
+                                    size: 20.0),
+                                const SizedBox(width: 5.0),
+                                Text(AppLocalizations.of(context)!.finished)
+                              ],
+                            ))
+                        : IconButton.filled(
                             onPressed: isInspecting
                                 ? () {
                                     startInspect(point);
                                   }
                                 : null,
-                            icon: const Icon(Icons.photo_camera)),
+                            icon: const Icon(Icons.manage_search_rounded)),
                   ],
                 ))
               ],
