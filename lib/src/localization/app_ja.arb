@@ -43,5 +43,7 @@
   "damage": "損傷度",
   "freeComment": "フリーコメント",
   "assessment": "評価",
-  "pleaseSelectAPhoto": "写真を選択ください"
+  "pleaseSelectAPhoto": "写真を選択ください",
+  "failedToCreateInspectionReport": "点検報告書の作成に失敗しました",
+  "failedToGetInspectionPoints": "点検ポイントの取得に失敗しました"
 }

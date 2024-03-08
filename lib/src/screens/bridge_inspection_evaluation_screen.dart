@@ -3,7 +3,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
+import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
 import 'package:kyoryo/src/screens/bridge_inspection_screen.dart';
 
 class BridgeInspectionEvaluationScreenArguments {
@@ -16,22 +18,35 @@ class BridgeInspectionEvaluationScreenArguments {
   });
 }
 
-class BridgeInspectionEvaluationScreen extends StatefulWidget {
+class BridgeInspectionEvaluationScreen extends ConsumerStatefulWidget {
   static const routeName = '/bridge-inspection-evaluation';
   final BridgeInspectionEvaluationScreenArguments arguments;
 
   const BridgeInspectionEvaluationScreen({super.key, required this.arguments});
 
   @override
-  State<BridgeInspectionEvaluationScreen> createState() =>
-      _BridgeInspectionEvaluationScreenState();
+  ConsumerState<BridgeInspectionEvaluationScreen> createState() =>
+      BridgeInspectionEvaluationScreenState();
 }
 
-class _BridgeInspectionEvaluationScreenState
-    extends State<BridgeInspectionEvaluationScreen> {
-  void _submitInspection() {
-    Navigator.popUntil(
-        context, ModalRoute.withName(BridgeInspectionScreen.routeName));
+class BridgeInspectionEvaluationScreenState
+    extends ConsumerState<BridgeInspectionEvaluationScreen> {
+  Future<void>? _pendingSubmssion;
+
+  Future<void> submitInspection() async {
+    final reportSubmission = ref
+        .read(
+            bridgeInspectionProvider(widget.arguments.point.bridgeId!).notifier)
+        .createReport(
+            widget.arguments.point.id!, widget.arguments.capturedPhotos)
+        .then((_) {
+      Navigator.popUntil(
+          context, ModalRoute.withName(BridgeInspectionScreen.routeName));
+    });
+
+    setState(() {
+      _pendingSubmssion = reportSubmission;
+    });
   }
 
   @override
@@ -128,12 +143,40 @@ class _BridgeInspectionEvaluationScreenState
                     ],
                   )),
               const SizedBox(height: 16),
-              FilledButton(
-                onPressed: _submitInspection,
-                style: FilledButton.styleFrom(
-                    minimumSize: const Size.fromHeight(55)),
-                child: Text(AppLocalizations.of(context)!.finishInspection),
-              )
+              FutureBuilder(
+                  future: _pendingSubmssion,
+                  builder: ((context, snapshot) {
+                    final isLoading =
+                        snapshot.connectionState == ConnectionState.waiting;
+
+                    return FilledButton.icon(
+                      icon: isLoading
+                          ? Container(
+                              width: 24,
+                              height: 24,
+                              padding: const EdgeInsets.all(2.0),
+                              child: const CircularProgressIndicator(
+                                strokeWidth: 3,
+                              ),
+                            )
+                          : const Icon(Icons.check),
+                      label:
+                          Text(AppLocalizations.of(context)!.finishInspection),
+                      onPressed: isLoading
+                          ? null
+                          : () {
+                              submitInspection().catchError((_) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                        content: Text(AppLocalizations.of(
+                                                context)!
+                                            .failedToCreateInspectionReport)));
+                              });
+                            },
+                      style: FilledButton.styleFrom(
+                          minimumSize: const Size.fromHeight(55)),
+                    );
+                  }))
             ],
           ),
         ));

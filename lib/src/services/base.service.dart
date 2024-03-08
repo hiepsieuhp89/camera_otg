@@ -14,7 +14,7 @@ abstract class BaseApiService {
     return _processResponse(response);
   }
 
-  Future<dynamic> post(String endpoint, {dynamic body}) async {
+  Future<dynamic> post(String endpoint, Object? body) async {
     final response = await http.post(
       Uri.parse('$baseUrl/$endpoint'),
       body: json.encode(body),
@@ -38,6 +38,23 @@ abstract class BaseApiService {
       headers: {'Content-Type': 'application/json; charset=utf-8'},
     );
     return _processResponse(response);
+  }
+
+  Future<dynamic> postSingleFile(String endpoint, String filePath) async {
+    final request =
+        http.MultipartRequest('POST', Uri.parse('$baseUrl/$endpoint'));
+    final file = await http.MultipartFile.fromPath('file', filePath);
+    request.files.add(file);
+
+    final response = await request.send();
+
+    if (response.statusCode == 200) {
+      final responseBody = await response.stream.bytesToString();
+
+      return json.decode(responseBody);
+    } else {
+      throw Exception('Failed to upload photo');
+    }
   }
 
   dynamic _processResponse(http.Response response) {

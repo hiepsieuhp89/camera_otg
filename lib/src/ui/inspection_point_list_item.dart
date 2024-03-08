@@ -1,18 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kyoryo/src/models/bridge.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
-import 'package:kyoryo/src/screens/take_picture_screen.dart';
+import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
 import 'package:photo_view/photo_view.dart';
 
-class InpsectionPointListItem extends StatelessWidget {
+class InpsectionPointListItem extends ConsumerWidget {
+  final Bridge bridge;
   final InspectionPoint point;
   final bool isInspecting;
+  final Function(InspectionPoint) startInspect;
 
   const InpsectionPointListItem(
-      {super.key, required this.point, this.isInspecting = false});
+      {super.key,
+      required this.point,
+      required this.bridge,
+      this.isInspecting = false,
+      required this.startInspect});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final createdReport =
+        ref.watch(bridgeInspectionProvider(bridge.id!))[point.id!];
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
       child: SizedBox(
@@ -41,15 +52,22 @@ class InpsectionPointListItem extends StatelessWidget {
                     AppLocalizations.of(context)!
                         .lastInspectionDate('23年02月03日 15:30'),
                     style: Theme.of(context).textTheme.bodySmall),
-                IconButton(
-                    onPressed: isInspecting
-                        ? () {
-                            Navigator.pushNamed(
-                                context, TakePictureScreen.routeName,
-                                arguments: point);
-                          }
-                        : null,
-                    icon: const Icon(Icons.photo_camera))
+                Expanded(
+                    child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    createdReport != null
+                        ? Icon(Icons.check_circle,
+                            color: Theme.of(context).primaryColor)
+                        : IconButton(
+                            onPressed: isInspecting
+                                ? () {
+                                    startInspect(point);
+                                  }
+                                : null,
+                            icon: const Icon(Icons.photo_camera)),
+                  ],
+                ))
               ],
             )
           ],
@@ -77,7 +95,7 @@ class InpsectionPointListItem extends StatelessWidget {
                     ),
                     body: Center(
                         child: PhotoView(
-                      imageProvider: NetworkImage(point.imageUrl!),
+                      imageProvider: NetworkImage(point.photoUrl!),
                     )),
                   ),
                 ),
@@ -91,7 +109,7 @@ class InpsectionPointListItem extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Theme.of(context).primaryColorLight,
                   image: DecorationImage(
-                    image: NetworkImage(point.imageUrl!),
+                    image: NetworkImage(point.photoUrl!),
                     fit: BoxFit.cover,
                   ),
                   borderRadius: const BorderRadius.horizontal(
@@ -111,7 +129,7 @@ class InpsectionPointListItem extends StatelessWidget {
                     ),
                     body: Center(
                         child: PhotoView(
-                      imageProvider: NetworkImage(point.blueprintUrl!),
+                      imageProvider: NetworkImage(point.diagramUrl!),
                     )),
                   ),
                 ),
@@ -125,7 +143,7 @@ class InpsectionPointListItem extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Theme.of(context).primaryColorLight,
                   image: DecorationImage(
-                    image: NetworkImage(point.blueprintUrl!),
+                    image: NetworkImage(point.diagramUrl!),
                     fit: BoxFit.cover,
                   ),
                   borderRadius: const BorderRadius.horizontal(

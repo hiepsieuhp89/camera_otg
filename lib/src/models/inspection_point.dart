@@ -7,10 +7,11 @@ part 'inspection_point.g.dart';
 @freezed
 class InspectionPoint with _$InspectionPoint {
   factory InspectionPoint(
-      {String? id,
+      {int? id,
       String? name,
-      @JsonKey(name: 'image_url') String? imageUrl,
-      @JsonKey(name: 'blueprint_url') String? blueprintUrl,
+      @JsonKey(name: 'bridge_id') int? bridgeId,
+      @JsonKey(name: 'photo_url') String? photoUrl,
+      @JsonKey(name: 'diagram_url') String? diagramUrl,
       @JsonKey(name: 'last_inspection_date')
       DateTime? lastInspectionDate}) = _InpsectionPoint;
 

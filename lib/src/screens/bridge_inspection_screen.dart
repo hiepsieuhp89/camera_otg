@@ -3,16 +3,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kyoryo/src/models/bridge.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
-import 'package:kyoryo/src/services/bridge.service.dart';
+import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
+import 'package:kyoryo/src/providers/inspection_points.provider.dart';
+import 'package:kyoryo/src/screens/take_picture_screen.dart';
 import 'package:kyoryo/src/ui/inspection_point_list_item.dart';
+
+class BridgeInspectionScreenArguments {
+  final Bridge bridge;
+
+  BridgeInspectionScreenArguments({required this.bridge});
+}
 
 class BridgeInspectionScreen extends ConsumerStatefulWidget {
   const BridgeInspectionScreen({
     super.key,
-    required this.bridge,
+    required this.arguments,
   });
 
-  final Bridge bridge;
+  final BridgeInspectionScreenArguments arguments;
   static const routeName = '/bridge-inspection';
 
   @override
@@ -23,29 +31,23 @@ class BridgeInspectionScreen extends ConsumerStatefulWidget {
 class _BridgeInspectionScreenState
     extends ConsumerState<BridgeInspectionScreen> {
   bool _isInspecting = false;
-  bool _isLoading = true;
-  List<InspectionPoint> _points = [];
 
-  @override
-  void initState() {
-    super.initState();
-    _fetchElements();
+  void _startInspectingPoint(InspectionPoint point) {
+    Navigator.pushNamed(context, TakePictureScreen.routeName, arguments: point);
   }
 
-  void _setInspecting(bool value) {
+  void _startInspecting() {
     setState(() {
-      _isInspecting = value;
+      _isInspecting = true;
     });
   }
 
-  void _fetchElements() async {
-    _isLoading = true;
-    final elements =
-        await ref.read(bridgeServiceProvider).fetchInspectionPoints();
-
+  void _stopInspecting() {
+    ref
+        .watch(bridgeInspectionProvider(widget.arguments.bridge.id!).notifier)
+        .clearInspection();
     setState(() {
-      _points = elements;
-      _isLoading = false;
+      _isInspecting = false;
     });
   }
 
@@ -64,7 +66,7 @@ class _BridgeInspectionScreenState
               child: Text(AppLocalizations.of(context)!.cancel),
               onPressed: () {
                 Navigator.of(context).pop();
-                _setInspecting(false);
+                _stopInspecting();
               },
             ),
           ],
@@ -75,6 +77,11 @@ class _BridgeInspectionScreenState
 
   @override
   Widget build(BuildContext context) {
+    final numberOfCreatedReports =
+        ref.watch(numberOfCreatedReportsProvider(widget.arguments.bridge.id!));
+    final inspectionPoints =
+        ref.watch(inspectionPointsProvider(widget.arguments.bridge.id!));
+
     return DefaultTabController(
       length: 2,
       child: Scaffold(
@@ -92,7 +99,7 @@ class _BridgeInspectionScreenState
               ]),
               title: Row(
                 children: <Widget>[
-                  Text(widget.bridge.nameKanji),
+                  Text(widget.arguments.bridge.nameKanji),
                   IconButton(
                       onPressed: () {},
                       icon: const Icon(Icons.info_outline_rounded)),
@@ -100,14 +107,48 @@ class _BridgeInspectionScreenState
               )),
           body: TabBarView(
             children: [
-              _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : ListView.builder(
-                      itemCount: _points.length,
-                      itemBuilder: (context, index) {
-                        return InpsectionPointListItem(
-                            point: _points[index], isInspecting: _isInspecting);
-                      }),
+              inspectionPoints.when(
+                data: (data) {
+                  return ListView.builder(
+                    restorationId: 'inspectionPointListView',
+                    itemCount: data.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      final point = data[index];
+
+                      return InpsectionPointListItem(
+                        point: point,
+                        bridge: widget.arguments.bridge,
+                        isInspecting: _isInspecting,
+                        startInspect: _startInspectingPoint,
+                      );
+                    },
+                  );
+                },
+                loading: () => const Center(
+                  child: CircularProgressIndicator(),
+                ),
+                error: (error, stackTrace) {
+                  debugPrint('Error: $error');
+
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                            AppLocalizations.of(context)!
+                                .failedToCreateInspectionReport,
+                            style: Theme.of(context).textTheme.bodySmall),
+                        IconButton(
+                          onPressed: () => ref.invalidate(
+                              inspectionPointsProvider(
+                                  widget.arguments.bridge.id!)),
+                          icon: const Icon(Icons.refresh),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
               Center(
                 child: Text(AppLocalizations.of(context)!.noDamageFound,
                     style: Theme.of(context).textTheme.bodySmall),
@@ -115,11 +156,13 @@ class _BridgeInspectionScreenState
             ],
           ),
           bottomSheet: BottomAppBar(
+            clipBehavior: Clip.none,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                Text(_isInspecting
-                    ? AppLocalizations.of(context)!.finishedTasks(0, 10)
+                Text(_isInspecting && inspectionPoints.value!.isNotEmpty
+                    ? AppLocalizations.of(context)!.finishedTasks(
+                        numberOfCreatedReports, inspectionPoints.value!.length)
                     : ''),
                 Row(
                   children: _isInspecting
@@ -135,7 +178,7 @@ class _BridgeInspectionScreenState
                         ]
                       : [
                           FilledButton.icon(
-                            onPressed: () => _setInspecting(true),
+                            onPressed: _startInspecting,
                             icon: const Icon(Icons.add),
                             label: Text(
                                 AppLocalizations.of(context)!.startInspection),

@@ -142,8 +142,8 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
               children: <Widget>[
                 Expanded(
                   flex: 4,
-                  child: widget.inspectionPoint.imageUrl != null
-                      ? Image.network(widget.inspectionPoint.imageUrl!)
+                  child: widget.inspectionPoint.photoUrl != null
+                      ? Image.network(widget.inspectionPoint.photoUrl!)
                       : const Placeholder(),
                 ),
                 Expanded(

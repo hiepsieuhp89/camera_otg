@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kyoryo/src/models/bridge.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/screens/bridge_filters_screen.dart';
 import 'package:kyoryo/src/screens/bridge_inspection_evaluation_screen.dart';
@@ -99,9 +98,10 @@ class MainApp extends StatelessWidget {
               case BridgeFiltersScreen.routeName:
                 return const BridgeFiltersScreen();
               case BridgeInspectionScreen.routeName:
-                final bridge = routeSettings.arguments as Bridge;
+                final arguments =
+                    routeSettings.arguments as BridgeInspectionScreenArguments;
 
-                return BridgeInspectionScreen(bridge: bridge);
+                return BridgeInspectionScreen(arguments: arguments);
               case TakePictureScreen.routeName:
                 final inspectionPoint =
                     routeSettings.arguments as InspectionPoint;
