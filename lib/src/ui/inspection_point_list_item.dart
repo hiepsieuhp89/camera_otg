@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:kyoryo/src/models/bridge.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
@@ -49,8 +50,9 @@ class InpsectionPointListItem extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                    AppLocalizations.of(context)!
-                        .lastInspectionDate('23年02月03日 15:30'),
+                    AppLocalizations.of(context)!.lastInspectionDate(
+                        DateFormat('yy年MM月dd日 HH:mm')
+                            .format(point.lastInspectionDate!)),
                     style: Theme.of(context).textTheme.bodySmall),
                 Expanded(
                     child: Row(

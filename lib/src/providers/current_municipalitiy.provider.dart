@@ -1,5 +1,5 @@
 import 'package:kyoryo/src/models/municipality.dart';
-import 'package:kyoryo/src/services/municipality.service.dart';
+import 'package:kyoryo/src/services/misc.service.dart';
 import 'package:kyoryo/src/services/settings.service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -22,9 +22,8 @@ class CurrentMunicipality extends _$CurrentMunicipality {
       return set(null);
     }
 
-    final municipality = await ref
-        .watch(municipalityServiceProvider)
-        .getMunicipalityByCode(code);
+    final municipality =
+        await ref.watch(miscServiceProvider).getMunicipalityByCode(code);
 
     set(municipality);
   }

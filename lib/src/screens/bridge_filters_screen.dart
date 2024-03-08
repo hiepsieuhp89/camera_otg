@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kyoryo/src/models/contractor.dart';
 import 'package:kyoryo/src/models/municipality.dart';
+import 'package:kyoryo/src/providers/current_contractor.provider.dart';
 import 'package:kyoryo/src/providers/current_municipalitiy.provider.dart';
-import 'package:kyoryo/src/providers/municipalities.provider.dart';
+import 'package:kyoryo/src/providers/misc.provider.dart';
 
 class BridgeFiltersScreen extends ConsumerWidget {
   const BridgeFiltersScreen({super.key});
@@ -15,6 +17,88 @@ class BridgeFiltersScreen extends ConsumerWidget {
     final municipalities = ref.watch(municipalitiesProvider);
     final municipality = ref.watch(currentMunicipalityProvider);
     final municipalityNotifier = ref.read(currentMunicipalityProvider.notifier);
+    final contractors = ref.watch(contractorsProvider);
+    final contractor = ref.watch(currentContractorProvider);
+    final contractorNotifier = ref.read(currentContractorProvider.notifier);
+
+    Autocomplete<Municipality> municipalityAutocomplete() {
+      return Autocomplete<Municipality>(
+          initialValue: TextEditingValue(text: municipality?.nameKanji ?? ''),
+          onSelected: (option) => municipalityNotifier.set(option),
+          displayStringForOption: (option) => option.nameKanji,
+          fieldViewBuilder: (BuildContext context,
+              TextEditingController textEditingController,
+              FocusNode focusNode,
+              VoidCallback onFieldSubmitted) {
+            return TextFormField(
+              controller: textEditingController,
+              focusNode: focusNode,
+              onFieldSubmitted: (_) => onFieldSubmitted(),
+              decoration: InputDecoration(
+                labelText: AppLocalizations.of(context)!.municipalityName,
+                border: const OutlineInputBorder(),
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: () {
+                    textEditingController.clear();
+                    municipalityNotifier.set(null);
+                  },
+                ),
+              ),
+            );
+          },
+          optionsBuilder: (TextEditingValue textEditingValue) {
+            if (textEditingValue.text == '' || !municipalities.hasValue) {
+              return const Iterable<Municipality>.empty();
+            }
+
+            return municipalities.value!.where((Municipality option) {
+              return option.nameKanji
+                      .contains(textEditingValue.text.toLowerCase()) ||
+                  option.nameRomaji!
+                      .contains(textEditingValue.text.toLowerCase());
+            });
+          });
+    }
+
+    Autocomplete<Contractor> contractorAutocomplete() {
+      return Autocomplete<Contractor>(
+          initialValue: TextEditingValue(text: contractor?.nameJp ?? ''),
+          onSelected: (option) => contractorNotifier.set(option),
+          displayStringForOption: (option) => option.nameJp,
+          fieldViewBuilder: (BuildContext context,
+              TextEditingController textEditingController,
+              FocusNode focusNode,
+              VoidCallback onFieldSubmitted) {
+            return TextFormField(
+              controller: textEditingController,
+              focusNode: focusNode,
+              onFieldSubmitted: (_) => onFieldSubmitted(),
+              decoration: InputDecoration(
+                labelText: AppLocalizations.of(context)!.contractorName,
+                border: const OutlineInputBorder(),
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: () {
+                    textEditingController.clear();
+                    contractorNotifier.set(null);
+                  },
+                ),
+              ),
+            );
+          },
+          optionsBuilder: (TextEditingValue textEditingValue) {
+            if (textEditingValue.text == '' || !contractors.hasValue) {
+              return const Iterable<Contractor>.empty();
+            }
+
+            return contractors.value!.where((Contractor option) {
+              return option.nameJp
+                      .contains(textEditingValue.text.toLowerCase()) ||
+                  option.nameEn.contains(textEditingValue.text.toLowerCase());
+            });
+          });
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -22,84 +106,20 @@ class BridgeFiltersScreen extends ConsumerWidget {
             Text(AppLocalizations.of(context)!.pleaseSelectAreaAndContractor),
         automaticallyImplyLeading: false,
       ),
-      body: municipalities.maybeWhen(
-        orElse: () => _loadingIndicator(),
-        data: (data) => Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(children: [
-              _municipalityAutocomplete(
-                  municipality, municipalityNotifier, data),
-              const SizedBox(height: 24),
-              _contractorSelect(context),
-              const SizedBox(height: 24),
-              _confirmButton(context),
-            ])),
-      ),
-    );
-  }
-
-  Autocomplete<Municipality> _municipalityAutocomplete(
-      Municipality? municipality,
-      CurrentMunicipality municipalityNotifier,
-      List<Municipality> data) {
-    return Autocomplete<Municipality>(
-        initialValue: TextEditingValue(text: municipality?.nameKanji ?? ''),
-        onSelected: (option) => municipalityNotifier.set(option),
-        displayStringForOption: (option) => option.nameKanji,
-        fieldViewBuilder: (BuildContext context,
-            TextEditingController textEditingController,
-            FocusNode focusNode,
-            VoidCallback onFieldSubmitted) {
-          return TextFormField(
-            controller: textEditingController,
-            focusNode: focusNode,
-            onFieldSubmitted: (_) => onFieldSubmitted(),
-            decoration: InputDecoration(
-              labelText: AppLocalizations.of(context)!.municipalityName,
-              border: const OutlineInputBorder(),
-              suffixIcon: IconButton(
-                icon: const Icon(Icons.clear),
-                onPressed: () {
-                  textEditingController.clear();
-                  municipalityNotifier.set(null);
-                },
-              ),
+      body: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(children: [
+            municipalityAutocomplete(),
+            const SizedBox(height: 24),
+            contractorAutocomplete(),
+            const SizedBox(height: 24),
+            FilledButton(
+              onPressed: () => Navigator.pop(context),
+              style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(55)),
+              child: Text(AppLocalizations.of(context)!.showBridgeList),
             ),
-          );
-        },
-        optionsBuilder: (TextEditingValue textEditingValue) {
-          if (textEditingValue.text == '') {
-            return const Iterable<Municipality>.empty();
-          }
-          return data.where((Municipality option) {
-            return option.nameKanji
-                    .contains(textEditingValue.text.toLowerCase()) ||
-                option.nameRomaji!
-                    .contains(textEditingValue.text.toLowerCase());
-          });
-        });
-  }
-
-  DropdownMenu<String> _contractorSelect(BuildContext context) {
-    return DropdownMenu(
-      label: Text(AppLocalizations.of(context)!.contractorName),
-      enabled: false,
-      expandedInsets: const EdgeInsets.all(0),
-      dropdownMenuEntries: const [],
-    );
-  }
-
-  Widget _confirmButton(BuildContext context) {
-    return FilledButton(
-      onPressed: () => Navigator.pop(context),
-      style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(55)),
-      child: Text(AppLocalizations.of(context)!.showBridgeList),
-    );
-  }
-
-  Widget _loadingIndicator() {
-    return const Center(
-      child: CircularProgressIndicator(),
+          ])),
     );
   }
 }
