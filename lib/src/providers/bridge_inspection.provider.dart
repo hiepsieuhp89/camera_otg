@@ -33,18 +33,17 @@ class BridgeInspection extends _$BridgeInspection {
 
   Future<void> createReport(
       int pointId, List<String> capturedPhotoPaths, Object? metadata) async {
-    List<Future<Photo>> photoFutures = capturedPhotoPaths
-        .map((path) => ref.read(photoServiceProvider).uploadPhoto(path))
-        .toList();
+    List<Photo> uploadedPhotos = [];
 
-    final photoIds = await Future.wait(photoFutures)
-        .then((photos) => photos.map((photo) => photo.id!).toList());
-
-    await Future.delayed(const Duration(seconds: 2)); // Simulate network delay
+    for (var path in capturedPhotoPaths) {
+      final photo = await ref.read(photoServiceProvider).uploadPhoto(path);
+      uploadedPhotos.add(photo);
+    }
 
     final report = await ref
         .read(inspectionPointReportServiceProvider)
-        .createReport(pointId, photoIds, metadata);
+        .createReport(pointId,
+            uploadedPhotos.map((photo) => photo.id!).toList(), metadata);
 
     addInspectionPointReport(pointId, report);
   }
