@@ -7,7 +7,7 @@ part 'bridge.g.dart';
 @freezed
 class Bridge with _$Bridge {
   factory Bridge({
-    String? id,
+    int? id,
     String? condition,
     @JsonKey(name: 'bridge_no') required String bridgeNo,
     @JsonKey(name: 'management_no') required String managementNo,

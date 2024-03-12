@@ -3,16 +3,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kyoryo/src/models/bridge.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
-import 'package:kyoryo/src/services/bridge.service.dart';
+import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
+import 'package:kyoryo/src/providers/inspection_points.provider.dart';
+import 'package:kyoryo/src/screens/take_picture_screen.dart';
 import 'package:kyoryo/src/ui/inspection_point_list_item.dart';
+
+class BridgeInspectionScreenArguments {
+  final Bridge bridge;
+
+  BridgeInspectionScreenArguments({required this.bridge});
+}
 
 class BridgeInspectionScreen extends ConsumerStatefulWidget {
   const BridgeInspectionScreen({
     super.key,
-    required this.bridge,
+    required this.arguments,
   });
 
-  final Bridge bridge;
+  final BridgeInspectionScreenArguments arguments;
   static const routeName = '/bridge-inspection';
 
   @override
@@ -23,29 +31,23 @@ class BridgeInspectionScreen extends ConsumerStatefulWidget {
 class _BridgeInspectionScreenState
     extends ConsumerState<BridgeInspectionScreen> {
   bool _isInspecting = false;
-  bool _isLoading = true;
-  List<InspectionPoint> _points = [];
 
-  @override
-  void initState() {
-    super.initState();
-    _fetchElements();
+  void _startInspectingPoint(InspectionPoint point) {
+    Navigator.pushNamed(context, TakePictureScreen.routeName, arguments: point);
   }
 
-  void _setInspecting(bool value) {
+  void _startInspecting() {
     setState(() {
-      _isInspecting = value;
+      _isInspecting = true;
     });
   }
 
-  void _fetchElements() async {
-    _isLoading = true;
-    final elements =
-        await ref.read(bridgeServiceProvider).fetchInspectionPoints();
-
+  void _stopInspecting() {
+    ref
+        .watch(bridgeInspectionProvider(widget.arguments.bridge.id!).notifier)
+        .clearInspection();
     setState(() {
-      _points = elements;
-      _isLoading = false;
+      _isInspecting = false;
     });
   }
 
@@ -64,9 +66,14 @@ class _BridgeInspectionScreenState
               child: Text(AppLocalizations.of(context)!.cancel),
               onPressed: () {
                 Navigator.of(context).pop();
-                _setInspecting(false);
+                _stopInspecting();
               },
             ),
+            TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text(AppLocalizations.of(context)!.continueInspecting)),
           ],
         );
       },
@@ -75,76 +82,131 @@ class _BridgeInspectionScreenState
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-          resizeToAvoidBottomInset: false,
-          appBar: AppBar(
-              bottom: TabBar(tabs: [
-                Tab(
-                  text: AppLocalizations.of(context)!.generalInspection,
-                  icon: const Icon(Icons.generating_tokens_outlined),
-                ),
-                Tab(
-                  text: AppLocalizations.of(context)!.damangeInspection,
-                  icon: const Icon(Icons.broken_image),
-                )
-              ]),
-              title: Row(
-                children: <Widget>[
-                  Text(widget.bridge.nameKanji),
-                  IconButton(
-                      onPressed: () {},
-                      icon: const Icon(Icons.info_outline_rounded)),
+    final numberOfCreatedReports =
+        ref.watch(numberOfCreatedReportsProvider(widget.arguments.bridge.id!));
+    final inspectionPoints =
+        ref.watch(inspectionPointsProvider(widget.arguments.bridge.id!));
+    final filteredInspectionPoints = ref
+        .watch(filteredInspectionPointsProvider(widget.arguments.bridge.id!));
+
+    return Scaffold(
+        resizeToAvoidBottomInset: false,
+        appBar: AppBar(
+            title: Row(
+          children: <Widget>[
+            Text(widget.arguments.bridge.nameKanji),
+            IconButton(
+                onPressed: () {}, icon: const Icon(Icons.info_outline_rounded)),
+          ],
+        )),
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: SegmentedButton<InspectionPointType?>(
+                onSelectionChanged: (Set<InspectionPointType?> value) {
+                  ref
+                      .watch(currentInspectionPointTypeProvider.notifier)
+                      .set(value.first);
+                },
+                selected: {ref.read(currentInspectionPointTypeProvider)},
+                segments: [
+                  ButtonSegment<InspectionPointType?>(
+                      label: Text(AppLocalizations.of(context)!.allInspection),
+                      value: null),
+                  ButtonSegment<InspectionPointType?>(
+                    label: Text(AppLocalizations.of(context)!
+                        .presentConditionInspection),
+                    value: InspectionPointType.presentCondition,
+                  ),
+                  ButtonSegment<InspectionPointType?>(
+                    label: Text(AppLocalizations.of(context)!.damageInspection),
+                    value: InspectionPointType.damage,
+                  )
                 ],
-              )),
-          body: TabBarView(
-            children: [
-              _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : ListView.builder(
-                      itemCount: _points.length,
-                      itemBuilder: (context, index) {
-                        return InpsectionPointListItem(
-                            point: _points[index], isInspecting: _isInspecting);
-                      }),
-              Center(
-                child: Text(AppLocalizations.of(context)!.noDamageFound,
-                    style: Theme.of(context).textTheme.bodySmall),
               ),
+            ),
+            Expanded(
+              child: filteredInspectionPoints.when(
+                data: (data) {
+                  return ListView.builder(
+                    restorationId: 'inspectionPointListView',
+                    itemCount: data.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      final point = data[index];
+
+                      return InpsectionPointListItem(
+                        point: point,
+                        bridge: widget.arguments.bridge,
+                        isInspecting: _isInspecting,
+                        startInspect: _startInspectingPoint,
+                      );
+                    },
+                  );
+                },
+                loading: () => const Center(
+                  child: CircularProgressIndicator(),
+                ),
+                error: (error, stackTrace) {
+                  debugPrint('Error: $error');
+
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                            AppLocalizations.of(context)!
+                                .failedToCreateInspectionReport,
+                            style: Theme.of(context).textTheme.bodySmall),
+                        IconButton(
+                          onPressed: () => ref.invalidate(
+                              inspectionPointsProvider(
+                                  widget.arguments.bridge.id!)),
+                          icon: const Icon(Icons.refresh),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            )
+          ],
+        ),
+        bottomNavigationBar: BottomAppBar(
+          clipBehavior: Clip.none,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Text(_isInspecting && inspectionPoints.value!.isNotEmpty
+                  ? AppLocalizations.of(context)!.finishedTasks(
+                      numberOfCreatedReports, inspectionPoints.value!.length)
+                  : ''),
+              Row(
+                children: _isInspecting
+                    ? [
+                        IconButton(
+                            onPressed: _confirmCancelDialog,
+                            icon: const Icon(Icons.close)),
+                        FilledButton.icon(
+                            onPressed: numberOfCreatedReports ==
+                                    inspectionPoints.value!.length
+                                ? _stopInspecting
+                                : null,
+                            icon: const Icon(Icons.check),
+                            label: Text(
+                                AppLocalizations.of(context)!.finishInspection))
+                      ]
+                    : [
+                        FilledButton.icon(
+                          onPressed: _startInspecting,
+                          icon: const Icon(Icons.play_arrow),
+                          label: Text(
+                              AppLocalizations.of(context)!.startInspection),
+                        )
+                      ],
+              )
             ],
           ),
-          bottomSheet: BottomAppBar(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Text(_isInspecting
-                    ? AppLocalizations.of(context)!.finishedTasks(0, 10)
-                    : ''),
-                Row(
-                  children: _isInspecting
-                      ? [
-                          IconButton(
-                              onPressed: _confirmCancelDialog,
-                              icon: const Icon(Icons.close)),
-                          FilledButton.icon(
-                              onPressed: null,
-                              icon: const Icon(Icons.check),
-                              label: Text(AppLocalizations.of(context)!
-                                  .finishInspection))
-                        ]
-                      : [
-                          FilledButton.icon(
-                            onPressed: () => _setInspecting(true),
-                            icon: const Icon(Icons.add),
-                            label: Text(
-                                AppLocalizations.of(context)!.startInspection),
-                          )
-                        ],
-                )
-              ],
-            ),
-          )),
-    );
+        ));
   }
 }

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
-import 'package:kyoryo/src/screens/bridge_inspection_photo_select_screen.dart';
+import 'package:kyoryo/src/screens/bridge_inspection_evaluation_screen.dart';
 import 'package:kyoryo/src/screens/preview_pictures_screen.dart';
 import 'package:kyoryo/src/utilities/image_utils.dart';
 
@@ -21,8 +21,8 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
   CameraController? _controller;
   Future<void>? _initializeControllerFuture;
 
-  List<String> capturedImages = [];
-
+  List<String> capturedPhotos = [];
+  int _selectedIndex = 1;
   bool _isCapturing = false;
 
   @override
@@ -72,10 +72,10 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
       final XFile rawImage = await _controller!.takePicture();
 
       // Compress the image and get a new XFile
-      final XFile? compressedImage = await compressImage(rawImage.path, 70);
+      final XFile? compressedImage = await compressImage(rawImage.path, 90);
 
       if (compressedImage != null) {
-        capturedImages.add(compressedImage.path);
+        capturedPhotos.add(compressedImage.path);
       }
     } catch (e) {
       debugPrint(e.toString());
@@ -90,11 +90,11 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
     Navigator.pushNamed(
       context,
       PreviewPicturesScreen.routeName,
-      arguments: capturedImages,
+      arguments: capturedPhotos,
     ).then((updatedImages) {
       if (updatedImages != null) {
         setState(() {
-          capturedImages = updatedImages as List<String>;
+          capturedPhotos = updatedImages as List<String>;
         });
       }
     });
@@ -102,9 +102,12 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
 
   void _navigateToReportScreen() {
     _resetOrientation();
-    Navigator.pushNamed(context, BridgeInspectionPhotoSelectScreen.routeName,
-        arguments: BridgeInspectionPhotoSelectScreenArguments(
-            point: widget.inspectionPoint, capturedImages: capturedImages));
+    Navigator.pushNamed(context, BridgeInspectionEvaluationScreen.routeName,
+            arguments: BridgeInspectionEvaluationScreenArguments(
+                point: widget.inspectionPoint, capturedPhotos: capturedPhotos))
+        .then((_) {
+      _setLandscapeOrientation();
+    });
   }
 
   @override
@@ -117,20 +120,6 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.takePictureTitle),
-        actions: [
-          TextButton.icon(
-            icon: const Icon(Icons.check, color: Colors.black),
-            label: Text(AppLocalizations.of(context)!.takePictureDone,
-                style: const TextStyle(color: Colors.black)),
-            onPressed: _navigateToReportScreen,
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.black,
-            ),
-          ),
-        ],
-      ),
       body: FutureBuilder<void>(
         future: _initializeControllerFuture,
         builder: (context, snapshot) {
@@ -140,12 +129,76 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
 
             return Row(
               children: <Widget>[
+                NavigationRail(
+                    leading: Column(
+                      children: [
+                        IconButton(
+                            icon: const Icon(Icons.arrow_back),
+                            onPressed: () {
+                              Navigator.pop(context);
+                            }),
+                        const SizedBox(height: 12),
+                        FloatingActionButton(
+                          elevation: 0,
+                          onPressed: capturedPhotos.isEmpty
+                              ? null
+                              : _navigateToReportScreen,
+                          child: const Icon(Icons.check),
+                        ),
+                      ],
+                    ),
+                    labelType: NavigationRailLabelType.all,
+                    onDestinationSelected: (int index) {
+                      if (index == 0) {
+                        return _navigateToPreview();
+                      }
+
+                      setState(() {
+                        _selectedIndex = index;
+                      });
+                    },
+                    destinations: [
+                      NavigationRailDestination(
+                        disabled: capturedPhotos.isEmpty,
+                        icon: capturedPhotos.isEmpty
+                            ? const Icon(Icons.photo_library_outlined)
+                            : Badge(
+                                label: Text(capturedPhotos.length.toString()),
+                                child: const Icon(Icons.photo_library_outlined),
+                              ),
+                        selectedIcon: capturedPhotos.isEmpty
+                            ? const Icon(Icons.photo_library)
+                            : Badge(
+                                label: Text(capturedPhotos.length.toString()),
+                                child: const Icon(Icons.photo_library),
+                              ),
+                        label:
+                            Text(AppLocalizations.of(context)!.capturedPhotos),
+                      ),
+                      NavigationRailDestination(
+                        icon: const Icon(Icons.photo_outlined),
+                        selectedIcon: const Icon(Icons.photo),
+                        label: Text(
+                            AppLocalizations.of(context)!.lastInspectionPhoto),
+                      ),
+                      NavigationRailDestination(
+                          icon: const Icon(Icons.schema_outlined),
+                          selectedIcon: const Icon(Icons.schema),
+                          label: Text(
+                              AppLocalizations.of(context)!.diagramPicture)),
+                    ],
+                    selectedIndex: _selectedIndex),
+                const VerticalDivider(thickness: 1, width: 1),
                 Expanded(
-                  flex: 4,
-                  child: widget.inspectionPoint.imageUrl != null
-                      ? Image.network(widget.inspectionPoint.imageUrl!)
-                      : const Placeholder(),
-                ),
+                    flex: 4,
+                    child: _selectedIndex == 1
+                        ? InteractiveViewer(
+                            constrained: true,
+                            child:
+                                Image.network(widget.inspectionPoint.photoUrl!))
+                        : InteractiveViewer(
+                            child: Image.network(
+                                widget.inspectionPoint.diagramUrl!))),
                 Expanded(
                   flex: 8,
                   child: Stack(
@@ -166,16 +219,6 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
                               ),
                             ),
                           ),
-                        ),
-                      ),
-                      Positioned(
-                        right: 90,
-                        bottom: 20,
-                        child: FloatingActionButton(
-                          heroTag: "preview-pictures",
-                          onPressed: _isCapturing ? null : _navigateToPreview,
-                          child: Icon(Icons.photo_library,
-                              color: _isCapturing ? Colors.grey : Colors.black),
                         ),
                       ),
                       Positioned(

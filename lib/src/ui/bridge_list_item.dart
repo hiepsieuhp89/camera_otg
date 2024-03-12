@@ -32,8 +32,7 @@ class BridgeListItem extends ConsumerWidget {
                       ),
                       body: Center(
                           child: PhotoView(
-                        imageProvider:
-                        NetworkImage(bridge.photoLink),
+                        imageProvider: NetworkImage(bridge.photoLink),
                       )),
                     ),
                   ),
@@ -42,7 +41,7 @@ class BridgeListItem extends ConsumerWidget {
               child: AspectRatio(
                 aspectRatio: 1.0,
                 child: Container(
-                  decoration:  BoxDecoration(
+                  decoration: BoxDecoration(
                     color: Colors.blue,
                     image: DecorationImage(
                       image: NetworkImage(bridge.photoLink),
@@ -96,7 +95,8 @@ class BridgeListItem extends ConsumerWidget {
                       onPressed: () {
                         Navigator.pushNamed(
                             context, BridgeInspectionScreen.routeName,
-                            arguments: bridge);
+                            arguments: BridgeInspectionScreenArguments(
+                                bridge: bridge));
                       })
                 ])
           ],
