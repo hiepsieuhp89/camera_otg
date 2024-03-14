@@ -1,11 +1,13 @@
+import 'dart:io';
+
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:image/image.dart' as img;
 import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/screens/bridge_inspection_evaluation_screen.dart';
 import 'package:kyoryo/src/screens/preview_pictures_screen.dart';
-import 'package:kyoryo/src/utilities/image_utils.dart';
 
 class TakePictureScreen extends StatefulWidget {
   const TakePictureScreen({super.key, required this.inspectionPoint});
@@ -17,9 +19,11 @@ class TakePictureScreen extends StatefulWidget {
   State<TakePictureScreen> createState() => _TakePictureScreenState();
 }
 
-class _TakePictureScreenState extends State<TakePictureScreen> {
+class _TakePictureScreenState extends State<TakePictureScreen>
+    with WidgetsBindingObserver {
   CameraController? _controller;
   Future<void>? _initializeControllerFuture;
+  Orientation? currentOrientation;
 
   List<String> capturedPhotos = [];
   int _selectedIndex = 1;
@@ -28,8 +32,27 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {
+          currentOrientation = MediaQuery.of(context).orientation;
+        });
+      }
+    });
     _initCamera();
     _setLandscapeOrientation();
+  }
+
+  @override
+  void didChangeMetrics() {
+    super.didChangeMetrics();
+    if (mounted) {
+      setState(() {
+        currentOrientation = MediaQuery.of(context).orientation;
+      });
+    }
   }
 
   Future<void> _initCamera() async {
@@ -49,7 +72,6 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
 
   void _setLandscapeOrientation() {
     SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeRight,
       DeviceOrientation.landscapeLeft,
     ]);
   }
@@ -71,12 +93,10 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
       // Capture the image and get an XFile
       final XFile rawImage = await _controller!.takePicture();
 
-      // Compress the image and get a new XFile
-      final XFile? compressedImage = await compressImage(rawImage.path, 90);
+      String imagePath = await _compressAndRotateImageBasedOnOrientation(
+          rawImage, currentOrientation);
 
-      if (compressedImage != null) {
-        capturedPhotos.add(compressedImage.path);
-      }
+      capturedPhotos.add(imagePath);
     } catch (e) {
       debugPrint(e.toString());
     } finally {
@@ -84,6 +104,31 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
         _isCapturing = false;
       });
     }
+  }
+
+  Future<String> _compressAndRotateImageBasedOnOrientation(
+      XFile capturedImage, Orientation? currentOrientation) async {
+    File imageFile = File(capturedImage.path);
+    Uint8List imageBytes = await imageFile.readAsBytes();
+    img.Image? originalImage = img.decodeImage(imageBytes);
+
+    if (originalImage != null && currentOrientation != null) {
+      img.Image rotatedImage;
+      switch (currentOrientation) {
+        case Orientation.landscape:
+          rotatedImage = originalImage;
+          break;
+        case Orientation.portrait:
+          rotatedImage = img.copyRotate(originalImage, angle: 90);
+          break;
+      }
+
+      Uint8List compressedImageBytes = img.encodeJpg(rotatedImage, quality: 85);
+
+      await imageFile.writeAsBytes(compressedImageBytes);
+    }
+
+    return capturedImage.path;
   }
 
   void _navigateToPreview() {
