@@ -21,6 +21,7 @@
   },
   "startInspection": "点検開始",
   "finishInspection": "点検終了",
+  "finishEvaluation": "入力完了",
   "lastInspectionDate": "最終点検日時：{dateTime}",
   "@lastInspectionDate": {
     "description": "Last inspection date and time",
