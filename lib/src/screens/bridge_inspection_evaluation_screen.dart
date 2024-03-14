@@ -220,7 +220,7 @@ class BridgeInspectionEvaluationScreenState
                             )
                           : const Icon(Icons.check),
                       label:
-                          Text(AppLocalizations.of(context)!.finishInspection),
+                          Text(AppLocalizations.of(context)!.finishEvaluation),
                       onPressed: isLoading
                           ? null
                           : () {
