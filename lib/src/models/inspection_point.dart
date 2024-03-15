@@ -8,7 +8,7 @@ enum InspectionPointType {
   @JsonValue('PRESENT_CONDITION')
   presentCondition,
   @JsonValue('DAMAGE')
-  damage,
+  damage
 }
 
 @freezed
@@ -20,6 +20,9 @@ class InspectionPoint with _$InspectionPoint {
       @JsonKey(name: 'bridge_id') int? bridgeId,
       @JsonKey(name: 'photo_url') String? photoUrl,
       @JsonKey(name: 'diagram_url') String? diagramUrl,
+      @JsonKey(name: 'diagram_id') int? diagramId,
+      @JsonKey(name: 'diagram_marking_x') int? diagramMarkingX,
+      @JsonKey(name: 'diagram_marking_y') int? diagramMarkingY,
       @JsonKey(name: 'last_inspection_date')
       DateTime? lastInspectionDate}) = _InpsectionPoint;
 

@@ -50,5 +50,18 @@
   "finished": "完了",
   "capturedPhotos": "撮影写真",
   "diagramPicture": "図面",
-  "continueInspecting": "続行"
+  "continueInspecting": "続行",
+  "diagramSelection": "図面選択",
+  "newDiagramPhotos": "新しい図面写真",
+  "currentDiagramPhotos": "現在の図面写真",
+  "takePhoto": "写真撮影",
+  "selectPhoto": "写真選択",
+  "noPhotosYet": "写真がありません",
+  "damageMarking": "損傷箇所マーキング",
+  "pleaseTapOnWhereTheDamageLocates": "損傷箇所をタップしてください",
+  "newDamage": "新規損傷",
+  "name": "名前",
+  "createThenEvalutatePoints": "点検ポイントを作成してください",
+  "createInspectionPoints": "点検ポイント作成",
+  "inspectionPoint": "点検ポイント"
 }

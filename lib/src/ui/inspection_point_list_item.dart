@@ -2,13 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:kyoryo/src/models/bridge.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
-import 'package:photo_view/photo_view.dart';
+import 'package:kyoryo/src/utilities/image_utils.dart';
 
 class InpsectionPointListItem extends ConsumerWidget {
-  final Bridge bridge;
   final InspectionPoint point;
   final bool isInspecting;
   final Function(InspectionPoint) startInspect;
@@ -16,14 +14,13 @@ class InpsectionPointListItem extends ConsumerWidget {
   const InpsectionPointListItem(
       {super.key,
       required this.point,
-      required this.bridge,
       this.isInspecting = false,
       required this.startInspect});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final createdReport =
-        ref.watch(bridgeInspectionProvider(bridge.id!))[point.id!];
+        ref.watch(bridgeInspectionProvider(point.bridgeId!))[point.id!];
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
@@ -51,8 +48,10 @@ class InpsectionPointListItem extends ConsumerWidget {
               children: [
                 Text(
                     AppLocalizations.of(context)!.lastInspectionDate(
-                        DateFormat('yy年MM月dd日 HH:mm')
-                            .format(point.lastInspectionDate!)),
+                        point.lastInspectionDate == null
+                            ? ''
+                            : DateFormat('yy年MM月dd日 HH:mm')
+                                .format(point.lastInspectionDate!)),
                     style: Theme.of(context).textTheme.bodySmall),
                 Expanded(
                     child: Row(
@@ -99,20 +98,7 @@ class InpsectionPointListItem extends ConsumerWidget {
         children: [
           GestureDetector(
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => Scaffold(
-                    appBar: AppBar(
-                      title: Text(point.name ?? ''),
-                    ),
-                    body: Center(
-                        child: PhotoView(
-                      imageProvider: NetworkImage(point.photoUrl!),
-                    )),
-                  ),
-                ),
-              );
+              goToImagePreview(context, point.name!, point.photoUrl!);
             },
             child: AspectRatio(
               aspectRatio: 1.0,
@@ -122,7 +108,9 @@ class InpsectionPointListItem extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: Theme.of(context).primaryColorLight,
                   image: DecorationImage(
-                    image: NetworkImage(point.photoUrl!),
+                    image: point.photoUrl == null
+                        ? Image.asset('bridge.png').image
+                        : NetworkImage(point.photoUrl!),
                     fit: BoxFit.cover,
                   ),
                   borderRadius: const BorderRadius.horizontal(
@@ -133,20 +121,7 @@ class InpsectionPointListItem extends ConsumerWidget {
           ),
           GestureDetector(
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => Scaffold(
-                    appBar: AppBar(
-                      title: Text(point.name ?? ''),
-                    ),
-                    body: Center(
-                        child: PhotoView(
-                      imageProvider: NetworkImage(point.diagramUrl!),
-                    )),
-                  ),
-                ),
-              );
+              goToImagePreview(context, point.name!, point.diagramUrl!);
             },
             child: AspectRatio(
               aspectRatio: 1.0,

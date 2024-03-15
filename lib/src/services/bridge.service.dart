@@ -26,4 +26,12 @@ class BridgeService extends BaseApiService {
         .map((inspectionPoint) => InspectionPoint.fromJson(inspectionPoint))
         .toList();
   }
+
+  Future<InspectionPoint> createInspectionPoint(
+      InspectionPoint inspectionPoint) async {
+    final jsonResponse =
+        await post('inspection_points', inspectionPoint.toJson());
+
+    return InspectionPoint.fromJson(jsonResponse);
+  }
 }

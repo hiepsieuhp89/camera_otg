@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:kyoryo/src/providers/current_bridge.provider.dart';
 import 'package:photo_view/photo_view.dart';
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -93,10 +94,10 @@ class BridgeListItem extends ConsumerWidget {
                   IconButton(
                       icon: const Icon(Icons.manage_search_rounded),
                       onPressed: () {
+                        ref.watch(currentBridgeProvider.notifier).set(bridge);
+
                         Navigator.pushNamed(
-                            context, BridgeInspectionScreen.routeName,
-                            arguments: BridgeInspectionScreenArguments(
-                                bridge: bridge));
+                            context, BridgeInspectionScreen.routeName);
                       })
                 ])
           ],
