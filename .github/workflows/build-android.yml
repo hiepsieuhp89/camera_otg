@@ -39,8 +39,13 @@ jobs:
               channel: "stable"
               flutter-version: "3.16.9"
               cache: true
+
           - name: Get Packages
             run: flutter pub get
+
+          - name: Generate .env file
+            run: |
+              echo "API_URL=${{ secrets.API_URL }}" > .env
       
           - name: Build Android App Bundle
             run: |
