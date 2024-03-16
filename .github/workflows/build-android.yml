@@ -55,5 +55,5 @@ jobs:
           - name: Publish Android Artifact
             uses: actions/upload-artifact@v4
             with:
-              name: release-apk-signed
+              name: release-apk
               path: build/app/outputs/flutter-apk/*.apk
