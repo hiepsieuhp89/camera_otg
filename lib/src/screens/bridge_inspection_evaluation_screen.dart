@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kyoryo/src/models/damage_type.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
+import 'package:kyoryo/src/providers/inspection_points.provider.dart';
 import 'package:kyoryo/src/providers/misc.provider.dart';
 import 'package:kyoryo/src/screens/bridge_inspection_screen.dart';
 
@@ -50,6 +51,9 @@ class BridgeInspectionEvaluationScreenState
       'health_level': _selectedHealthLevel ?? '',
       'remark': _textEditingController.text,
     }).then((_) {
+      ref.invalidate(
+          inspectionPointsProvider(widget.arguments.point.bridgeId!));
+
       Navigator.popUntil(
           context, ModalRoute.withName(BridgeInspectionScreen.routeName));
     });

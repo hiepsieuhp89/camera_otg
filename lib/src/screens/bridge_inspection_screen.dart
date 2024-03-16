@@ -1,26 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kyoryo/src/models/bridge.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
+import 'package:kyoryo/src/providers/current_bridge.provider.dart';
 import 'package:kyoryo/src/providers/inspection_points.provider.dart';
+import 'package:kyoryo/src/screens/inspection_point_diagram_select_screen.dart';
 import 'package:kyoryo/src/screens/take_picture_screen.dart';
 import 'package:kyoryo/src/ui/inspection_point_list_item.dart';
-
-class BridgeInspectionScreenArguments {
-  final Bridge bridge;
-
-  BridgeInspectionScreenArguments({required this.bridge});
-}
 
 class BridgeInspectionScreen extends ConsumerStatefulWidget {
   const BridgeInspectionScreen({
     super.key,
-    required this.arguments,
   });
 
-  final BridgeInspectionScreenArguments arguments;
   static const routeName = '/bridge-inspection';
 
   @override
@@ -44,11 +37,18 @@ class _BridgeInspectionScreenState
 
   void _stopInspecting() {
     ref
-        .watch(bridgeInspectionProvider(widget.arguments.bridge.id!).notifier)
+        .watch(bridgeInspectionProvider(ref.watch(currentBridgeProvider)!.id)
+            .notifier)
         .clearInspection();
     setState(() {
       _isInspecting = false;
     });
+  }
+
+  void _createNewInspectionPoint() {
+    Navigator.of(context).pushNamed(
+      InpsectionPointDiagramSelectScreen.routeName,
+    );
   }
 
   Future<void> _confirmCancelDialog() async {
@@ -82,19 +82,20 @@ class _BridgeInspectionScreenState
 
   @override
   Widget build(BuildContext context) {
+    final currentBridge = ref.watch(currentBridgeProvider);
     final numberOfCreatedReports =
-        ref.watch(numberOfCreatedReportsProvider(widget.arguments.bridge.id!));
+        ref.watch(numberOfCreatedReportsProvider(currentBridge!.id));
     final inspectionPoints =
-        ref.watch(inspectionPointsProvider(widget.arguments.bridge.id!));
-    final filteredInspectionPoints = ref
-        .watch(filteredInspectionPointsProvider(widget.arguments.bridge.id!));
+        ref.watch(inspectionPointsProvider(currentBridge.id));
+    final filteredInspectionPoints =
+        ref.watch(filteredInspectionPointsProvider(currentBridge.id));
 
     return Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
             title: Row(
           children: <Widget>[
-            Text(widget.arguments.bridge.nameKanji),
+            Text(currentBridge.nameKanji),
             IconButton(
                 onPressed: () {}, icon: const Icon(Icons.info_outline_rounded)),
           ],
@@ -137,7 +138,6 @@ class _BridgeInspectionScreenState
 
                       return InpsectionPointListItem(
                         point: point,
-                        bridge: widget.arguments.bridge,
                         isInspecting: _isInspecting,
                         startInspect: _startInspectingPoint,
                       );
@@ -161,7 +161,7 @@ class _BridgeInspectionScreenState
                         IconButton(
                           onPressed: () => ref.invalidate(
                               inspectionPointsProvider(
-                                  widget.arguments.bridge.id!)),
+                                  ref.watch(currentBridgeProvider)!.id)),
                           icon: const Icon(Icons.refresh),
                         ),
                       ],
@@ -187,6 +187,9 @@ class _BridgeInspectionScreenState
                         IconButton(
                             onPressed: _confirmCancelDialog,
                             icon: const Icon(Icons.close)),
+                        IconButton(
+                            onPressed: _createNewInspectionPoint,
+                            icon: const Icon(Icons.broken_image_outlined)),
                         FilledButton.icon(
                             onPressed: numberOfCreatedReports ==
                                     inspectionPoints.value!.length

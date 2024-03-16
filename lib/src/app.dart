@@ -7,6 +7,8 @@ import 'package:kyoryo/src/screens/bridge_filters_screen.dart';
 import 'package:kyoryo/src/screens/bridge_inspection_evaluation_screen.dart';
 import 'package:kyoryo/src/screens/bridge_inspection_screen.dart';
 import 'package:kyoryo/src/screens/bridge_list_screen.dart';
+import 'package:kyoryo/src/screens/inspection_point_damage_mark_screen.dart';
+import 'package:kyoryo/src/screens/inspection_point_diagram_select_screen.dart';
 import 'package:kyoryo/src/screens/preview_pictures_screen.dart';
 import 'package:kyoryo/src/screens/take_picture_screen.dart';
 
@@ -98,10 +100,7 @@ class MainApp extends StatelessWidget {
               case BridgeFiltersScreen.routeName:
                 return const BridgeFiltersScreen();
               case BridgeInspectionScreen.routeName:
-                final arguments =
-                    routeSettings.arguments as BridgeInspectionScreenArguments;
-
-                return BridgeInspectionScreen(arguments: arguments);
+                return const BridgeInspectionScreen();
               case TakePictureScreen.routeName:
                 final inspectionPoint =
                     routeSettings.arguments as InspectionPoint;
@@ -116,6 +115,13 @@ class MainApp extends StatelessWidget {
                     as BridgeInspectionEvaluationScreenArguments;
 
                 return BridgeInspectionEvaluationScreen(arguments: arguments);
+              case InpsectionPointDiagramSelectScreen.routeName:
+                return const InpsectionPointDiagramSelectScreen();
+              case InspectionPointDamageMarkScreen.routeName:
+                final arguments = routeSettings.arguments
+                    as InspectionPointDamageMarkScreenArguments;
+
+                return InspectionPointDamageMarkScreen(arguments: arguments);
               case BridgeListScreen.routeName:
               default:
                 return const BridgeListScreen();
