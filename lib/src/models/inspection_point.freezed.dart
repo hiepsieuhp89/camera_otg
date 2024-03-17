@@ -1,0 +1,376 @@
+// coverage:ignore-file
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint
+// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
+
+part of 'inspection_point.dart';
+
+// **************************************************************************
+// FreezedGenerator
+// **************************************************************************
+
+T _$identity<T>(T value) => value;
+
+final _privateConstructorUsedError = UnsupportedError(
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+
+InspectionPoint _$InspectionPointFromJson(Map<String, dynamic> json) {
+  return _InpsectionPoint.fromJson(json);
+}
+
+/// @nodoc
+mixin _$InspectionPoint {
+  int? get id => throw _privateConstructorUsedError;
+  InspectionPointType get type => throw _privateConstructorUsedError;
+  String? get name => throw _privateConstructorUsedError;
+  @JsonKey(name: 'bridge_id')
+  int? get bridgeId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'photo_url')
+  String? get photoUrl => throw _privateConstructorUsedError;
+  @JsonKey(name: 'diagram_url')
+  String? get diagramUrl => throw _privateConstructorUsedError;
+  @JsonKey(name: 'diagram_id')
+  int? get diagramId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'diagram_marking_x')
+  int? get diagramMarkingX => throw _privateConstructorUsedError;
+  @JsonKey(name: 'diagram_marking_y')
+  int? get diagramMarkingY => throw _privateConstructorUsedError;
+  @JsonKey(name: 'last_inspection_date')
+  DateTime? get lastInspectionDate => throw _privateConstructorUsedError;
+
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  @JsonKey(ignore: true)
+  $InspectionPointCopyWith<InspectionPoint> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $InspectionPointCopyWith<$Res> {
+  factory $InspectionPointCopyWith(
+          InspectionPoint value, $Res Function(InspectionPoint) then) =
+      _$InspectionPointCopyWithImpl<$Res, InspectionPoint>;
+  @useResult
+  $Res call(
+      {int? id,
+      InspectionPointType type,
+      String? name,
+      @JsonKey(name: 'bridge_id') int? bridgeId,
+      @JsonKey(name: 'photo_url') String? photoUrl,
+      @JsonKey(name: 'diagram_url') String? diagramUrl,
+      @JsonKey(name: 'diagram_id') int? diagramId,
+      @JsonKey(name: 'diagram_marking_x') int? diagramMarkingX,
+      @JsonKey(name: 'diagram_marking_y') int? diagramMarkingY,
+      @JsonKey(name: 'last_inspection_date') DateTime? lastInspectionDate});
+}
+
+/// @nodoc
+class _$InspectionPointCopyWithImpl<$Res, $Val extends InspectionPoint>
+    implements $InspectionPointCopyWith<$Res> {
+  _$InspectionPointCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = freezed,
+    Object? type = null,
+    Object? name = freezed,
+    Object? bridgeId = freezed,
+    Object? photoUrl = freezed,
+    Object? diagramUrl = freezed,
+    Object? diagramId = freezed,
+    Object? diagramMarkingX = freezed,
+    Object? diagramMarkingY = freezed,
+    Object? lastInspectionDate = freezed,
+  }) {
+    return _then(_value.copyWith(
+      id: freezed == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int?,
+      type: null == type
+          ? _value.type
+          : type // ignore: cast_nullable_to_non_nullable
+              as InspectionPointType,
+      name: freezed == name
+          ? _value.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String?,
+      bridgeId: freezed == bridgeId
+          ? _value.bridgeId
+          : bridgeId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      photoUrl: freezed == photoUrl
+          ? _value.photoUrl
+          : photoUrl // ignore: cast_nullable_to_non_nullable
+              as String?,
+      diagramUrl: freezed == diagramUrl
+          ? _value.diagramUrl
+          : diagramUrl // ignore: cast_nullable_to_non_nullable
+              as String?,
+      diagramId: freezed == diagramId
+          ? _value.diagramId
+          : diagramId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      diagramMarkingX: freezed == diagramMarkingX
+          ? _value.diagramMarkingX
+          : diagramMarkingX // ignore: cast_nullable_to_non_nullable
+              as int?,
+      diagramMarkingY: freezed == diagramMarkingY
+          ? _value.diagramMarkingY
+          : diagramMarkingY // ignore: cast_nullable_to_non_nullable
+              as int?,
+      lastInspectionDate: freezed == lastInspectionDate
+          ? _value.lastInspectionDate
+          : lastInspectionDate // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+    ) as $Val);
+  }
+}
+
+/// @nodoc
+abstract class _$$InpsectionPointImplCopyWith<$Res>
+    implements $InspectionPointCopyWith<$Res> {
+  factory _$$InpsectionPointImplCopyWith(_$InpsectionPointImpl value,
+          $Res Function(_$InpsectionPointImpl) then) =
+      __$$InpsectionPointImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call(
+      {int? id,
+      InspectionPointType type,
+      String? name,
+      @JsonKey(name: 'bridge_id') int? bridgeId,
+      @JsonKey(name: 'photo_url') String? photoUrl,
+      @JsonKey(name: 'diagram_url') String? diagramUrl,
+      @JsonKey(name: 'diagram_id') int? diagramId,
+      @JsonKey(name: 'diagram_marking_x') int? diagramMarkingX,
+      @JsonKey(name: 'diagram_marking_y') int? diagramMarkingY,
+      @JsonKey(name: 'last_inspection_date') DateTime? lastInspectionDate});
+}
+
+/// @nodoc
+class __$$InpsectionPointImplCopyWithImpl<$Res>
+    extends _$InspectionPointCopyWithImpl<$Res, _$InpsectionPointImpl>
+    implements _$$InpsectionPointImplCopyWith<$Res> {
+  __$$InpsectionPointImplCopyWithImpl(
+      _$InpsectionPointImpl _value, $Res Function(_$InpsectionPointImpl) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = freezed,
+    Object? type = null,
+    Object? name = freezed,
+    Object? bridgeId = freezed,
+    Object? photoUrl = freezed,
+    Object? diagramUrl = freezed,
+    Object? diagramId = freezed,
+    Object? diagramMarkingX = freezed,
+    Object? diagramMarkingY = freezed,
+    Object? lastInspectionDate = freezed,
+  }) {
+    return _then(_$InpsectionPointImpl(
+      id: freezed == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int?,
+      type: null == type
+          ? _value.type
+          : type // ignore: cast_nullable_to_non_nullable
+              as InspectionPointType,
+      name: freezed == name
+          ? _value.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String?,
+      bridgeId: freezed == bridgeId
+          ? _value.bridgeId
+          : bridgeId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      photoUrl: freezed == photoUrl
+          ? _value.photoUrl
+          : photoUrl // ignore: cast_nullable_to_non_nullable
+              as String?,
+      diagramUrl: freezed == diagramUrl
+          ? _value.diagramUrl
+          : diagramUrl // ignore: cast_nullable_to_non_nullable
+              as String?,
+      diagramId: freezed == diagramId
+          ? _value.diagramId
+          : diagramId // ignore: cast_nullable_to_non_nullable
+              as int?,
+      diagramMarkingX: freezed == diagramMarkingX
+          ? _value.diagramMarkingX
+          : diagramMarkingX // ignore: cast_nullable_to_non_nullable
+              as int?,
+      diagramMarkingY: freezed == diagramMarkingY
+          ? _value.diagramMarkingY
+          : diagramMarkingY // ignore: cast_nullable_to_non_nullable
+              as int?,
+      lastInspectionDate: freezed == lastInspectionDate
+          ? _value.lastInspectionDate
+          : lastInspectionDate // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$InpsectionPointImpl implements _InpsectionPoint {
+  _$InpsectionPointImpl(
+      {this.id,
+      required this.type,
+      this.name,
+      @JsonKey(name: 'bridge_id') this.bridgeId,
+      @JsonKey(name: 'photo_url') this.photoUrl,
+      @JsonKey(name: 'diagram_url') this.diagramUrl,
+      @JsonKey(name: 'diagram_id') this.diagramId,
+      @JsonKey(name: 'diagram_marking_x') this.diagramMarkingX,
+      @JsonKey(name: 'diagram_marking_y') this.diagramMarkingY,
+      @JsonKey(name: 'last_inspection_date') this.lastInspectionDate});
+
+  factory _$InpsectionPointImpl.fromJson(Map<String, dynamic> json) =>
+      _$$InpsectionPointImplFromJson(json);
+
+  @override
+  final int? id;
+  @override
+  final InspectionPointType type;
+  @override
+  final String? name;
+  @override
+  @JsonKey(name: 'bridge_id')
+  final int? bridgeId;
+  @override
+  @JsonKey(name: 'photo_url')
+  final String? photoUrl;
+  @override
+  @JsonKey(name: 'diagram_url')
+  final String? diagramUrl;
+  @override
+  @JsonKey(name: 'diagram_id')
+  final int? diagramId;
+  @override
+  @JsonKey(name: 'diagram_marking_x')
+  final int? diagramMarkingX;
+  @override
+  @JsonKey(name: 'diagram_marking_y')
+  final int? diagramMarkingY;
+  @override
+  @JsonKey(name: 'last_inspection_date')
+  final DateTime? lastInspectionDate;
+
+  @override
+  String toString() {
+    return 'InspectionPoint(id: $id, type: $type, name: $name, bridgeId: $bridgeId, photoUrl: $photoUrl, diagramUrl: $diagramUrl, diagramId: $diagramId, diagramMarkingX: $diagramMarkingX, diagramMarkingY: $diagramMarkingY, lastInspectionDate: $lastInspectionDate)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$InpsectionPointImpl &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.type, type) || other.type == type) &&
+            (identical(other.name, name) || other.name == name) &&
+            (identical(other.bridgeId, bridgeId) ||
+                other.bridgeId == bridgeId) &&
+            (identical(other.photoUrl, photoUrl) ||
+                other.photoUrl == photoUrl) &&
+            (identical(other.diagramUrl, diagramUrl) ||
+                other.diagramUrl == diagramUrl) &&
+            (identical(other.diagramId, diagramId) ||
+                other.diagramId == diagramId) &&
+            (identical(other.diagramMarkingX, diagramMarkingX) ||
+                other.diagramMarkingX == diagramMarkingX) &&
+            (identical(other.diagramMarkingY, diagramMarkingY) ||
+                other.diagramMarkingY == diagramMarkingY) &&
+            (identical(other.lastInspectionDate, lastInspectionDate) ||
+                other.lastInspectionDate == lastInspectionDate));
+  }
+
+  @JsonKey(ignore: true)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType,
+      id,
+      type,
+      name,
+      bridgeId,
+      photoUrl,
+      diagramUrl,
+      diagramId,
+      diagramMarkingX,
+      diagramMarkingY,
+      lastInspectionDate);
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$InpsectionPointImplCopyWith<_$InpsectionPointImpl> get copyWith =>
+      __$$InpsectionPointImplCopyWithImpl<_$InpsectionPointImpl>(
+          this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$InpsectionPointImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _InpsectionPoint implements InspectionPoint {
+  factory _InpsectionPoint(
+      {final int? id,
+      required final InspectionPointType type,
+      final String? name,
+      @JsonKey(name: 'bridge_id') final int? bridgeId,
+      @JsonKey(name: 'photo_url') final String? photoUrl,
+      @JsonKey(name: 'diagram_url') final String? diagramUrl,
+      @JsonKey(name: 'diagram_id') final int? diagramId,
+      @JsonKey(name: 'diagram_marking_x') final int? diagramMarkingX,
+      @JsonKey(name: 'diagram_marking_y') final int? diagramMarkingY,
+      @JsonKey(name: 'last_inspection_date')
+      final DateTime? lastInspectionDate}) = _$InpsectionPointImpl;
+
+  factory _InpsectionPoint.fromJson(Map<String, dynamic> json) =
+      _$InpsectionPointImpl.fromJson;
+
+  @override
+  int? get id;
+  @override
+  InspectionPointType get type;
+  @override
+  String? get name;
+  @override
+  @JsonKey(name: 'bridge_id')
+  int? get bridgeId;
+  @override
+  @JsonKey(name: 'photo_url')
+  String? get photoUrl;
+  @override
+  @JsonKey(name: 'diagram_url')
+  String? get diagramUrl;
+  @override
+  @JsonKey(name: 'diagram_id')
+  int? get diagramId;
+  @override
+  @JsonKey(name: 'diagram_marking_x')
+  int? get diagramMarkingX;
+  @override
+  @JsonKey(name: 'diagram_marking_y')
+  int? get diagramMarkingY;
+  @override
+  @JsonKey(name: 'last_inspection_date')
+  DateTime? get lastInspectionDate;
+  @override
+  @JsonKey(ignore: true)
+  _$$InpsectionPointImplCopyWith<_$InpsectionPointImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
