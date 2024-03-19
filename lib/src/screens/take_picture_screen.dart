@@ -27,7 +27,9 @@ class _TakePictureScreenState extends State<TakePictureScreen>
 
   List<String> capturedPhotos = [];
   int _selectedIndex = 1;
-  bool _isCapturing = false;
+
+  List<XFile> processingQueue = [];
+  bool isProcessing = false;
 
   @override
   void initState() {
@@ -84,25 +86,42 @@ class _TakePictureScreenState extends State<TakePictureScreen>
   }
 
   void _takePicture() async {
-    setState(() {
-      _isCapturing = true;
-    });
     try {
       await _initializeControllerFuture;
 
-      // Capture the image and get an XFile
       final XFile rawImage = await _controller!.takePicture();
 
-      String imagePath = await _compressAndRotateImageBasedOnOrientation(
-          rawImage, currentOrientation);
-
-      capturedPhotos.add(imagePath);
+      processingQueue.add(rawImage);
+      processNextImage();
     } catch (e) {
       debugPrint(e.toString());
-    } finally {
-      setState(() {
-        _isCapturing = false;
-      });
+    }
+  }
+
+  Future<void> processNextImage() async {
+    if (isProcessing || processingQueue.isEmpty) return;
+
+    setState(() {
+      isProcessing = true;
+    });
+
+    var batch = processingQueue.take(5).toList();
+    processingQueue = processingQueue.skip(5).toList();
+
+    var futures = batch.map((image) async {
+      String imagePath = await _compressAndRotateImageBasedOnOrientation(
+          image, currentOrientation);
+      capturedPhotos.add(imagePath);
+    }).toList();
+
+    await Future.wait(futures);
+
+    setState(() {
+      isProcessing = false;
+    });
+
+    if (processingQueue.isNotEmpty) {
+      processNextImage();
     }
   }
 
@@ -271,9 +290,9 @@ class _TakePictureScreenState extends State<TakePictureScreen>
                         bottom: 20,
                         child: FloatingActionButton(
                           heroTag: "take-picture",
-                          onPressed: _isCapturing ? null : _takePicture,
-                          child: Icon(Icons.camera_alt,
-                              color: _isCapturing ? Colors.grey : Colors.black),
+                          onPressed: _takePicture,
+                          child:
+                              const Icon(Icons.camera_alt, color: Colors.black),
                         ),
                       ),
                     ],
