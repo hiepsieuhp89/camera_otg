@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
@@ -53,6 +54,10 @@ abstract class BaseApiService {
 
       return json.decode(responseBody);
     } else {
+      response.stream.bytesToString().then((value) {
+        debugPrint('Failed to upload photo: ${response.statusCode} $value');
+      });
+
       throw Exception('Failed to upload photo');
     }
   }
