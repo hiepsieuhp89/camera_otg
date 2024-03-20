@@ -8,6 +8,7 @@ import 'package:image/image.dart' as img;
 import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/screens/bridge_inspection_evaluation_screen.dart';
 import 'package:kyoryo/src/screens/preview_pictures_screen.dart';
+import 'package:kyoryo/src/ui/side_sheet.dart';
 
 class TakePictureScreen extends StatefulWidget {
   const TakePictureScreen({super.key, required this.inspectionPoint});
@@ -43,6 +44,7 @@ class _TakePictureScreenState extends State<TakePictureScreen>
         });
       }
     });
+    _enterFullScreen();
     _initCamera();
     _setLandscapeOrientation();
   }
@@ -66,10 +68,19 @@ class _TakePictureScreenState extends State<TakePictureScreen>
     );
 
     setState(() {
-      _controller = CameraController(backCamera, ResolutionPreset.medium,
+      _controller = CameraController(backCamera, ResolutionPreset.veryHigh,
           enableAudio: false);
       _initializeControllerFuture = _controller?.initialize();
     });
+  }
+
+  void _enterFullScreen() {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
+  }
+
+  void _exitFullScreen() {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+        overlays: SystemUiOverlay.values);
   }
 
   void _setLandscapeOrientation() {
@@ -166,6 +177,7 @@ class _TakePictureScreenState extends State<TakePictureScreen>
 
   void _navigateToReportScreen() {
     _resetOrientation();
+    _exitFullScreen();
     Navigator.pushNamed(context, BridgeInspectionEvaluationScreen.routeName,
             arguments: BridgeInspectionEvaluationScreenArguments(
                 point: widget.inspectionPoint, capturedPhotos: capturedPhotos))
@@ -176,6 +188,7 @@ class _TakePictureScreenState extends State<TakePictureScreen>
 
   @override
   void dispose() {
+    _exitFullScreen();
     _resetOrientation();
     _controller?.dispose();
     super.dispose();
@@ -201,7 +214,6 @@ class _TakePictureScreenState extends State<TakePictureScreen>
                             onPressed: () {
                               Navigator.pop(context);
                             }),
-                        const SizedBox(height: 12),
                         FloatingActionButton(
                           elevation: 0,
                           onPressed: capturedPhotos.isEmpty
@@ -211,10 +223,29 @@ class _TakePictureScreenState extends State<TakePictureScreen>
                         ),
                       ],
                     ),
-                    labelType: NavigationRailLabelType.all,
+                    labelType: NavigationRailLabelType.selected,
                     onDestinationSelected: (int index) {
                       if (index == 0) {
                         return _navigateToPreview();
+                      }
+
+                      if (index == 1) {
+                        showSideSheet(context,
+                            header: AppLocalizations.of(context)!
+                                .lastInspectionPhoto,
+                            body: InteractiveViewer(
+                                constrained: true,
+                                child: Image.network(
+                                    widget.inspectionPoint.photoUrl!)));
+                      }
+
+                      if (index == 2) {
+                        showSideSheet(context,
+                            header:
+                                AppLocalizations.of(context)!.diagramPicture,
+                            body: InteractiveViewer(
+                                child: Image.network(
+                                    widget.inspectionPoint.diagramUrl!)));
                       }
 
                       setState(() {
@@ -223,6 +254,7 @@ class _TakePictureScreenState extends State<TakePictureScreen>
                     },
                     destinations: [
                       NavigationRailDestination(
+                        padding: const EdgeInsets.only(top: 16),
                         disabled: capturedPhotos.isEmpty,
                         icon: capturedPhotos.isEmpty
                             ? const Icon(Icons.photo_library_outlined)
@@ -254,17 +286,6 @@ class _TakePictureScreenState extends State<TakePictureScreen>
                     selectedIndex: _selectedIndex),
                 const VerticalDivider(thickness: 1, width: 1),
                 Expanded(
-                    flex: 4,
-                    child: _selectedIndex == 1
-                        ? InteractiveViewer(
-                            constrained: true,
-                            child:
-                                Image.network(widget.inspectionPoint.photoUrl!))
-                        : InteractiveViewer(
-                            child: Image.network(
-                                widget.inspectionPoint.diagramUrl!))),
-                Expanded(
-                  flex: 8,
                   child: Stack(
                     alignment: Alignment.bottomCenter,
                     children: [
