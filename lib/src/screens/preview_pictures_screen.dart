@@ -48,37 +48,40 @@ class _PreviewPicturesScreenState extends State<PreviewPicturesScreen> {
         ),
         body: OrientationBuilder(
           builder: (context, orientation) {
-            return GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 4,
-                crossAxisSpacing: 4,
-                mainAxisSpacing: 4,
-              ),
-              itemCount: imagePaths.length,
-              itemBuilder: (context, index) {
-                return Stack(
-                  alignment: Alignment.topRight,
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        image: DecorationImage(
-                          image: FileImage(File(imagePaths[index])),
-                          fit: BoxFit.cover,
+            return Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 4,
+                  crossAxisSpacing: 4,
+                  mainAxisSpacing: 4,
+                ),
+                itemCount: imagePaths.length,
+                itemBuilder: (context, index) {
+                  return Stack(
+                    alignment: Alignment.topRight,
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: FileImage(File(imagePaths[index])),
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
-                    ),
-                    Positioned(
-                      right: 0,
-                      bottom: 0,
-                      child: FloatingActionButton.small(
-                        heroTag: 'image-$index',
-                        onPressed: () => removeImage(imagePaths[index]),
-                        child: const Icon(Icons.delete, color: Colors.red),
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: FloatingActionButton.small(
+                          heroTag: 'image-$index',
+                          onPressed: () => removeImage(imagePaths[index]),
+                          child: const Icon(Icons.delete, color: Colors.red),
+                        ),
                       ),
-                    ),
-                  ],
-                );
-              },
+                    ],
+                  );
+                },
+              ),
             );
           },
         ),
