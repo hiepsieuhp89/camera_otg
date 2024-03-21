@@ -133,18 +133,18 @@ packages:
     dependency: transitive
     description:
       name: camera_android
-      sha256: "351429510121d179b9aac5a2e8cb525c3cd6c39f4d709c5f72dfb21726e52371"
+      sha256: "15a6543878a41c141807ffab496f66b7fef6da0f23372f5513fc6349e60f437e"
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.8+16"
+    version: "0.10.8+17"
   camera_avfoundation:
     dependency: transitive
     description:
       name: camera_avfoundation
-      sha256: "7d0763dfcbf060f56aa254a68c103210280bee9e97bbe4fdef23e257a4f70ab9"
+      sha256: "8b113e43ee4434c9244c03c905432a0d5956cedaded3cd7381abaab89ce50297"
       url: "https://pub.dev"
     source: hosted
-    version: "0.9.14"
+    version: "0.9.14+1"
   camera_platform_interface:
     dependency: transitive
     description:
@@ -362,42 +362,50 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_image_compress
-      sha256: f159d2e8c4ed04b8e36994124fd4a5017a0f01e831ae3358c74095c340e9ae5e
+      sha256: "4edadb0ca2f957b85190e9c3aa728569b91b64b6e06e0eec5b622d47a8692ab2"
       url: "https://pub.dev"
     source: hosted
-    version: "2.1.0"
+    version: "2.2.0"
   flutter_image_compress_common:
     dependency: transitive
     description:
       name: flutter_image_compress_common
-      sha256: "7cad12802628706655920089cfe9ee1d1098300e7f39a079eb160458bbc47652"
+      sha256: "7f79bc6c8a363063620b4e372fa86bc691e1cb28e58048cd38e030692fbd99ee"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.3"
+    version: "1.0.5"
   flutter_image_compress_macos:
     dependency: transitive
     description:
       name: flutter_image_compress_macos
-      sha256: fea1e3d71150d03373916b832c49b5c2f56c3e7e13da82a929274a2c6f88251e
+      sha256: "26df6385512e92b3789dc76b613b54b55c457a7f1532e59078b04bf189782d47"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.1"
+    version: "1.0.2"
+  flutter_image_compress_ohos:
+    dependency: transitive
+    description:
+      name: flutter_image_compress_ohos
+      sha256: "70360371698be994786e5dd2e364a6525b1c5a4f843bff8af9b8a2fbe808d8d8"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.2"
   flutter_image_compress_platform_interface:
     dependency: transitive
     description:
       name: flutter_image_compress_platform_interface
-      sha256: eb4f055138b29b04498ebcb6d569aaaee34b64d75fb74ea0d40f9790bf47ee9d
+      sha256: "579cb3947fd4309103afe6442a01ca01e1e6f93dc53bb4cbd090e8ce34a41889"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.3"
+    version: "1.0.5"
   flutter_image_compress_web:
     dependency: transitive
     description:
       name: flutter_image_compress_web
-      sha256: da41cc3859f19d11c7d10be615f6a9dcf0907e7daffde7442bf4cc2486663660
+      sha256: f02fe352b17f82b72f481de45add240db062a2585850bea1667e82cc4cd6c311
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.3+2"
+    version: "0.1.4+1"
   flutter_lints:
     dependency: "direct dev"
     description:
@@ -423,10 +431,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_riverpod
-      sha256: "4bce556b7ecbfea26109638d5237684538d4abc509d253e6c5c4c5733b360098"
+      sha256: "0f1974eff5bbe774bf1d870e406fc6f29e3d6f1c46bd9c58e7172ff68a785d7d"
       url: "https://pub.dev"
     source: hosted
-    version: "2.4.10"
+    version: "2.5.1"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -601,10 +609,10 @@ packages:
     dependency: transitive
     description:
       name: js
-      sha256: f2c445dce49627136094980615a031419f7f3eb393237e4ecd97ac15dea343f3
+      sha256: c1b2e9b5ea78c45e1a0788d29606ba27dc5f71f019f32ca5140f61ef071838cf
       url: "https://pub.dev"
     source: hosted
-    version: "0.6.7"
+    version: "0.7.1"
   json_annotation:
     dependency: "direct main"
     description:
@@ -777,10 +785,10 @@ packages:
     dependency: transitive
     description:
       name: riverpod
-      sha256: "548e2192eb7aeb826eb89387f814edb76594f3363e2c0bb99dd733d795ba3589"
+      sha256: f21b32ffd26a36555e501b04f4a5dca43ed59e16343f1a30c13632b2351dfa4d
       url: "https://pub.dev"
     source: hosted
-    version: "2.5.0"
+    version: "2.5.1"
   riverpod_analyzer_utils:
     dependency: transitive
     description:
@@ -793,26 +801,26 @@ packages:
     dependency: "direct main"
     description:
       name: riverpod_annotation
-      sha256: "77e5d51afa4fa3e67903fb8746f33d368728d7051a0b6c292bcee60aeba46d95"
+      sha256: e5e796c0eba4030c704e9dae1b834a6541814963292839dcf9638d53eba84f5c
       url: "https://pub.dev"
     source: hosted
-    version: "2.3.4"
+    version: "2.3.5"
   riverpod_generator:
     dependency: "direct dev"
     description:
       name: riverpod_generator
-      sha256: "359068f04879347ae4edbe66c81cc95f83fa1743806d1a0c86e55dd3c33ebb32"
+      sha256: d451608bf17a372025fc36058863737636625dfdb7e3cbf6142e0dfeb366ab22
       url: "https://pub.dev"
     source: hosted
-    version: "2.3.11"
+    version: "2.4.0"
   riverpod_lint:
     dependency: "direct dev"
     description:
       name: riverpod_lint
-      sha256: e9bbd02e9e89e18eecb183bbca556d7b523a0669024da9b8167c08903f442937
+      sha256: "3c67c14ccd16f0c9d53e35ef70d06cd9d072e2fb14557326886bbde903b230a5"
       url: "https://pub.dev"
     source: hosted
-    version: "2.3.9"
+    version: "2.3.10"
   rxdart:
     dependency: transitive
     description:
@@ -1022,10 +1030,10 @@ packages:
     dependency: transitive
     description:
       name: vm_service
-      sha256: b3d56ff4341b8f182b96aceb2fa20e3dcb336b9f867bc0eafc0de10f1048e957
+      sha256: a2662fb1f114f4296cf3f5a50786a2d888268d7776cf681aa17d660ffa23b246
       url: "https://pub.dev"
     source: hosted
-    version: "13.0.0"
+    version: "14.0.0"
   watcher:
     dependency: transitive
     description:
