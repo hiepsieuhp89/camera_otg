@@ -4,11 +4,11 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:image/image.dart' as img;
 import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/screens/bridge_inspection_evaluation_screen.dart';
 import 'package:kyoryo/src/screens/preview_pictures_screen.dart';
 import 'package:kyoryo/src/ui/side_sheet.dart';
+import 'package:kyoryo/src/utilities/image_utils.dart';
 
 class TakePictureScreen extends StatefulWidget {
   const TakePictureScreen({super.key, required this.inspectionPoint});
@@ -117,8 +117,8 @@ class _TakePictureScreenState extends State<TakePictureScreen>
     processingQueue = processingQueue.skip(5).toList();
 
     var futures = batch.map((image) async {
-      String imagePath = await _compressAndRotateImageBasedOnOrientation(
-          image, currentOrientation);
+      String imagePath =
+          await compressAndRotateImage(image, currentOrientation);
       capturedPhotos.add(imagePath);
     }).toList();
 
@@ -131,31 +131,6 @@ class _TakePictureScreenState extends State<TakePictureScreen>
     if (processingQueue.isNotEmpty) {
       processNextImage();
     }
-  }
-
-  Future<String> _compressAndRotateImageBasedOnOrientation(
-      XFile capturedImage, Orientation? currentOrientation) async {
-    File imageFile = File(capturedImage.path);
-    Uint8List imageBytes = await imageFile.readAsBytes();
-    img.Image? originalImage = img.decodeImage(imageBytes);
-
-    if (originalImage != null && currentOrientation != null) {
-      img.Image rotatedImage;
-      switch (currentOrientation) {
-        case Orientation.landscape:
-          rotatedImage = originalImage;
-          break;
-        case Orientation.portrait:
-          rotatedImage = img.copyRotate(originalImage, angle: 90);
-          break;
-      }
-
-      Uint8List compressedImageBytes = img.encodeJpg(rotatedImage, quality: 85);
-
-      await imageFile.writeAsBytes(compressedImageBytes);
-    }
-
-    return capturedImage.path;
   }
 
   void _navigateToPreview() {
