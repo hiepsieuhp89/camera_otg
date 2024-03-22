@@ -4,10 +4,11 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:image/image.dart' as img;
 import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/screens/bridge_inspection_evaluation_screen.dart';
 import 'package:kyoryo/src/screens/preview_pictures_screen.dart';
+import 'package:kyoryo/src/ui/side_sheet.dart';
+import 'package:kyoryo/src/utilities/image_utils.dart';
 
 class TakePictureScreen extends StatefulWidget {
   const TakePictureScreen({super.key, required this.inspectionPoint});
@@ -24,10 +25,7 @@ class _TakePictureScreenState extends State<TakePictureScreen>
   CameraController? _controller;
   Future<void>? _initializeControllerFuture;
   Orientation? currentOrientation;
-
   List<String> capturedPhotos = [];
-  int _selectedIndex = 1;
-
   List<XFile> processingQueue = [];
   bool isProcessing = false;
 
@@ -43,6 +41,7 @@ class _TakePictureScreenState extends State<TakePictureScreen>
         });
       }
     });
+    _enterFullScreen();
     _initCamera();
     _setLandscapeOrientation();
   }
@@ -66,10 +65,19 @@ class _TakePictureScreenState extends State<TakePictureScreen>
     );
 
     setState(() {
-      _controller = CameraController(backCamera, ResolutionPreset.medium,
+      _controller = CameraController(backCamera, ResolutionPreset.veryHigh,
           enableAudio: false);
       _initializeControllerFuture = _controller?.initialize();
     });
+  }
+
+  void _enterFullScreen() {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
+  }
+
+  void _exitFullScreen() {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+        overlays: SystemUiOverlay.values);
   }
 
   void _setLandscapeOrientation() {
@@ -109,8 +117,8 @@ class _TakePictureScreenState extends State<TakePictureScreen>
     processingQueue = processingQueue.skip(5).toList();
 
     var futures = batch.map((image) async {
-      String imagePath = await _compressAndRotateImageBasedOnOrientation(
-          image, currentOrientation);
+      String imagePath =
+          await compressAndRotateImage(image, currentOrientation);
       capturedPhotos.add(imagePath);
     }).toList();
 
@@ -123,31 +131,6 @@ class _TakePictureScreenState extends State<TakePictureScreen>
     if (processingQueue.isNotEmpty) {
       processNextImage();
     }
-  }
-
-  Future<String> _compressAndRotateImageBasedOnOrientation(
-      XFile capturedImage, Orientation? currentOrientation) async {
-    File imageFile = File(capturedImage.path);
-    Uint8List imageBytes = await imageFile.readAsBytes();
-    img.Image? originalImage = img.decodeImage(imageBytes);
-
-    if (originalImage != null && currentOrientation != null) {
-      img.Image rotatedImage;
-      switch (currentOrientation) {
-        case Orientation.landscape:
-          rotatedImage = originalImage;
-          break;
-        case Orientation.portrait:
-          rotatedImage = img.copyRotate(originalImage, angle: 90);
-          break;
-      }
-
-      Uint8List compressedImageBytes = img.encodeJpg(rotatedImage, quality: 85);
-
-      await imageFile.writeAsBytes(compressedImageBytes);
-    }
-
-    return capturedImage.path;
   }
 
   void _navigateToPreview() {
@@ -166,6 +149,7 @@ class _TakePictureScreenState extends State<TakePictureScreen>
 
   void _navigateToReportScreen() {
     _resetOrientation();
+    _exitFullScreen();
     Navigator.pushNamed(context, BridgeInspectionEvaluationScreen.routeName,
             arguments: BridgeInspectionEvaluationScreenArguments(
                 point: widget.inspectionPoint, capturedPhotos: capturedPhotos))
@@ -174,8 +158,74 @@ class _TakePictureScreenState extends State<TakePictureScreen>
     });
   }
 
+  Widget getFlashIcon() {
+    switch (_controller!.value.flashMode) {
+      case FlashMode.off:
+        return const Icon(Icons.flash_off, color: Colors.white);
+      case FlashMode.auto:
+        return const Icon(Icons.flash_auto, color: Colors.white);
+      case FlashMode.always:
+        return const Icon(Icons.flash_on, color: Colors.white);
+      case FlashMode.torch:
+        return const Icon(Icons.lightbulb, color: Colors.white);
+    }
+  }
+
+  Future<void> setFlashMode(FlashMode mode) async {
+    if (_controller == null) {
+      return;
+    }
+
+    await _controller!.setFlashMode(mode);
+  }
+
+  void onSetFlashModeButtonPressed(FlashMode mode) {
+    setFlashMode(mode).then((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
+
+    Navigator.pop(context);
+  }
+
+  void showFlashDialog() {
+    showDialog(
+        context: context,
+        builder: (_) => Dialog(
+              backgroundColor: Colors.black,
+              child: Container(
+                width: 150,
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    IconButton(
+                        onPressed: () =>
+                            onSetFlashModeButtonPressed(FlashMode.off),
+                        icon: const Icon(Icons.flash_off, color: Colors.white)),
+                    IconButton(
+                        onPressed: () =>
+                            onSetFlashModeButtonPressed(FlashMode.always),
+                        icon: const Icon(Icons.flash_on, color: Colors.white)),
+                    IconButton(
+                        onPressed: () =>
+                            onSetFlashModeButtonPressed(FlashMode.auto),
+                        icon:
+                            const Icon(Icons.flash_auto, color: Colors.white)),
+                    IconButton(
+                        onPressed: () =>
+                            onSetFlashModeButtonPressed(FlashMode.torch),
+                        icon: const Icon(Icons.lightbulb, color: Colors.white)),
+                  ],
+                ),
+              ),
+            ));
+  }
+
   @override
   void dispose() {
+    _exitFullScreen();
     _resetOrientation();
     _controller?.dispose();
     super.dispose();
@@ -189,115 +239,122 @@ class _TakePictureScreenState extends State<TakePictureScreen>
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done &&
               _controller != null) {
-            final cameraAspectRatio = _controller!.value.aspectRatio;
-
             return Row(
               children: <Widget>[
                 NavigationRail(
-                    leading: Column(
-                      children: [
-                        IconButton(
-                            icon: const Icon(Icons.arrow_back),
-                            onPressed: () {
-                              Navigator.pop(context);
-                            }),
-                        const SizedBox(height: 12),
-                        FloatingActionButton(
-                          elevation: 0,
-                          onPressed: capturedPhotos.isEmpty
-                              ? null
-                              : _navigateToReportScreen,
-                          child: const Icon(Icons.check),
-                        ),
-                      ],
-                    ),
-                    labelType: NavigationRailLabelType.all,
-                    onDestinationSelected: (int index) {
-                      if (index == 0) {
-                        return _navigateToPreview();
-                      }
-
-                      setState(() {
-                        _selectedIndex = index;
-                      });
-                    },
-                    destinations: [
-                      NavigationRailDestination(
-                        disabled: capturedPhotos.isEmpty,
-                        icon: capturedPhotos.isEmpty
-                            ? const Icon(Icons.photo_library_outlined)
-                            : Badge(
-                                label: Text(capturedPhotos.length.toString()),
-                                child: const Icon(Icons.photo_library_outlined),
-                              ),
-                        selectedIcon: capturedPhotos.isEmpty
-                            ? const Icon(Icons.photo_library)
-                            : Badge(
-                                label: Text(capturedPhotos.length.toString()),
-                                child: const Icon(Icons.photo_library),
-                              ),
-                        label:
-                            Text(AppLocalizations.of(context)!.capturedPhotos),
-                      ),
-                      NavigationRailDestination(
-                        icon: const Icon(Icons.photo_outlined),
-                        selectedIcon: const Icon(Icons.photo),
-                        label: Text(
-                            AppLocalizations.of(context)!.lastInspectionPhoto),
-                      ),
-                      NavigationRailDestination(
-                          icon: const Icon(Icons.schema_outlined),
-                          selectedIcon: const Icon(Icons.schema),
-                          label: Text(
-                              AppLocalizations.of(context)!.diagramPicture)),
-                    ],
-                    selectedIndex: _selectedIndex),
-                const VerticalDivider(thickness: 1, width: 1),
-                Expanded(
-                    flex: 4,
-                    child: _selectedIndex == 1
-                        ? InteractiveViewer(
-                            constrained: true,
-                            child:
-                                Image.network(widget.inspectionPoint.photoUrl!))
-                        : InteractiveViewer(
-                            child: Image.network(
-                                widget.inspectionPoint.diagramUrl!))),
-                Expanded(
-                  flex: 8,
-                  child: Stack(
-                    alignment: Alignment.bottomCenter,
+                  selectedIndex: null,
+                  leading: Column(
                     children: [
-                      Container(
-                        color: Colors.black,
-                        child: Center(
-                          child: AspectRatio(
-                            aspectRatio: cameraAspectRatio,
-                            child: FittedBox(
-                              fit: BoxFit.fitHeight,
-                              child: SizedBox(
-                                width: MediaQuery.of(context).size.height *
-                                    cameraAspectRatio,
-                                height: MediaQuery.of(context).size.height,
-                                child: CameraPreview(_controller!),
-                              ),
-                            ),
-                          ),
-                        ),
+                      IconButton(
+                          icon: const Icon(Icons.arrow_back),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          }),
+                      FloatingActionButton(
+                        elevation: 0,
+                        onPressed: capturedPhotos.isEmpty
+                            ? null
+                            : _navigateToReportScreen,
+                        child: const Icon(Icons.check),
                       ),
-                      Positioned(
-                        right: 20,
-                        bottom: 20,
-                        child: FloatingActionButton(
-                          heroTag: "take-picture",
-                          onPressed: _takePicture,
-                          child:
-                              const Icon(Icons.camera_alt, color: Colors.black),
-                        ),
-                      ),
+                      const SizedBox(height: 16)
                     ],
                   ),
+                  labelType: NavigationRailLabelType.all,
+                  onDestinationSelected: (int index) {
+                    if (index == 0) {
+                      showSideSheet(context,
+                          header:
+                              AppLocalizations.of(context)!.lastInspectionPhoto,
+                          body: InteractiveViewer(
+                              constrained: true,
+                              child: Image.network(
+                                  widget.inspectionPoint.photoUrl!)));
+                    }
+
+                    if (index == 1) {
+                      showSideSheet(context,
+                          header: AppLocalizations.of(context)!.diagramPicture,
+                          body: InteractiveViewer(
+                              child: Image.network(
+                                  widget.inspectionPoint.diagramUrl!)));
+                    }
+                  },
+                  destinations: [
+                    NavigationRailDestination(
+                      icon: const Icon(Icons.photo_outlined),
+                      selectedIcon: const Icon(Icons.photo),
+                      label: Text(
+                          AppLocalizations.of(context)!.lastInspectionPhoto),
+                    ),
+                    NavigationRailDestination(
+                        icon: const Icon(Icons.schema_outlined),
+                        selectedIcon: const Icon(Icons.schema),
+                        label:
+                            Text(AppLocalizations.of(context)!.diagramPicture)),
+                  ],
                 ),
+                const VerticalDivider(thickness: 1, width: 1),
+                Expanded(
+                  child: Stack(
+                    alignment: Alignment.centerRight,
+                    children: [
+                      Positioned.fill(
+                        child: CameraPreview(_controller!),
+                      ),
+                      Container(
+                        width: 120,
+                        color: Colors.black.withOpacity(0.5),
+                        child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              SizedBox(
+                                height: 48,
+                                child: IconButton(
+                                  onPressed: showFlashDialog,
+                                  icon: getFlashIcon(),
+                                  iconSize: 30,
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: _takePicture,
+                                icon: const Icon(Icons.circle,
+                                    color: Colors.white),
+                                iconSize: 70,
+                              ),
+                              SizedBox(
+                                height: 48,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    if (capturedPhotos.isNotEmpty) {
+                                      _navigateToPreview();
+                                    }
+                                  },
+                                  child: Badge(
+                                    isLabelVisible: capturedPhotos.isNotEmpty,
+                                    label:
+                                        Text(capturedPhotos.length.toString()),
+                                    child: CircleAvatar(
+                                      radius: 20,
+                                      backgroundImage: capturedPhotos.isNotEmpty
+                                          ? FileImage(File(capturedPhotos.last))
+                                          : null,
+                                      child: capturedPhotos.isEmpty
+                                          ? const Icon(
+                                              Icons.photo_library_outlined,
+                                              color: Colors.white,
+                                              size: 20,
+                                            )
+                                          : null,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ]),
+                      )
+                    ],
+                  ),
+                )
               ],
             );
           } else {
