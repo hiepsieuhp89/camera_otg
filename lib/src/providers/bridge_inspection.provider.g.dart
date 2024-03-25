@@ -157,7 +157,7 @@ class _NumberOfCreatedReportsProviderElement
   int get bridgeId => (origin as NumberOfCreatedReportsProvider).bridgeId;
 }
 
-String _$bridgeInspectionHash() => r'1f7427afecb9fdd0a16e7707b6d28d1d0751ec21';
+String _$bridgeInspectionHash() => r'171f0c48be345f0e9e0fd6198832d037967ec341';
 
 abstract class _$BridgeInspection
     extends BuildlessAutoDisposeNotifier<Map<int, InspectionPointReport>> {
