@@ -87,37 +87,46 @@ class BridgeInspectionEvaluationScreenState
                     children: [
                       Expanded(
                         flex: 1,
-                        child: Column(children: [
-                          Row(children: [
-                            Text(
-                              AppLocalizations.of(context)!
-                                  .currentInspectionPhoto,
-                              style: Theme.of(context).textTheme.labelLarge,
-                            )
+                        child: Stack(children: [
+                          Column(children: [
+                            Row(children: [
+                              Text(
+                                AppLocalizations.of(context)!
+                                    .currentInspectionPhoto,
+                                style: Theme.of(context).textTheme.labelLarge,
+                              )
+                            ]),
+                            const SizedBox(height: 8),
+                            Expanded(
+                                child: CarouselSlider(
+                              options: CarouselOptions(
+                                viewportFraction: 0.6,
+                                initialPage: 0,
+                                enableInfiniteScroll: false,
+                                reverse: false,
+                                enlargeCenterPage: true,
+                                onPageChanged: (index, reason) {},
+                                scrollDirection: Axis.horizontal,
+                              ),
+                              items:
+                                  widget.arguments.capturedPhotos.map((photo) {
+                                return Builder(
+                                  builder: (BuildContext context) {
+                                    return Image(
+                                      image: FileImage(File(photo)),
+                                      fit: BoxFit.cover,
+                                    );
+                                  },
+                                );
+                              }).toList(),
+                            )),
                           ]),
-                          const SizedBox(height: 8),
-                          Expanded(
-                              child: CarouselSlider(
-                            options: CarouselOptions(
-                              viewportFraction: 0.6,
-                              initialPage: 0,
-                              enableInfiniteScroll: false,
-                              reverse: false,
-                              enlargeCenterPage: true,
-                              onPageChanged: (index, reason) {},
-                              scrollDirection: Axis.horizontal,
-                            ),
-                            items: widget.arguments.capturedPhotos.map((photo) {
-                              return Builder(
-                                builder: (BuildContext context) {
-                                  return Image(
-                                    image: FileImage(File(photo)),
-                                    fit: BoxFit.cover,
-                                  );
-                                },
-                              );
-                            }).toList(),
-                          ))
+                          const Positioned(
+                            right: 0,
+                            bottom: 0,
+                            child: Icon(Icons.check,
+                                color: Colors.green, size: 90),
+                          ),
                         ]),
                       ),
                       const SizedBox(height: 16),
