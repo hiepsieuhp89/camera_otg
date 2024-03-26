@@ -74,193 +74,206 @@ class BridgeInspectionEvaluationScreenState
     final damageTypes = ref.watch(damageTypesProvider);
 
     return Scaffold(
-        appBar: AppBar(title: Text(widget.arguments.point.name!)),
-        body: SingleChildScrollView(
-            child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: SizedBox(
-                  // Be cautious with this approach; use it as a last resort
-                  // The height should be at least as tall as the screen to ensure scrolling works as expected
-                  height: MediaQuery.of(context).size.height,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        flex: 1,
-                        child: Stack(children: [
-                          Column(children: [
-                            Row(children: [
-                              Text(
-                                AppLocalizations.of(context)!
-                                    .currentInspectionPhoto,
-                                style: Theme.of(context).textTheme.labelLarge,
-                              )
-                            ]),
-                            const SizedBox(height: 8),
-                            Expanded(
-                                child: CarouselSlider(
-                              options: CarouselOptions(
-                                viewportFraction: 0.6,
-                                initialPage: 0,
-                                enableInfiniteScroll: false,
-                                reverse: false,
-                                enlargeCenterPage: true,
-                                onPageChanged: (index, reason) {},
-                                scrollDirection: Axis.horizontal,
-                              ),
-                              items:
-                                  widget.arguments.capturedPhotos.map((photo) {
-                                return Builder(
-                                  builder: (BuildContext context) {
-                                    return Image(
-                                      image: FileImage(File(photo)),
-                                      fit: BoxFit.cover,
-                                    );
-                                  },
-                                );
-                              }).toList(),
-                            )),
-                          ]),
-                          const Positioned(
-                            right: 0,
-                            bottom: 0,
-                            child: Icon(Icons.check,
-                                color: Colors.green, size: 90),
-                          ),
-                        ]),
-                      ),
-                      const SizedBox(height: 16),
-                      Expanded(
-                          flex: 1,
-                          child: Column(
-                            children: [
-                              Row(
-                                children: [
-                                  Text(
-                                    AppLocalizations.of(context)!.assessment,
-                                    style:
-                                        Theme.of(context).textTheme.labelLarge,
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              Row(
-                                children: [
-                                  Expanded(
-                                      child: DropdownMenu<String>(
-                                    label: Text(AppLocalizations.of(context)!
-                                        .damageType),
-                                    expandedInsets: const EdgeInsets.all(0),
-                                    onSelected: (category) {
-                                      setState(() {
-                                        _selectedCategory = category;
-                                        _selectedDamageType = null;
-                                      });
-                                    },
-                                    dropdownMenuEntries: damageTypes.hasValue
-                                        ? damageTypes.value!
-                                            .map((type) => type.category)
-                                            .toSet()
-                                            .map((category) {
-                                            return DropdownMenuEntry(
-                                              value: category,
-                                              label: category,
-                                            );
-                                          }).toList()
-                                        : const [],
-                                  )),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                      child: DropdownMenu<DamageType>(
-                                    label: Text(AppLocalizations.of(context)!
-                                        .damageDetails),
-                                    enabled: _selectedCategory != null,
-                                    expandedInsets: const EdgeInsets.all(0),
-                                    onSelected: (damageType) {
-                                      setState(() {
-                                        _selectedDamageType = damageType;
-                                      });
-                                    },
-                                    dropdownMenuEntries: damageTypes.hasValue
-                                        ? damageTypes.value!
-                                            .where((type) =>
-                                                type.category ==
-                                                _selectedCategory)
-                                            .map((type) {
-                                            return DropdownMenuEntry(
-                                              value: type,
-                                              label: type.nameJp,
-                                            );
-                                          }).toList()
-                                        : const [],
-                                  ))
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              DropdownMenu<String>(
-                                label:
-                                    Text(AppLocalizations.of(context)!.damage),
-                                expandedInsets: const EdgeInsets.all(0),
-                                onSelected: (healthLevel) {
-                                  setState(() {
-                                    _selectedHealthLevel = healthLevel;
-                                  });
-                                },
-                                dropdownMenuEntries: const [
-                                  DropdownMenuEntry(value: 'A', label: 'A'),
-                                  DropdownMenuEntry(value: 'B', label: 'B'),
-                                  DropdownMenuEntry(value: 'C', label: 'C'),
-                                  DropdownMenuEntry(value: 'D', label: 'D'),
-                                  DropdownMenuEntry(value: 'E', label: 'E'),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              TextField(
-                                  controller: _textEditingController,
-                                  decoration: InputDecoration(
-                                    label: Text(
-                                        AppLocalizations.of(context)!.remark),
-                                    border: const OutlineInputBorder(),
-                                  ))
-                            ],
-                          )),
-                      const SizedBox(height: 16),
-                      FutureBuilder(
-                          future: _pendingSubmssion,
-                          builder: ((context, snapshot) {
-                            final isLoading = snapshot.connectionState ==
-                                ConnectionState.waiting;
+        appBar: AppBar(
+          title: Text(widget.arguments.point.name!),
+        ),
+        body: OrientationBuilder(builder: ((context, orientation) {
+          if (orientation == Orientation.portrait) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                buildPhotosCarousel(context),
+                buildEvaluationForm(context, damageTypes),
+              ],
+            );
+          } else {
+            return Row(
+              children: [
+                buildPhotosCarousel(context),
+                buildEvaluationForm(context, damageTypes),
+              ],
+            );
+          }
+        })));
+  }
 
-                            return FilledButton.icon(
-                              icon: isLoading
-                                  ? Container(
-                                      width: 24,
-                                      height: 24,
-                                      padding: const EdgeInsets.all(2.0),
-                                      child: const CircularProgressIndicator(
-                                        strokeWidth: 3,
-                                      ),
-                                    )
-                                  : const Icon(Icons.check),
-                              label: Text(AppLocalizations.of(context)!
-                                  .finishEvaluation),
-                              onPressed: isLoading
-                                  ? null
-                                  : () {
-                                      submitInspection().catchError((_) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(SnackBar(
-                                                content: Text(AppLocalizations
-                                                        .of(context)!
-                                                    .failedToCreateInspectionReport)));
-                                      });
-                                    },
-                              style: FilledButton.styleFrom(
-                                  minimumSize: const Size.fromHeight(55)),
+  Expanded buildEvaluationForm(
+      BuildContext context, AsyncValue<List<DamageType>> damageTypes) {
+    return Expanded(
+        flex: 1,
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: ListView(
+            children: [
+              Row(
+                children: [
+                  Text(
+                    AppLocalizations.of(context)!.assessment,
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                      child: DropdownMenu<String>(
+                    label: Text(AppLocalizations.of(context)!.damageType),
+                    expandedInsets: const EdgeInsets.all(0),
+                    onSelected: (category) {
+                      setState(() {
+                        _selectedCategory = category;
+                        _selectedDamageType = null;
+                      });
+                    },
+                    dropdownMenuEntries: damageTypes.hasValue
+                        ? damageTypes.value!
+                            .map((type) => type.category)
+                            .toSet()
+                            .map((category) {
+                            return DropdownMenuEntry(
+                              value: category,
+                              label: category,
                             );
-                          }))
+                          }).toList()
+                        : const [],
+                  )),
+                  const SizedBox(width: 8),
+                  Expanded(
+                      child: DropdownMenu<DamageType>(
+                    label: Text(AppLocalizations.of(context)!.damageDetails),
+                    enabled: _selectedCategory != null,
+                    expandedInsets: const EdgeInsets.all(0),
+                    onSelected: (damageType) {
+                      setState(() {
+                        _selectedDamageType = damageType;
+                      });
+                    },
+                    dropdownMenuEntries: damageTypes.hasValue
+                        ? damageTypes.value!
+                            .where((type) => type.category == _selectedCategory)
+                            .map((type) {
+                            return DropdownMenuEntry(
+                              value: type,
+                              label: type.nameJp,
+                            );
+                          }).toList()
+                        : const [],
+                  ))
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  DropdownMenu<String>(
+                    label: Text(AppLocalizations.of(context)!.damage),
+                    onSelected: (healthLevel) {
+                      setState(() {
+                        _selectedHealthLevel = healthLevel;
+                      });
+                    },
+                    dropdownMenuEntries: const [
+                      DropdownMenuEntry(value: 'A', label: 'A'),
+                      DropdownMenuEntry(value: 'B', label: 'B'),
+                      DropdownMenuEntry(value: 'C', label: 'C'),
+                      DropdownMenuEntry(value: 'D', label: 'D'),
+                      DropdownMenuEntry(value: 'E', label: 'E'),
                     ],
                   ),
-                ))));
+                  const SizedBox(width: 8),
+                  Expanded(
+                      child: TextField(
+                          controller: _textEditingController,
+                          decoration: InputDecoration(
+                            label: Text(AppLocalizations.of(context)!.remark),
+                            border: const OutlineInputBorder(),
+                          )))
+                ],
+              ),
+              const SizedBox(height: 16),
+              FutureBuilder(
+                  future: _pendingSubmssion,
+                  builder: ((context, snapshot) {
+                    final isLoading =
+                        snapshot.connectionState == ConnectionState.waiting;
+
+                    return FilledButton.icon(
+                      icon: isLoading
+                          ? Container(
+                              width: 24,
+                              height: 24,
+                              padding: const EdgeInsets.all(2.0),
+                              child: const CircularProgressIndicator(
+                                strokeWidth: 3,
+                              ),
+                            )
+                          : const Icon(Icons.check),
+                      label:
+                          Text(AppLocalizations.of(context)!.finishEvaluation),
+                      onPressed: isLoading
+                          ? null
+                          : () {
+                              submitInspection().catchError((_) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                        content: Text(AppLocalizations.of(
+                                                context)!
+                                            .failedToCreateInspectionReport)));
+                              });
+                            },
+                      style: FilledButton.styleFrom(
+                          minimumSize: const Size.fromHeight(55)),
+                    );
+                  }))
+            ],
+          ),
+        ));
+  }
+
+  Expanded buildPhotosCarousel(BuildContext context) {
+    return Expanded(
+      flex: 1,
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Stack(children: [
+          Column(children: [
+            Row(children: [
+              Text(
+                AppLocalizations.of(context)!.currentInspectionPhoto,
+                style: Theme.of(context).textTheme.labelLarge,
+              )
+            ]),
+            const SizedBox(height: 8),
+            Expanded(
+                child: CarouselSlider(
+              options: CarouselOptions(
+                viewportFraction: 0.6,
+                initialPage: 0,
+                enableInfiniteScroll: false,
+                reverse: false,
+                enlargeCenterPage: true,
+                onPageChanged: (index, reason) {},
+                scrollDirection: Axis.horizontal,
+              ),
+              items: widget.arguments.capturedPhotos.map((photo) {
+                return Builder(
+                  builder: (BuildContext context) {
+                    return Image(
+                      image: FileImage(File(photo)),
+                      fit: BoxFit.cover,
+                    );
+                  },
+                );
+              }).toList(),
+            )),
+          ]),
+          const Positioned(
+            right: 0,
+            bottom: 0,
+            child: Icon(Icons.check, color: Colors.green, size: 90),
+          ),
+        ]),
+      ),
+    );
   }
 }
