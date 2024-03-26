@@ -83,14 +83,12 @@ class _TakePictureScreenState extends State<TakePictureScreen>
   void _setLandscapeOrientation() {
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
     ]);
   }
 
   void _resetOrientation() {
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
+    SystemChrome.setPreferredOrientations([]);
   }
 
   void _takePicture() async {
