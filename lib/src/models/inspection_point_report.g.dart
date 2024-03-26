@@ -13,6 +13,9 @@ _$InspectionPointReportImpl _$$InspectionPointReportImplFromJson(
       inspectionPointId: json['inspection_point_id'] as int,
       date:
           json['date'] == null ? null : DateTime.parse(json['date'] as String),
+      photos: (json['photos'] as List<dynamic>?)
+          ?.map((e) => Photo.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
 
 Map<String, dynamic> _$$InspectionPointReportImplToJson(
@@ -21,4 +24,5 @@ Map<String, dynamic> _$$InspectionPointReportImplToJson(
       'id': instance.id,
       'inspection_point_id': instance.inspectionPointId,
       'date': instance.date?.toIso8601String(),
+      'photos': instance.photos,
     };

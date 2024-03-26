@@ -24,8 +24,8 @@ mixin _$InspectionPointReport {
   int? get id => throw _privateConstructorUsedError;
   @JsonKey(name: 'inspection_point_id')
   int get inspectionPointId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'date')
   DateTime? get date => throw _privateConstructorUsedError;
+  List<Photo>? get photos => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -42,7 +42,8 @@ abstract class $InspectionPointReportCopyWith<$Res> {
   $Res call(
       {int? id,
       @JsonKey(name: 'inspection_point_id') int inspectionPointId,
-      @JsonKey(name: 'date') DateTime? date});
+      DateTime? date,
+      List<Photo>? photos});
 }
 
 /// @nodoc
@@ -62,6 +63,7 @@ class _$InspectionPointReportCopyWithImpl<$Res,
     Object? id = freezed,
     Object? inspectionPointId = null,
     Object? date = freezed,
+    Object? photos = freezed,
   }) {
     return _then(_value.copyWith(
       id: freezed == id
@@ -76,6 +78,10 @@ class _$InspectionPointReportCopyWithImpl<$Res,
           ? _value.date
           : date // ignore: cast_nullable_to_non_nullable
               as DateTime?,
+      photos: freezed == photos
+          ? _value.photos
+          : photos // ignore: cast_nullable_to_non_nullable
+              as List<Photo>?,
     ) as $Val);
   }
 }
@@ -92,7 +98,8 @@ abstract class _$$InspectionPointReportImplCopyWith<$Res>
   $Res call(
       {int? id,
       @JsonKey(name: 'inspection_point_id') int inspectionPointId,
-      @JsonKey(name: 'date') DateTime? date});
+      DateTime? date,
+      List<Photo>? photos});
 }
 
 /// @nodoc
@@ -110,6 +117,7 @@ class __$$InspectionPointReportImplCopyWithImpl<$Res>
     Object? id = freezed,
     Object? inspectionPointId = null,
     Object? date = freezed,
+    Object? photos = freezed,
   }) {
     return _then(_$InspectionPointReportImpl(
       id: freezed == id
@@ -124,6 +132,10 @@ class __$$InspectionPointReportImplCopyWithImpl<$Res>
           ? _value.date
           : date // ignore: cast_nullable_to_non_nullable
               as DateTime?,
+      photos: freezed == photos
+          ? _value._photos
+          : photos // ignore: cast_nullable_to_non_nullable
+              as List<Photo>?,
     ));
   }
 }
@@ -134,7 +146,9 @@ class _$InspectionPointReportImpl implements _InspectionPointReport {
   _$InspectionPointReportImpl(
       {this.id,
       @JsonKey(name: 'inspection_point_id') required this.inspectionPointId,
-      @JsonKey(name: 'date') this.date});
+      this.date,
+      final List<Photo>? photos})
+      : _photos = photos;
 
   factory _$InspectionPointReportImpl.fromJson(Map<String, dynamic> json) =>
       _$$InspectionPointReportImplFromJson(json);
@@ -145,12 +159,20 @@ class _$InspectionPointReportImpl implements _InspectionPointReport {
   @JsonKey(name: 'inspection_point_id')
   final int inspectionPointId;
   @override
-  @JsonKey(name: 'date')
   final DateTime? date;
+  final List<Photo>? _photos;
+  @override
+  List<Photo>? get photos {
+    final value = _photos;
+    if (value == null) return null;
+    if (_photos is EqualUnmodifiableListView) return _photos;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
 
   @override
   String toString() {
-    return 'InspectionPointReport(id: $id, inspectionPointId: $inspectionPointId, date: $date)';
+    return 'InspectionPointReport(id: $id, inspectionPointId: $inspectionPointId, date: $date, photos: $photos)';
   }
 
   @override
@@ -161,12 +183,14 @@ class _$InspectionPointReportImpl implements _InspectionPointReport {
             (identical(other.id, id) || other.id == id) &&
             (identical(other.inspectionPointId, inspectionPointId) ||
                 other.inspectionPointId == inspectionPointId) &&
-            (identical(other.date, date) || other.date == date));
+            (identical(other.date, date) || other.date == date) &&
+            const DeepCollectionEquality().equals(other._photos, _photos));
   }
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(runtimeType, id, inspectionPointId, date);
+  int get hashCode => Object.hash(runtimeType, id, inspectionPointId, date,
+      const DeepCollectionEquality().hash(_photos));
 
   @JsonKey(ignore: true)
   @override
@@ -185,11 +209,11 @@ class _$InspectionPointReportImpl implements _InspectionPointReport {
 
 abstract class _InspectionPointReport implements InspectionPointReport {
   factory _InspectionPointReport(
-          {final int? id,
-          @JsonKey(name: 'inspection_point_id')
-          required final int inspectionPointId,
-          @JsonKey(name: 'date') final DateTime? date}) =
-      _$InspectionPointReportImpl;
+      {final int? id,
+      @JsonKey(name: 'inspection_point_id')
+      required final int inspectionPointId,
+      final DateTime? date,
+      final List<Photo>? photos}) = _$InspectionPointReportImpl;
 
   factory _InspectionPointReport.fromJson(Map<String, dynamic> json) =
       _$InspectionPointReportImpl.fromJson;
@@ -200,8 +224,9 @@ abstract class _InspectionPointReport implements InspectionPointReport {
   @JsonKey(name: 'inspection_point_id')
   int get inspectionPointId;
   @override
-  @JsonKey(name: 'date')
   DateTime? get date;
+  @override
+  List<Photo>? get photos;
   @override
   @JsonKey(ignore: true)
   _$$InspectionPointReportImplCopyWith<_$InspectionPointReportImpl>
