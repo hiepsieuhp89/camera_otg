@@ -296,7 +296,7 @@ class _BridgeInspectionScreenState
                                   SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount:
                                     orientation == Orientation.portrait ? 1 : 2,
-                                mainAxisExtent: 168,
+                                mainAxisExtent: 224,
                                 mainAxisSpacing: 8.0,
                                 crossAxisSpacing: 8.0,
                               ),

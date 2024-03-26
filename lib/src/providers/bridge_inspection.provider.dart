@@ -57,7 +57,8 @@ class BridgeInspection extends _$BridgeInspection {
     final report = await ref
         .read(inspectionPointReportServiceProvider)
         .createReport(pointId,
-            uploadedPhotos.map((photo) => photo.id!).toList(), metadata);
+            uploadedPhotos.map((photo) => photo.id!).toList(), metadata)
+        .then((report) => report.copyWith(photos: uploadedPhotos));
 
     addInspectionPointReport(pointId, report);
   }
