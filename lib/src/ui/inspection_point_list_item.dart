@@ -23,73 +23,80 @@ class InpsectionPointListItem extends ConsumerWidget {
     final createdReport =
         ref.watch(bridgeInspectionProvider(point.bridgeId!))[point.id!];
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: <Widget>[
-              Expanded(
-                child: _imageGroup(context, createdReport),
-              )
-            ],
-          ),
-          const SizedBox(height: 10.0),
-          Row(
-            children: [
-              point.type == InspectionPointType.damage
-                  ? Icon(Icons.broken_image_outlined,
-                      color: Theme.of(context).primaryColor)
-                  : Icon(Icons.image_search_outlined,
-                      color: Theme.of(context).primaryColor),
-              Text(
-                point.name!,
-                style: Theme.of(context).textTheme.titleMedium,
-                textAlign: TextAlign.left,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                  AppLocalizations.of(context)!.lastInspectionDate(
-                      point.lastInspectionDate == null
-                          ? ''
-                          : DateFormat('yy年MM月dd日 HH:mm')
-                              .format(point.lastInspectionDate!)),
-                  style: Theme.of(context).textTheme.bodySmall),
-              Expanded(
-                  child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  createdReport != null
-                      ? Chip(
-                          backgroundColor:
-                              Theme.of(context).primaryColor.withOpacity(0.15),
-                          label: Row(
-                            children: [
-                              Icon(Icons.check,
-                                  color: Theme.of(context).primaryColor,
-                                  size: 20.0),
-                              const SizedBox(width: 5.0),
-                              Text(AppLocalizations.of(context)!.finished)
-                            ],
-                          ))
-                      : IconButton.filled(
-                          onPressed: isInspecting
-                              ? () {
-                                  startInspect(point);
-                                }
-                              : null,
-                          icon: const Icon(Icons.manage_search_rounded)),
-                ],
-              ))
-            ],
-          )
-        ],
+    return Card(
+      child: Container(
+        constraints: const BoxConstraints(
+          maxHeight: 228,
+          minHeight: 228,
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: <Widget>[
+                Expanded(
+                  child: _imageGroup(context, createdReport),
+                )
+              ],
+            ),
+            const SizedBox(height: 10.0),
+            Row(
+              children: [
+                point.type == InspectionPointType.damage
+                    ? Icon(Icons.broken_image_outlined,
+                        color: Theme.of(context).primaryColor)
+                    : Icon(Icons.image_search_outlined,
+                        color: Theme.of(context).primaryColor),
+                Text(
+                  point.name!,
+                  style: Theme.of(context).textTheme.titleMedium,
+                  textAlign: TextAlign.left,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                    AppLocalizations.of(context)!.lastInspectionDate(
+                        point.lastInspectionDate == null
+                            ? ''
+                            : DateFormat('yy年MM月dd日 HH:mm')
+                                .format(point.lastInspectionDate!)),
+                    style: Theme.of(context).textTheme.bodySmall),
+                Expanded(
+                    child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    createdReport != null
+                        ? Chip(
+                            backgroundColor: Theme.of(context)
+                                .primaryColor
+                                .withOpacity(0.15),
+                            label: Row(
+                              children: [
+                                Icon(Icons.check,
+                                    color: Theme.of(context).primaryColor,
+                                    size: 20.0),
+                                const SizedBox(width: 5.0),
+                                Text(AppLocalizations.of(context)!.finished)
+                              ],
+                            ))
+                        : IconButton.filled(
+                            onPressed: isInspecting
+                                ? () {
+                                    startInspect(point);
+                                  }
+                                : null,
+                            icon: const Icon(Icons.manage_search_rounded)),
+                  ],
+                ))
+              ],
+            )
+          ],
+        ),
       ),
     );
   }

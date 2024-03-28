@@ -291,25 +291,30 @@ class _BridgeInspectionScreenState
                       Expanded(
                         child: filteredInspectionPoints.when(
                           data: (data) {
-                            return GridView.builder(
-                              gridDelegate:
-                                  SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount:
-                                    orientation == Orientation.portrait ? 1 : 2,
-                                mainAxisExtent: 224,
-                                mainAxisSpacing: 8.0,
-                                crossAxisSpacing: 8.0,
-                              ),
-                              itemCount: data.length,
-                              itemBuilder: (BuildContext context, int index) {
-                                final point = data[index];
+                            return Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: GridView.builder(
+                                gridDelegate:
+                                    SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount:
+                                      orientation == Orientation.portrait
+                                          ? 1
+                                          : 2,
+                                  mainAxisExtent: 232,
+                                  mainAxisSpacing: 8.0,
+                                  crossAxisSpacing: 8.0,
+                                ),
+                                itemCount: data.length,
+                                itemBuilder: (BuildContext context, int index) {
+                                  final point = data[index];
 
-                                return InpsectionPointListItem(
-                                  point: point,
-                                  isInspecting: isInspecting,
-                                  startInspect: _startInspectingPoint,
-                                );
-                              },
+                                  return InpsectionPointListItem(
+                                    point: point,
+                                    isInspecting: isInspecting,
+                                    startInspect: _startInspectingPoint,
+                                  );
+                                },
+                              ),
                             );
                           },
                           loading: () => const Center(
