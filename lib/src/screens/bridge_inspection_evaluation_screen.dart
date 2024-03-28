@@ -51,9 +51,6 @@ class BridgeInspectionEvaluationScreenState
       'health_level': _selectedHealthLevel ?? '',
       'remark': _textEditingController.text,
     }).then((_) {
-      ref.invalidate(
-          inspectionPointsProvider(widget.arguments.point.bridgeId!));
-
       Navigator.popUntil(
           context, ModalRoute.withName(BridgeInspectionScreen.routeName));
     });
