@@ -3,7 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
-import 'package:photo_view/photo_view.dart';
+import 'package:kyoryo/src/ui/image_view_overlay.dart';
 import 'package:image/image.dart' as img;
 
 Future<String> compressAndRotateImage(
@@ -31,19 +31,6 @@ Future<String> compressAndRotateImage(
   return capturedImage.path;
 }
 
-void goToImagePreview(BuildContext context, String title, String imageUrl) {
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => Scaffold(
-        appBar: AppBar(
-          title: Text(title),
-        ),
-        body: Center(
-            child: PhotoView(
-          imageProvider: NetworkImage(imageUrl),
-        )),
-      ),
-    ),
-  );
+void viewImage(BuildContext context, String imageUrl) {
+  Navigator.push(context, ImageViewOverlay(imageUrl));
 }

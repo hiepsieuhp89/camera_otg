@@ -271,11 +271,7 @@ class _TakePictureScreenState extends State<TakePictureScreen>
                     }
 
                     if (index == 1) {
-                      showSideSheet(context,
-                          header: AppLocalizations.of(context)!.diagramPicture,
-                          body: InteractiveViewer(
-                              child: Image.network(
-                                  widget.inspectionPoint.diagramUrl!)));
+                      viewImage(context, widget.inspectionPoint.diagramUrl!);
                     }
                   },
                   destinations: [

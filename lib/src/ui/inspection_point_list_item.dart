@@ -139,7 +139,7 @@ class InpsectionPointListItem extends ConsumerWidget {
   GestureDetector buildImageContainer(BuildContext context, String imageUrl) {
     return GestureDetector(
       onTap: () {
-        goToImagePreview(context, point.name!, imageUrl);
+        viewImage(context, imageUrl);
       },
       child: AspectRatio(
         aspectRatio: 1.0,
