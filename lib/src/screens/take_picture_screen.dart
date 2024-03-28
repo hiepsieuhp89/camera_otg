@@ -7,7 +7,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/screens/bridge_inspection_evaluation_screen.dart';
 import 'package:kyoryo/src/screens/preview_pictures_screen.dart';
-import 'package:kyoryo/src/ui/side_sheet.dart';
+import 'package:kyoryo/src/ui/collapsible_panel.dart';
 import 'package:kyoryo/src/utilities/image_utils.dart';
 
 class TakePictureScreen extends StatefulWidget {
@@ -28,6 +28,7 @@ class _TakePictureScreenState extends State<TakePictureScreen>
   List<String> capturedPhotos = [];
   List<XFile> processingQueue = [];
   bool isProcessing = false;
+  bool showPreviousPhoto = false;
 
   @override
   void initState() {
@@ -261,13 +262,9 @@ class _TakePictureScreenState extends State<TakePictureScreen>
                   labelType: NavigationRailLabelType.all,
                   onDestinationSelected: (int index) {
                     if (index == 0) {
-                      showSideSheet(context,
-                          header:
-                              AppLocalizations.of(context)!.lastInspectionPhoto,
-                          body: InteractiveViewer(
-                              constrained: true,
-                              child: Image.network(
-                                  widget.inspectionPoint.photoUrl!)));
+                      setState(() {
+                        showPreviousPhoto = !showPreviousPhoto;
+                      });
                     }
 
                     if (index == 1) {
@@ -296,6 +293,42 @@ class _TakePictureScreenState extends State<TakePictureScreen>
                       Positioned.fill(
                         child: CameraPreview(_controller!),
                       ),
+                      Positioned(
+                          top: 0,
+                          left: 0,
+                          child: CollapsiblePanel(
+                            collapsed: !showPreviousPhoto,
+                            child: Container(
+                              height: 200,
+                              width: 250,
+                              alignment: Alignment.bottomRight,
+                              decoration: BoxDecoration(
+                                  color: Colors.red,
+                                  border: Border(
+                                    right: BorderSide(
+                                        width: 1,
+                                        color: Theme.of(context).dividerColor),
+                                    bottom: BorderSide(
+                                        width: 1,
+                                        color: Theme.of(context).dividerColor),
+                                  ),
+                                  image: DecorationImage(
+                                    image: Image.network(
+                                            widget.inspectionPoint.photoUrl!)
+                                        .image,
+                                    fit: BoxFit.cover,
+                                  )),
+                              child: IconButton(
+                                onPressed: () {
+                                  viewImage(context,
+                                      widget.inspectionPoint.photoUrl!);
+                                },
+                                icon: const Icon(Icons.fullscreen),
+                                iconSize: 30,
+                                color: Colors.white,
+                              ),
+                            ),
+                          )),
                       Container(
                         width: 120,
                         color: Colors.black.withOpacity(0.5),
