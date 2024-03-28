@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:kyoryo/src/providers/current_bridge.provider.dart';
-import 'package:photo_view/photo_view.dart';
+import 'package:kyoryo/src/utilities/image_utils.dart';
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:kyoryo/src/models/bridge.dart';
@@ -24,20 +24,7 @@ class BridgeListItem extends ConsumerWidget {
           children: <Widget>[
             GestureDetector(
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => Scaffold(
-                      appBar: AppBar(
-                        title: Text(bridge.nameKanji),
-                      ),
-                      body: Center(
-                          child: PhotoView(
-                        imageProvider: NetworkImage(bridge.photoLink),
-                      )),
-                    ),
-                  ),
-                );
+                viewImage(context, bridge.photoLink);
               },
               child: AspectRatio(
                 aspectRatio: 1.0,
