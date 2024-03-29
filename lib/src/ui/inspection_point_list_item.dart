@@ -102,37 +102,58 @@ class InpsectionPointListItem extends ConsumerWidget {
   }
 
   Widget _imageGroup(BuildContext context, InspectionPointReport? report) {
+    final images = [
+      point.diagramUrl!,
+      point.photoUrl!,
+    ];
+
+    if (isInspecting && report == null) {
+      images.add('');
+    } else if (isInspecting && report != null) {
+      images.addAll(report.photos!.map((photo) => photo.photoLink));
+    }
+
     return SizedBox(
         height: 120,
-        child: ListView(
+        child: ListView.separated(
           scrollDirection: Axis.horizontal,
-          children: [
-            buildImageContainer(context, point.diagramUrl!),
-            const SizedBox(width: 12),
-            buildImageContainer(context, point.photoUrl!),
-            isInspecting ? const SizedBox(width: 12) : const SizedBox.shrink(),
-            if (!isInspecting)
-              const SizedBox.shrink()
-            else if (report != null)
-              buildImageContainer(context, report.photos!.first.photoLink)
-            else
-              Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor.withOpacity(0.15),
-                    border: Border.all(
-                      color: Colors.black12,
-                      width: 1,
-                    ),
-                    borderRadius: const BorderRadius.all(Radius.circular(12.0)),
+          itemCount: images.length,
+          separatorBuilder: (context, index) {
+            if (index == 1) {
+              return const SizedBox(
+                width: 25,
+                child: Center(
+                  child: VerticalDivider(
+                    width: 1,
                   ),
-                  child: Center(
-                    child: Icon(Icons.do_not_disturb,
-                        color: Theme.of(context).primaryColor.withOpacity(0.2),
-                        size: 40.0),
-                  )),
-          ],
+                ),
+              );
+            }
+            return const SizedBox(width: 12);
+          },
+          itemBuilder: (context, index) {
+            if (images[index] == '') {
+              return Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColor.withOpacity(0.15),
+                  border: Border.all(
+                    color: Colors.black12,
+                    width: 1,
+                  ),
+                  borderRadius: const BorderRadius.all(Radius.circular(12.0)),
+                ),
+                child: Center(
+                  child: Icon(Icons.do_not_disturb,
+                      color: Theme.of(context).primaryColor.withOpacity(0.2),
+                      size: 40.0),
+                ),
+              );
+            }
+
+            return buildImageContainer(context, images[index]);
+          },
         ));
   }
 
