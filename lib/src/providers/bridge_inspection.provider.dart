@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:kyoryo/src/models/inspection.dart';
 import 'package:kyoryo/src/models/inspection_point_report.dart';
 import 'package:kyoryo/src/models/photo.dart';
 import 'package:kyoryo/src/providers/inspection_points.provider.dart';
@@ -12,28 +13,29 @@ part 'bridge_inspection.provider.g.dart';
 @riverpod
 class BridgeInspection extends _$BridgeInspection {
   @override
-  Map<int, InspectionPointReport> build(int bridgeId) {
-    return {};
+  Inspection? build(int bridgeId) {
+    return null;
   }
 
   void addInspectionPointReport(int pointId, InspectionPointReport report) {
-    final reports = {...state};
-    reports[pointId] = report;
-    state = reports;
+    if (state == null) throw Exception('Inspection not started');
+
+    state = state!.copyWith(reports: [...state!.reports, report]);
   }
 
-  void clearInspectionPointReport(int pointId) {
-    final reports = {...state};
-    reports.remove(pointId);
-    state = reports;
+  void startInspection() {
+    state =
+        Inspection(reports: [], timestamp: DateTime.now(), bridgeId: bridgeId);
   }
 
   void clearInspection() {
-    state = {};
+    state = null;
   }
 
   bool endInspection() {
-    int numberOfReports = state.length;
+    if (state == null) return true;
+
+    int numberOfReports = state!.reports.length;
     int numberOfPoints =
         ref.watch(inspectionPointsProvider(bridgeId)).value?.length ?? 0;
 
@@ -45,19 +47,28 @@ class BridgeInspection extends _$BridgeInspection {
     }
   }
 
-  Future<void> createReport(
-      int pointId, List<String> capturedPhotoPaths, Object? metadata) async {
-    List<Photo> uploadedPhotos = [];
+  Future<void> createReport(int pointId, List<String> capturedPhotoPaths,
+      Map<String, dynamic>? metadata) async {
+    if (state == null) throw Exception('Inspection not started');
 
-    for (var path in capturedPhotoPaths) {
-      final photo = await ref.read(photoServiceProvider).uploadPhoto(path);
-      uploadedPhotos.add(photo);
-    }
+    List<Future<Photo>> photoFutures = capturedPhotoPaths
+        .map((path) => ref.read(photoServiceProvider).uploadPhoto(path))
+        .toList();
+
+    final uploadedPhotos = await Future.wait(photoFutures);
+
+    // NOTE: This is a temporary workaround to group inspection results by timestamp
+    final metadataWithTimestamp = <String, dynamic>{
+      ...?metadata,
+      'timestamp': state!.timestamp.toIso8601String()
+    };
 
     final report = await ref
         .read(inspectionPointReportServiceProvider)
-        .createReport(pointId,
-            uploadedPhotos.map((photo) => photo.id!).toList(), metadata)
+        .createReport(
+            pointId,
+            uploadedPhotos.map((photo) => photo.id!).toList(),
+            metadataWithTimestamp)
         .then((report) => report.copyWith(photos: uploadedPhotos));
 
     addInspectionPointReport(pointId, report);
@@ -66,5 +77,5 @@ class BridgeInspection extends _$BridgeInspection {
 
 @riverpod
 int numberOfCreatedReports(NumberOfCreatedReportsRef ref, int bridgeId) {
-  return ref.watch(bridgeInspectionProvider(bridgeId)).length;
+  return ref.watch(bridgeInspectionProvider(bridgeId))?.reports.length ?? 0;
 }

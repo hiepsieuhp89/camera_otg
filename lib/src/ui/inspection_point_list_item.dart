@@ -20,8 +20,15 @@ class InpsectionPointListItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final createdReport =
-        ref.watch(bridgeInspectionProvider(point.bridgeId!))[point.id!];
+    final inspection = ref.watch(bridgeInspectionProvider(point.bridgeId!));
+    InspectionPointReport? createdReport;
+
+    try {
+      createdReport = inspection?.reports
+          .firstWhere((report) => report.inspectionPointId == point.id);
+    } catch (e) {
+      createdReport = null;
+    }
 
     return Card(
       child: Container(
