@@ -7,7 +7,7 @@ part of 'bridge_inspection.provider.dart';
 // **************************************************************************
 
 String _$numberOfCreatedReportsHash() =>
-    r'1c7d9300eaf246a58414031b8df13d89858708ce';
+    r'7e46f12be9e4e4157d53c046946d75ceed7c9352';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -157,13 +157,13 @@ class _NumberOfCreatedReportsProviderElement
   int get bridgeId => (origin as NumberOfCreatedReportsProvider).bridgeId;
 }
 
-String _$bridgeInspectionHash() => r'860041c230ac42cadc3420deba71ef1354781753';
+String _$bridgeInspectionHash() => r'b65d52cd206911be32b13d5cf905233b89c8a202';
 
 abstract class _$BridgeInspection
-    extends BuildlessAutoDisposeNotifier<Map<int, InspectionPointReport>> {
+    extends BuildlessAutoDisposeNotifier<Inspection?> {
   late final int bridgeId;
 
-  Map<int, InspectionPointReport> build(
+  Inspection? build(
     int bridgeId,
   );
 }
@@ -173,7 +173,7 @@ abstract class _$BridgeInspection
 const bridgeInspectionProvider = BridgeInspectionFamily();
 
 /// See also [BridgeInspection].
-class BridgeInspectionFamily extends Family<Map<int, InspectionPointReport>> {
+class BridgeInspectionFamily extends Family<Inspection?> {
   /// See also [BridgeInspection].
   const BridgeInspectionFamily();
 
@@ -211,8 +211,8 @@ class BridgeInspectionFamily extends Family<Map<int, InspectionPointReport>> {
 }
 
 /// See also [BridgeInspection].
-class BridgeInspectionProvider extends AutoDisposeNotifierProviderImpl<
-    BridgeInspection, Map<int, InspectionPointReport>> {
+class BridgeInspectionProvider
+    extends AutoDisposeNotifierProviderImpl<BridgeInspection, Inspection?> {
   /// See also [BridgeInspection].
   BridgeInspectionProvider(
     int bridgeId,
@@ -243,7 +243,7 @@ class BridgeInspectionProvider extends AutoDisposeNotifierProviderImpl<
   final int bridgeId;
 
   @override
-  Map<int, InspectionPointReport> runNotifierBuild(
+  Inspection? runNotifierBuild(
     covariant BridgeInspection notifier,
   ) {
     return notifier.build(
@@ -268,8 +268,8 @@ class BridgeInspectionProvider extends AutoDisposeNotifierProviderImpl<
   }
 
   @override
-  AutoDisposeNotifierProviderElement<BridgeInspection,
-      Map<int, InspectionPointReport>> createElement() {
+  AutoDisposeNotifierProviderElement<BridgeInspection, Inspection?>
+      createElement() {
     return _BridgeInspectionProviderElement(this);
   }
 
@@ -287,15 +287,14 @@ class BridgeInspectionProvider extends AutoDisposeNotifierProviderImpl<
   }
 }
 
-mixin BridgeInspectionRef
-    on AutoDisposeNotifierProviderRef<Map<int, InspectionPointReport>> {
+mixin BridgeInspectionRef on AutoDisposeNotifierProviderRef<Inspection?> {
   /// The parameter `bridgeId` of this provider.
   int get bridgeId;
 }
 
 class _BridgeInspectionProviderElement
-    extends AutoDisposeNotifierProviderElement<BridgeInspection,
-        Map<int, InspectionPointReport>> with BridgeInspectionRef {
+    extends AutoDisposeNotifierProviderElement<BridgeInspection, Inspection?>
+    with BridgeInspectionRef {
   _BridgeInspectionProviderElement(super.provider);
 
   @override

@@ -46,6 +46,10 @@ class _BridgeInspectionScreenState
     setState(() {
       isInspecting = true;
     });
+    ref
+        .watch(bridgeInspectionProvider(ref.watch(currentBridgeProvider)!.id)
+            .notifier)
+        .startInspection();
   }
 
   void _stopInspecting() {
