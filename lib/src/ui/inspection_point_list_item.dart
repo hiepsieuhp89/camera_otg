@@ -109,10 +109,12 @@ class InpsectionPointListItem extends ConsumerWidget {
   }
 
   Widget _imageGroup(BuildContext context, InspectionPointReport? report) {
-    final images = [
-      point.diagramUrl!,
-      point.photoUrl!,
-    ];
+    final images = point.type == InspectionPointType.damage
+        ? [
+            point.diagramUrl!,
+            point.photoUrl!,
+          ]
+        : [point.photoUrl!];
 
     if (isInspecting && report == null) {
       images.add('');
@@ -126,7 +128,9 @@ class InpsectionPointListItem extends ConsumerWidget {
           scrollDirection: Axis.horizontal,
           itemCount: images.length,
           separatorBuilder: (context, index) {
-            if (index == 1) {
+            if ((point.type == InspectionPointType.damage && index == 1) ||
+                (point.type == InspectionPointType.presentCondition &&
+                    index == 0)) {
               return const SizedBox(
                 width: 25,
                 child: Center(
