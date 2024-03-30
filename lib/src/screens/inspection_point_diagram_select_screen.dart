@@ -62,12 +62,85 @@ class InpsectionPointDiagramSelectScreenState
               child: const Icon(Icons.check),
             ),
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.diagramSelection),
-      ),
+          title: Text(AppLocalizations.of(context)!.diagramSelection),
+          actions: MediaQuery.of(context).orientation == Orientation.landscape
+              ? [
+                  ActionChip(
+                      avatar: const Icon(Icons.add_a_photo_outlined),
+                      label: Text(AppLocalizations.of(context)!.takePhoto),
+                      onPressed: _takePhoto),
+                  const SizedBox(width: 16),
+                  ActionChip(
+                    avatar: const Icon(Icons.add_photo_alternate_outlined),
+                    label: Text(AppLocalizations.of(context)!.selectPhoto),
+                    onPressed: _selectPhotoFromGallery,
+                  ),
+                  const SizedBox(width: 16),
+                ]
+              : []),
       body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(children: [
-          Row(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: OrientationBuilder(
+            builder: (context, orientation) {
+              return orientation == Orientation.portrait
+                  ? Column(children: [
+                      Expanded(
+                          child: buildNewDiagramPhotoSelection(
+                              context, orientation)),
+                      const SizedBox(height: 16),
+                      Expanded(
+                        child: buildCurrentDiagramPhotoSelection(context),
+                      )
+                    ])
+                  : Row(
+                      children: [
+                        Expanded(
+                            child: buildNewDiagramPhotoSelection(
+                                context, orientation)),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: buildCurrentDiagramPhotoSelection(context),
+                        ),
+                      ],
+                    );
+            },
+          )),
+    );
+  }
+
+  Column buildCurrentDiagramPhotoSelection(BuildContext context) {
+    return Column(
+      children: [
+        Row(children: [
+          Text(
+            AppLocalizations.of(context)!.currentDiagramPhotos,
+            style: Theme.of(context).textTheme.labelLarge,
+          )
+        ]),
+        Expanded(
+          child: Center(
+            child: Text(AppLocalizations.of(context)!.noPhotosYet,
+                style: Theme.of(context).textTheme.titleSmall),
+          ),
+        )
+      ],
+    );
+  }
+
+  Column buildNewDiagramPhotoSelection(
+      BuildContext context, Orientation orientation) {
+    return Column(
+      children: [
+        Row(children: [
+          Text(
+            AppLocalizations.of(context)!.newDiagramPhotos,
+            style: Theme.of(context).textTheme.labelLarge,
+          )
+        ]),
+        const SizedBox(height: 8),
+        Visibility(
+          visible: orientation == Orientation.portrait,
+          child: Row(
             children: [
               ActionChip(
                   avatar: const Icon(Icons.add_a_photo_outlined),
@@ -81,93 +154,72 @@ class InpsectionPointDiagramSelectScreenState
               )
             ],
           ),
-          const SizedBox(height: 16),
-          Row(children: [
-            Text(
-              AppLocalizations.of(context)!.newDiagramPhotos,
-              style: Theme.of(context).textTheme.labelLarge,
-            )
-          ]),
-          const SizedBox(height: 8),
-          Expanded(
-              child: _newPhotoPaths.isEmpty
-                  ? Center(
-                      child: Text(AppLocalizations.of(context)!.noPhotosYet,
-                          style: Theme.of(context).textTheme.titleSmall),
-                    )
-                  : Flexible(
-                      child: GridView.builder(
-                        itemCount: _newPhotoPaths.length,
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 8,
-                          mainAxisSpacing: 8,
-                        ),
-                        itemBuilder: (context, index) {
-                          String photoPath = _newPhotoPaths[index];
-
-                          return GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                if (_selectedDiagramPath == photoPath) {
-                                  _selectedDiagramPath = null;
-                                } else {
-                                  _selectedDiagramPath = photoPath;
-                                }
-                              });
-                            },
-                            child: Stack(
-                              children: [
-                                Container(
-                                    height: 150,
-                                    color: Colors.grey[200],
-                                    padding: _selectedDiagramPath == photoPath
-                                        ? const EdgeInsets.all(24)
-                                        : null,
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        borderRadius:
-                                            _selectedDiagramPath == photoPath
-                                                ? BorderRadius.circular(8)
-                                                : null,
-                                        image: DecorationImage(
-                                          image: FileImage(File(photoPath)),
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                    )),
-                                _selectedDiagramPath == photoPath
-                                    ? Positioned(
-                                        top: 4,
-                                        right: 4,
-                                        child: Icon(
-                                          Icons.check_circle,
-                                          color: Theme.of(context).primaryColor,
-                                        ),
-                                      )
-                                    : const SizedBox.shrink()
-                              ],
-                            ),
-                          );
-                        },
+        ),
+        Expanded(
+            child: _newPhotoPaths.isEmpty
+                ? Center(
+                    child: Text(AppLocalizations.of(context)!.noPhotosYet,
+                        style: Theme.of(context).textTheme.titleSmall),
+                  )
+                : Flexible(
+                    child: GridView.builder(
+                      itemCount: _newPhotoPaths.length,
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 8,
+                        mainAxisSpacing: 8,
                       ),
-                    )),
-          const SizedBox(height: 16),
-          Row(children: [
-            Text(
-              AppLocalizations.of(context)!.currentDiagramPhotos,
-              style: Theme.of(context).textTheme.labelLarge,
-            )
-          ]),
-          Expanded(
-            child: Center(
-              child: Text(AppLocalizations.of(context)!.noPhotosYet,
-                  style: Theme.of(context).textTheme.titleSmall),
-            ),
-          )
-        ]),
-      ),
+                      itemBuilder: (context, index) {
+                        String photoPath = _newPhotoPaths[index];
+
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              if (_selectedDiagramPath == photoPath) {
+                                _selectedDiagramPath = null;
+                              } else {
+                                _selectedDiagramPath = photoPath;
+                              }
+                            });
+                          },
+                          child: Stack(
+                            children: [
+                              Container(
+                                  height: 150,
+                                  color: Colors.grey[200],
+                                  padding: _selectedDiagramPath == photoPath
+                                      ? const EdgeInsets.all(24)
+                                      : null,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius:
+                                          _selectedDiagramPath == photoPath
+                                              ? BorderRadius.circular(8)
+                                              : null,
+                                      image: DecorationImage(
+                                        image: FileImage(File(photoPath)),
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  )),
+                              _selectedDiagramPath == photoPath
+                                  ? Positioned(
+                                      top: 4,
+                                      right: 4,
+                                      child: Icon(
+                                        Icons.check_circle,
+                                        color: Theme.of(context).primaryColor,
+                                      ),
+                                    )
+                                  : const SizedBox.shrink()
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ))
+      ],
     );
   }
 }
