@@ -163,15 +163,18 @@ class InpsectionPointListItem extends ConsumerWidget {
               );
             }
 
-            return buildImageContainer(context, images[index]);
+            return buildImageContainer(context, images, images[index]);
           },
         ));
   }
 
-  GestureDetector buildImageContainer(BuildContext context, String imageUrl) {
+  GestureDetector buildImageContainer(
+      BuildContext context, List<String> imageUrls, String imageUrl) {
     return GestureDetector(
       onTap: () {
-        viewImage(context, imageUrl);
+        final viewableImages = imageUrls.where((url) => url != '').toList();
+
+        viewImages(context, viewableImages, viewableImages.indexOf(imageUrl));
       },
       child: AspectRatio(
         aspectRatio: 1.0,
