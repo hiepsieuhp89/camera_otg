@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:kyoryo/src/ui/image_view_overlay.dart';
 import 'package:image/image.dart' as img;
+import 'package:kyoryo/src/ui/images_view_overlay.dart';
 
 Future<String> compressAndRotateImage(
     XFile capturedImage, Orientation? currentOrientation) async {
@@ -33,4 +34,10 @@ Future<String> compressAndRotateImage(
 
 void viewImage(BuildContext context, String imageUrl) {
   Navigator.push(context, ImageViewOverlay(imageUrl));
+}
+
+void viewImages(
+    BuildContext context, List<String> imageUrls, int initialImage) {
+  Navigator.push(
+      context, ImagesViewOverlay(imageUrls, initialPage: initialImage));
 }
