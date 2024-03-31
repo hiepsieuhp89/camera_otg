@@ -1,7 +1,7 @@
 {
-  "appTitle": "Kyoryo",
+  "appTitle": "Smart Buddy",
   "@appTitle": {
-    "description": "Kyoryo"
+    "description": "Smart Buddy"
   },
   "pleaseSelectAreaAndContractor": "点検エリアを選択ください",
   "showBridgeList": "橋リストを表示",
