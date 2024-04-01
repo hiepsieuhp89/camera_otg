@@ -38,6 +38,7 @@ dev_dependencies:
   riverpod_lint: ^2.3.9
   freezed: ^2.4.7
   json_serializable: ^6.7.1
+  flutter_launcher_icons: ^0.13.1
 
 flutter:
   uses-material-design: true
@@ -49,3 +50,9 @@ flutter:
     # Add assets from the images directory to the application.
     - assets/images/
     - .env
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  remove_alpha_ios: true
+  image_path: "assets/images/tsunagu.png"
