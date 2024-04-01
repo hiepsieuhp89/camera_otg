@@ -49,7 +49,6 @@ jobs:
       
           - name: Build Android App Bundle
             run: |
-              flutter pub run flutter_launcher_icons:main
               flutter build apk --release
               flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64,android-x64
       
