@@ -1,7 +1,9 @@
 import 'dart:io';
 
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kyoryo/src/models/damage_type.dart';
@@ -37,6 +39,8 @@ class BridgeInspectionEvaluationScreenState
   String? _selectedCategory;
   String? _selectedHealthLevel;
   DamageType? _selectedDamageType;
+  String? _preferredPhotoPath;
+  String? _currentPhotoPath;
   late TextEditingController _textEditingController;
 
   Future<void> submitInspection() async {
@@ -49,6 +53,8 @@ class BridgeInspectionEvaluationScreenState
       'damage_type': _selectedDamageType?.nameJp ?? '',
       'health_level': _selectedHealthLevel ?? '',
       'remark': _textEditingController.text,
+      'preferred_photo_index':
+          widget.arguments.capturedPhotos.indexOf(_preferredPhotoPath ?? ''),
     }).then((_) {
       Navigator.popUntil(
           context, ModalRoute.withName(BridgeInspectionScreen.routeName));
@@ -62,6 +68,7 @@ class BridgeInspectionEvaluationScreenState
   @override
   void initState() {
     super.initState();
+    _currentPhotoPath = widget.arguments.capturedPhotos.first;
     _textEditingController = TextEditingController();
   }
 
@@ -99,7 +106,7 @@ class BridgeInspectionEvaluationScreenState
         flex: 1,
         child: Padding(
           padding: const EdgeInsets.all(12.0),
-          child: ListView(
+          child: Column(
             children: [
               Row(
                 children: [
@@ -110,81 +117,90 @@ class BridgeInspectionEvaluationScreenState
                 ],
               ),
               const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                      child: DropdownMenu<String>(
-                    label: Text(AppLocalizations.of(context)!.damageType),
-                    expandedInsets: const EdgeInsets.all(0),
-                    onSelected: (category) {
-                      setState(() {
-                        _selectedCategory = category;
-                        _selectedDamageType = null;
-                      });
-                    },
-                    dropdownMenuEntries: damageTypes.hasValue
-                        ? damageTypes.value!
-                            .map((type) => type.category)
-                            .toSet()
-                            .map((category) {
-                            return DropdownMenuEntry(
-                              value: category,
-                              label: category,
-                            );
-                          }).toList()
-                        : const [],
-                  )),
-                  const SizedBox(width: 8),
-                  Expanded(
-                      child: DropdownMenu<DamageType>(
-                    label: Text(AppLocalizations.of(context)!.damageDetails),
-                    enabled: _selectedCategory != null,
-                    expandedInsets: const EdgeInsets.all(0),
-                    onSelected: (damageType) {
-                      setState(() {
-                        _selectedDamageType = damageType;
-                      });
-                    },
-                    dropdownMenuEntries: damageTypes.hasValue
-                        ? damageTypes.value!
-                            .where((type) => type.category == _selectedCategory)
-                            .map((type) {
-                            return DropdownMenuEntry(
-                              value: type,
-                              label: type.nameJp,
-                            );
-                          }).toList()
-                        : const [],
-                  ))
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  DropdownMenu<String>(
-                    label: Text(AppLocalizations.of(context)!.damage),
-                    onSelected: (healthLevel) {
-                      setState(() {
-                        _selectedHealthLevel = healthLevel;
-                      });
-                    },
-                    dropdownMenuEntries: const [
-                      DropdownMenuEntry(value: 'A', label: 'A'),
-                      DropdownMenuEntry(value: 'B', label: 'B'),
-                      DropdownMenuEntry(value: 'C', label: 'C'),
-                      DropdownMenuEntry(value: 'D', label: 'D'),
-                      DropdownMenuEntry(value: 'E', label: 'E'),
-                    ],
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                      child: TextField(
-                          controller: _textEditingController,
-                          decoration: InputDecoration(
-                            label: Text(AppLocalizations.of(context)!.remark),
-                            border: const OutlineInputBorder(),
-                          )))
-                ],
+              Expanded(
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                            child: DropdownMenu<String>(
+                          label: Text(AppLocalizations.of(context)!.damageType),
+                          expandedInsets: const EdgeInsets.all(0),
+                          onSelected: (category) {
+                            setState(() {
+                              _selectedCategory = category;
+                              _selectedDamageType = null;
+                            });
+                          },
+                          dropdownMenuEntries: damageTypes.hasValue
+                              ? damageTypes.value!
+                                  .map((type) => type.category)
+                                  .toSet()
+                                  .map((category) {
+                                  return DropdownMenuEntry(
+                                    value: category,
+                                    label: category,
+                                  );
+                                }).toList()
+                              : const [],
+                        )),
+                        const SizedBox(width: 8),
+                        Expanded(
+                            child: DropdownMenu<DamageType>(
+                          label:
+                              Text(AppLocalizations.of(context)!.damageDetails),
+                          enabled: _selectedCategory != null,
+                          expandedInsets: const EdgeInsets.all(0),
+                          onSelected: (damageType) {
+                            setState(() {
+                              _selectedDamageType = damageType;
+                            });
+                          },
+                          dropdownMenuEntries: damageTypes.hasValue
+                              ? damageTypes.value!
+                                  .where((type) =>
+                                      type.category == _selectedCategory)
+                                  .map((type) {
+                                  return DropdownMenuEntry(
+                                    value: type,
+                                    label: type.nameJp,
+                                  );
+                                }).toList()
+                              : const [],
+                        ))
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        DropdownMenu<String>(
+                          label: Text(AppLocalizations.of(context)!.damage),
+                          onSelected: (healthLevel) {
+                            setState(() {
+                              _selectedHealthLevel = healthLevel;
+                            });
+                          },
+                          dropdownMenuEntries: const [
+                            DropdownMenuEntry(value: 'A', label: 'A'),
+                            DropdownMenuEntry(value: 'B', label: 'B'),
+                            DropdownMenuEntry(value: 'C', label: 'C'),
+                            DropdownMenuEntry(value: 'D', label: 'D'),
+                            DropdownMenuEntry(value: 'E', label: 'E'),
+                          ],
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                            child: TextField(
+                                controller: _textEditingController,
+                                decoration: InputDecoration(
+                                  label: Text(
+                                      AppLocalizations.of(context)!.remark),
+                                  border: const OutlineInputBorder(),
+                                )))
+                      ],
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 16),
               FutureBuilder(
@@ -231,43 +247,65 @@ class BridgeInspectionEvaluationScreenState
       flex: 1,
       child: Padding(
         padding: const EdgeInsets.all(12.0),
-        child: Stack(children: [
-          Column(children: [
-            Row(children: [
-              Text(
-                AppLocalizations.of(context)!.currentInspectionPhoto,
-                style: Theme.of(context).textTheme.labelLarge,
-              )
-            ]),
-            const SizedBox(height: 8),
-            Expanded(
-                child: CarouselSlider(
-              options: CarouselOptions(
-                viewportFraction: 0.6,
-                initialPage: 0,
-                enableInfiniteScroll: false,
-                reverse: false,
-                enlargeCenterPage: true,
-                onPageChanged: (index, reason) {},
-                scrollDirection: Axis.horizontal,
-              ),
-              items: widget.arguments.capturedPhotos.map((photo) {
-                return Builder(
-                  builder: (BuildContext context) {
-                    return Image(
-                      image: FileImage(File(photo)),
-                      fit: BoxFit.cover,
-                    );
-                  },
-                );
-              }).toList(),
-            )),
+        child: Column(children: [
+          Row(children: [
+            Text(
+              AppLocalizations.of(context)!.currentInspectionPhoto,
+              style: Theme.of(context).textTheme.labelLarge,
+            )
           ]),
-          const Positioned(
-            right: 0,
-            bottom: 0,
-            child: Icon(Icons.check, color: Colors.green, size: 90),
-          ),
+          const SizedBox(height: 8),
+          Expanded(
+              child: CarouselSlider(
+            options: CarouselOptions(
+              viewportFraction: 0.6,
+              initialPage: 0,
+              enableInfiniteScroll: false,
+              reverse: false,
+              enlargeCenterPage: true,
+              onPageChanged: (index, reason) {
+                setState(() {
+                  _currentPhotoPath = widget.arguments.capturedPhotos[index];
+                });
+              },
+              scrollDirection: Axis.horizontal,
+            ),
+            items: widget.arguments.capturedPhotos.mapIndexed((index, photo) {
+              return Builder(
+                builder: (BuildContext context) {
+                  return Stack(
+                    children: [
+                      Positioned.fill(
+                          child: Image(
+                        image: FileImage(File(photo)),
+                        fit: BoxFit.cover,
+                      )),
+                      Positioned(
+                          top: 2,
+                          right: 2,
+                          child: Icon(
+                            Icons.check_circle,
+                            color: widget.arguments.capturedPhotos[index] ==
+                                    _preferredPhotoPath
+                                ? Theme.of(context).primaryColor
+                                : Theme.of(context).disabledColor,
+                          )),
+                    ],
+                  );
+                },
+              );
+            }).toList(),
+          )),
+          TextButton.icon(
+              icon: const Icon(Icons.check_circle),
+              onPressed: _currentPhotoPath == _preferredPhotoPath
+                  ? null
+                  : () {
+                      setState(() {
+                        _preferredPhotoPath = _currentPhotoPath;
+                      });
+                    },
+              label: Text(AppLocalizations.of(context)!.setPreferredPhoto)),
         ]),
       ),
     );

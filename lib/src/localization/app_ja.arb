@@ -65,5 +65,6 @@
   "createThenEvalutatePoints": "点検ポイントを作成してください",
   "createInspectionPoints": "点検ポイント作成",
   "inspectionPoint": "点検ポイント",
-  "pleaseFinishAllInspectionPoints": "全ての点検ポイントを完了してください"
+  "pleaseFinishAllInspectionPoints": "全ての点検ポイントを完了してください",
+  "setPreferredPhoto": "優先写真設定"
 }
