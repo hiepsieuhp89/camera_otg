@@ -30,6 +30,11 @@ class InpsectionPointListItem extends ConsumerWidget {
       createdReport = null;
     }
 
+    String photoRefNumber = point.photoRefNumber != null
+        ? '${AppLocalizations.of(context)!.photoRefNumber(point.photoRefNumber.toString())}：'
+        : '';
+    String labelText = '$photoRefNumber${point.name ?? ''}';
+
     return Card(
       child: Container(
         constraints: const BoxConstraints(
@@ -55,8 +60,9 @@ class InpsectionPointListItem extends ConsumerWidget {
                         color: Theme.of(context).primaryColor)
                     : Icon(Icons.image_search_outlined,
                         color: Theme.of(context).primaryColor),
+                const SizedBox(width: 8.0),
                 Text(
-                  point.name!,
+                  labelText,
                   style: Theme.of(context).textTheme.titleMedium,
                   textAlign: TextAlign.left,
                   overflow: TextOverflow.ellipsis,

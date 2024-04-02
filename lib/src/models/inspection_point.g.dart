@@ -18,6 +18,7 @@ _$InpsectionPointImpl _$$InpsectionPointImplFromJson(
       diagramId: json['diagram_id'] as int?,
       diagramMarkingX: json['diagram_marking_x'] as int?,
       diagramMarkingY: json['diagram_marking_y'] as int?,
+      photoRefNumber: json['photo_ref_number'] as int?,
       lastInspectionDate: json['last_inspection_date'] == null
           ? null
           : DateTime.parse(json['last_inspection_date'] as String),
@@ -35,6 +36,7 @@ Map<String, dynamic> _$$InpsectionPointImplToJson(
       'diagram_id': instance.diagramId,
       'diagram_marking_x': instance.diagramMarkingX,
       'diagram_marking_y': instance.diagramMarkingY,
+      'photo_ref_number': instance.photoRefNumber,
       'last_inspection_date': instance.lastInspectionDate?.toIso8601String(),
     };
 
