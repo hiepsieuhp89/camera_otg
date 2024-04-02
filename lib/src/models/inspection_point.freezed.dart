@@ -35,6 +35,8 @@ mixin _$InspectionPoint {
   int? get diagramMarkingX => throw _privateConstructorUsedError;
   @JsonKey(name: 'diagram_marking_y')
   int? get diagramMarkingY => throw _privateConstructorUsedError;
+  @JsonKey(name: 'photo_ref_number')
+  int? get photoRefNumber => throw _privateConstructorUsedError;
   @JsonKey(name: 'last_inspection_date')
   DateTime? get lastInspectionDate => throw _privateConstructorUsedError;
 
@@ -60,6 +62,7 @@ abstract class $InspectionPointCopyWith<$Res> {
       @JsonKey(name: 'diagram_id') int? diagramId,
       @JsonKey(name: 'diagram_marking_x') int? diagramMarkingX,
       @JsonKey(name: 'diagram_marking_y') int? diagramMarkingY,
+      @JsonKey(name: 'photo_ref_number') int? photoRefNumber,
       @JsonKey(name: 'last_inspection_date') DateTime? lastInspectionDate});
 }
 
@@ -85,6 +88,7 @@ class _$InspectionPointCopyWithImpl<$Res, $Val extends InspectionPoint>
     Object? diagramId = freezed,
     Object? diagramMarkingX = freezed,
     Object? diagramMarkingY = freezed,
+    Object? photoRefNumber = freezed,
     Object? lastInspectionDate = freezed,
   }) {
     return _then(_value.copyWith(
@@ -124,6 +128,10 @@ class _$InspectionPointCopyWithImpl<$Res, $Val extends InspectionPoint>
           ? _value.diagramMarkingY
           : diagramMarkingY // ignore: cast_nullable_to_non_nullable
               as int?,
+      photoRefNumber: freezed == photoRefNumber
+          ? _value.photoRefNumber
+          : photoRefNumber // ignore: cast_nullable_to_non_nullable
+              as int?,
       lastInspectionDate: freezed == lastInspectionDate
           ? _value.lastInspectionDate
           : lastInspectionDate // ignore: cast_nullable_to_non_nullable
@@ -150,6 +158,7 @@ abstract class _$$InpsectionPointImplCopyWith<$Res>
       @JsonKey(name: 'diagram_id') int? diagramId,
       @JsonKey(name: 'diagram_marking_x') int? diagramMarkingX,
       @JsonKey(name: 'diagram_marking_y') int? diagramMarkingY,
+      @JsonKey(name: 'photo_ref_number') int? photoRefNumber,
       @JsonKey(name: 'last_inspection_date') DateTime? lastInspectionDate});
 }
 
@@ -173,6 +182,7 @@ class __$$InpsectionPointImplCopyWithImpl<$Res>
     Object? diagramId = freezed,
     Object? diagramMarkingX = freezed,
     Object? diagramMarkingY = freezed,
+    Object? photoRefNumber = freezed,
     Object? lastInspectionDate = freezed,
   }) {
     return _then(_$InpsectionPointImpl(
@@ -212,6 +222,10 @@ class __$$InpsectionPointImplCopyWithImpl<$Res>
           ? _value.diagramMarkingY
           : diagramMarkingY // ignore: cast_nullable_to_non_nullable
               as int?,
+      photoRefNumber: freezed == photoRefNumber
+          ? _value.photoRefNumber
+          : photoRefNumber // ignore: cast_nullable_to_non_nullable
+              as int?,
       lastInspectionDate: freezed == lastInspectionDate
           ? _value.lastInspectionDate
           : lastInspectionDate // ignore: cast_nullable_to_non_nullable
@@ -233,6 +247,7 @@ class _$InpsectionPointImpl implements _InpsectionPoint {
       @JsonKey(name: 'diagram_id') this.diagramId,
       @JsonKey(name: 'diagram_marking_x') this.diagramMarkingX,
       @JsonKey(name: 'diagram_marking_y') this.diagramMarkingY,
+      @JsonKey(name: 'photo_ref_number') this.photoRefNumber,
       @JsonKey(name: 'last_inspection_date') this.lastInspectionDate});
 
   factory _$InpsectionPointImpl.fromJson(Map<String, dynamic> json) =>
@@ -263,12 +278,15 @@ class _$InpsectionPointImpl implements _InpsectionPoint {
   @JsonKey(name: 'diagram_marking_y')
   final int? diagramMarkingY;
   @override
+  @JsonKey(name: 'photo_ref_number')
+  final int? photoRefNumber;
+  @override
   @JsonKey(name: 'last_inspection_date')
   final DateTime? lastInspectionDate;
 
   @override
   String toString() {
-    return 'InspectionPoint(id: $id, type: $type, name: $name, bridgeId: $bridgeId, photoUrl: $photoUrl, diagramUrl: $diagramUrl, diagramId: $diagramId, diagramMarkingX: $diagramMarkingX, diagramMarkingY: $diagramMarkingY, lastInspectionDate: $lastInspectionDate)';
+    return 'InspectionPoint(id: $id, type: $type, name: $name, bridgeId: $bridgeId, photoUrl: $photoUrl, diagramUrl: $diagramUrl, diagramId: $diagramId, diagramMarkingX: $diagramMarkingX, diagramMarkingY: $diagramMarkingY, photoRefNumber: $photoRefNumber, lastInspectionDate: $lastInspectionDate)';
   }
 
   @override
@@ -291,6 +309,8 @@ class _$InpsectionPointImpl implements _InpsectionPoint {
                 other.diagramMarkingX == diagramMarkingX) &&
             (identical(other.diagramMarkingY, diagramMarkingY) ||
                 other.diagramMarkingY == diagramMarkingY) &&
+            (identical(other.photoRefNumber, photoRefNumber) ||
+                other.photoRefNumber == photoRefNumber) &&
             (identical(other.lastInspectionDate, lastInspectionDate) ||
                 other.lastInspectionDate == lastInspectionDate));
   }
@@ -308,6 +328,7 @@ class _$InpsectionPointImpl implements _InpsectionPoint {
       diagramId,
       diagramMarkingX,
       diagramMarkingY,
+      photoRefNumber,
       lastInspectionDate);
 
   @JsonKey(ignore: true)
@@ -336,6 +357,7 @@ abstract class _InpsectionPoint implements InspectionPoint {
       @JsonKey(name: 'diagram_id') final int? diagramId,
       @JsonKey(name: 'diagram_marking_x') final int? diagramMarkingX,
       @JsonKey(name: 'diagram_marking_y') final int? diagramMarkingY,
+      @JsonKey(name: 'photo_ref_number') final int? photoRefNumber,
       @JsonKey(name: 'last_inspection_date')
       final DateTime? lastInspectionDate}) = _$InpsectionPointImpl;
 
@@ -366,6 +388,9 @@ abstract class _InpsectionPoint implements InspectionPoint {
   @override
   @JsonKey(name: 'diagram_marking_y')
   int? get diagramMarkingY;
+  @override
+  @JsonKey(name: 'photo_ref_number')
+  int? get photoRefNumber;
   @override
   @JsonKey(name: 'last_inspection_date')
   DateTime? get lastInspectionDate;
