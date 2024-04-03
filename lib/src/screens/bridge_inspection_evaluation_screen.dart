@@ -51,7 +51,7 @@ class BridgeInspectionEvaluationScreenState
             widget.arguments.point.id!, widget.arguments.capturedPhotos, {
       'damage_category': _selectedCategory ?? '',
       'damage_type': _selectedDamageType?.nameJp ?? '',
-      'health_level': _selectedHealthLevel ?? '',
+      'damage_level': _selectedHealthLevel ?? '',
       'remark': _textEditingController.text,
       'preferred_photo_index':
           widget.arguments.capturedPhotos.indexOf(_preferredPhotoPath ?? ''),
