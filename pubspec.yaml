@@ -9,6 +9,7 @@ environment:
   sdk: '>=3.2.5 <4.0.0'
 
 dependencies:
+  cached_network_image: ^3.3.1
   camera: ^0.10.5+9
   carousel_slider: ^4.2.1
   collection: ^1.18.0

@@ -1,17 +1,16 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kyoryo/src/models/diagram.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/providers/current_bridge.provider.dart';
 import 'package:kyoryo/src/providers/inspection_points.provider.dart';
 import 'package:kyoryo/src/screens/take_picture_screen.dart';
 
 class InspectionPointDamageMarkScreenArguments {
-  final String diagramPath;
+  final Diagram diagram;
 
-  InspectionPointDamageMarkScreenArguments({required this.diagramPath});
+  InspectionPointDamageMarkScreenArguments({required this.diagram});
 }
 
 class InspectionPointDamageMarkScreen extends ConsumerStatefulWidget {
@@ -45,8 +44,8 @@ class InspectionPointDamageMarkScreenState
   @override
   Widget build(BuildContext context) {
     final currentBridge = ref.watch(currentBridgeProvider);
-    final imageWidget =
-        Image.file(File(widget.arguments.diagramPath), key: _imageKey);
+    final imageWidget = Image.network(widget.arguments.diagram.photo!.photoLink,
+        key: _imageKey);
 
     imageWidget.image
         .resolve(const ImageConfiguration())
@@ -69,14 +68,13 @@ class InspectionPointDamageMarkScreenState
               .round();
 
       inspectionPointsNotiffier
-          .createInspectionPoint(
-              InspectionPoint(
-                  name: _inspectionPointName,
-                  type: InspectionPointType.damage,
-                  bridgeId: currentBridge.id,
-                  diagramMarkingX: markCoordinateX,
-                  diagramMarkingY: markCoordinateY),
-              widget.arguments.diagramPath)
+          .createInspectionPoint(InspectionPoint(
+              name: _inspectionPointName,
+              type: InspectionPointType.damage,
+              bridgeId: currentBridge.id,
+              diagramMarkingX: markCoordinateX,
+              diagramMarkingY: markCoordinateY,
+              diagramId: widget.arguments.diagram.id))
           .then(
         (value) {
           Navigator.pushNamed(context, TakePictureScreen.routeName,

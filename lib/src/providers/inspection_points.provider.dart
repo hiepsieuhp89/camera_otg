@@ -1,6 +1,5 @@
 import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/services/bridge.service.dart';
-import 'package:kyoryo/src/services/photo.service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'inspection_points.provider.g.dart';
@@ -12,14 +11,9 @@ class InspectionPoints extends _$InspectionPoints {
     return ref.watch(bridgeServiceProvider).fetchInspectionPoints(bridgeId);
   }
 
-  Future<InspectionPoint> createInspectionPoint(
-      InspectionPoint point, String diagramPath) async {
-    final diagramPhoto =
-        await ref.watch(photoServiceProvider).uploadPhoto(diagramPath);
-
-    final inspectionPoint = await ref
-        .watch(bridgeServiceProvider)
-        .createInspectionPoint(point.copyWith(diagramId: diagramPhoto.id));
+  Future<InspectionPoint> createInspectionPoint(InspectionPoint point) async {
+    final inspectionPoint =
+        await ref.watch(bridgeServiceProvider).createInspectionPoint(point);
 
     final previousState = await future;
 

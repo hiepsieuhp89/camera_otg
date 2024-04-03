@@ -116,8 +116,8 @@ class _TakePictureScreenState extends State<TakePictureScreen>
     processingQueue = processingQueue.skip(5).toList();
 
     var futures = batch.map((image) async {
-      String imagePath =
-          await compressAndRotateImage(image, currentOrientation);
+      String imagePath = await compressAndRotateImage(image,
+          currentOrientation: currentOrientation);
       capturedPhotos.add(imagePath);
     }).toList();
 

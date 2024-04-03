@@ -7,8 +7,8 @@ import 'package:kyoryo/src/ui/image_view_overlay.dart';
 import 'package:image/image.dart' as img;
 import 'package:kyoryo/src/ui/images_view_overlay.dart';
 
-Future<String> compressAndRotateImage(
-    XFile capturedImage, Orientation? currentOrientation) async {
+Future<String> compressAndRotateImage(XFile capturedImage,
+    {Orientation? currentOrientation, int quality = 85}) async {
   File imageFile = File(capturedImage.path);
   Uint8List imageBytes = await imageFile.readAsBytes();
   img.Image? originalImage = img.decodeImage(imageBytes);
@@ -24,7 +24,8 @@ Future<String> compressAndRotateImage(
         break;
     }
 
-    Uint8List compressedImageBytes = img.encodeJpg(rotatedImage, quality: 85);
+    Uint8List compressedImageBytes =
+        img.encodeJpg(rotatedImage, quality: quality);
 
     await imageFile.writeAsBytes(compressedImageBytes);
   }
