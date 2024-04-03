@@ -163,7 +163,7 @@ class _FilteredInspectionPointsProviderElement
   int get bridgeId => (origin as FilteredInspectionPointsProvider).bridgeId;
 }
 
-String _$inspectionPointsHash() => r'dbea9337358eed96aac6b5af48dc5b8c27befe78';
+String _$inspectionPointsHash() => r'a60fcebf4aa1ce66a35b170d89bb8b70981a4ccd';
 
 abstract class _$InspectionPoints
     extends BuildlessAutoDisposeAsyncNotifier<List<InspectionPoint>> {
