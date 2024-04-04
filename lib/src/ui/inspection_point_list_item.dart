@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -62,11 +63,13 @@ class InpsectionPointListItem extends ConsumerWidget {
                     : Icon(Icons.image_search_outlined,
                         color: Theme.of(context).primaryColor),
                 const SizedBox(width: 8.0),
-                Text(
-                  labelText,
-                  style: Theme.of(context).textTheme.titleMedium,
-                  textAlign: TextAlign.left,
-                  overflow: TextOverflow.ellipsis,
+                Expanded(
+                  child: Text(
+                    labelText,
+                    style: Theme.of(context).textTheme.titleMedium,
+                    textAlign: TextAlign.left,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),
