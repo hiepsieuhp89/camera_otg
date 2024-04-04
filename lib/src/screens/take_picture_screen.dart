@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
+import 'package:kyoryo/src/models/marking.dart';
 import 'package:kyoryo/src/screens/bridge_inspection_evaluation_screen.dart';
 import 'package:kyoryo/src/screens/preview_pictures_screen.dart';
 import 'package:kyoryo/src/ui/collapsible_panel.dart';
@@ -268,7 +269,15 @@ class _TakePictureScreenState extends State<TakePictureScreen>
                     }
 
                     if (index == 1) {
-                      viewImage(context, widget.inspectionPoint.diagramUrl!);
+                      viewImage(context,
+                          imageUrl: widget.inspectionPoint.diagramUrl!,
+                          marking: widget.inspectionPoint.diagramMarkingX !=
+                                      null &&
+                                  widget.inspectionPoint.diagramMarkingY != null
+                              ? Marking(
+                                  x: widget.inspectionPoint.diagramMarkingX!,
+                                  y: widget.inspectionPoint.diagramMarkingY!)
+                              : null);
                     }
                   },
                   destinations: [
@@ -321,7 +330,8 @@ class _TakePictureScreenState extends State<TakePictureScreen>
                               child: IconButton(
                                 onPressed: () {
                                   viewImage(context,
-                                      widget.inspectionPoint.photoUrl!);
+                                      imageUrl:
+                                          widget.inspectionPoint.photoUrl!);
                                 },
                                 icon: const Icon(Icons.fullscreen),
                                 iconSize: 30,

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:photo_view/photo_view.dart';
+import 'package:kyoryo/src/models/marking.dart';
+import 'package:kyoryo/src/ui/photo_view_with_marking.dart';
 
 class ImageViewOverlay extends ModalRoute<void> {
-  late String imageUrl;
+  String imageUrl;
+  Marking? marking;
 
-  ImageViewOverlay(this.imageUrl);
+  ImageViewOverlay({required this.imageUrl, this.marking});
 
   @override
   Duration get transitionDuration => const Duration(milliseconds: 200);
@@ -39,11 +41,11 @@ class ImageViewOverlay extends ModalRoute<void> {
   Widget _buildOverlayContent(BuildContext context) {
     return Stack(
       children: <Widget>[
-        PhotoView(
-            imageProvider: NetworkImage(imageUrl),
-            backgroundDecoration:
-                const BoxDecoration(color: Colors.transparent),
-            minScale: PhotoViewComputedScale.contained),
+        PhotoViewWithMarking(
+          imageProvider: NetworkImage(imageUrl),
+          backgroundDecoration: const BoxDecoration(color: Colors.transparent),
+          marking: marking,
+        ),
         Positioned(
           top: 4,
           left: 4,
