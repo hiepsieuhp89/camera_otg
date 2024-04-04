@@ -107,15 +107,6 @@ class BridgeInspectionEvaluationScreenState
           padding: const EdgeInsets.all(12.0),
           child: Column(
             children: [
-              Row(
-                children: [
-                  Text(
-                    AppLocalizations.of(context)!.assessment,
-                    style: Theme.of(context).textTheme.labelLarge,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
               Expanded(
                 child: Column(
                   children: [
@@ -247,13 +238,6 @@ class BridgeInspectionEvaluationScreenState
       child: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Column(children: [
-          Row(children: [
-            Text(
-              AppLocalizations.of(context)!.currentInspectionPhoto,
-              style: Theme.of(context).textTheme.labelLarge,
-            )
-          ]),
-          const SizedBox(height: 8),
           Expanded(
               child: CarouselSlider(
             options: CarouselOptions(
