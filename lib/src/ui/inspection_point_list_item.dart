@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/models/inspection_point_report.dart';
+import 'package:kyoryo/src/models/marking.dart';
 import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
 import 'package:kyoryo/src/utilities/image_utils.dart';
 
@@ -117,10 +118,10 @@ class InpsectionPointListItem extends ConsumerWidget {
   Widget _imageGroup(BuildContext context, InspectionPointReport? report) {
     final images = point.type == InspectionPointType.damage
         ? [
-            point.diagramUrl!,
-            point.photoUrl!,
+            point.diagramUrl ?? '',
+            point.photoUrl ?? '',
           ]
-        : [point.photoUrl!];
+        : [point.photoUrl ?? ''];
 
     if (isInspecting && report == null) {
       images.add('');
@@ -179,8 +180,19 @@ class InpsectionPointListItem extends ConsumerWidget {
     return GestureDetector(
       onTap: () {
         final viewableImages = imageUrls.where((url) => url != '').toList();
+        final markings = point.diagramMarkingX != null &&
+                point.diagramMarkingY != null &&
+                point.type == InspectionPointType.damage
+            ? {
+                0: Marking(
+                  x: point.diagramMarkingX!,
+                  y: point.diagramMarkingY!,
+                )
+              }
+            : null;
 
-        viewImages(context, viewableImages, viewableImages.indexOf(imageUrl));
+        viewImages(context, viewableImages, viewableImages.indexOf(imageUrl),
+            markings);
       },
       child: AspectRatio(
         aspectRatio: 1.0,

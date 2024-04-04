@@ -223,7 +223,7 @@ class InpsectionPointDiagramSelectScreenState
                       size: 14,
                     ),
                     onPressed: () {
-                      viewImage(context, diagram.photo!.photoLink);
+                      viewImage(context, imageUrl: diagram.photo!.photoLink);
                     }),
               ))
       ],

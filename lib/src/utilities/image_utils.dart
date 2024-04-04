@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:kyoryo/src/models/marking.dart';
 import 'package:kyoryo/src/ui/image_view_overlay.dart';
 import 'package:image/image.dart' as img;
 import 'package:kyoryo/src/ui/images_view_overlay.dart';
@@ -33,12 +34,16 @@ Future<String> compressAndRotateImage(XFile capturedImage,
   return capturedImage.path;
 }
 
-void viewImage(BuildContext context, String imageUrl) {
-  Navigator.push(context, ImageViewOverlay(imageUrl));
+void viewImage(BuildContext context,
+    {required String imageUrl, Marking? marking}) {
+  Navigator.push(
+      context, ImageViewOverlay(imageUrl: imageUrl, marking: marking));
 }
 
-void viewImages(
-    BuildContext context, List<String> imageUrls, int initialImage) {
+void viewImages(BuildContext context, List<String> imageUrls, int initialImage,
+    Map<int, Marking>? markings) {
   Navigator.push(
-      context, ImagesViewOverlay(imageUrls, initialPage: initialImage));
+      context,
+      ImagesViewOverlay(imageUrls,
+          initialPage: initialImage, markings: markings ?? {}));
 }

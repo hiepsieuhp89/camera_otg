@@ -1,12 +1,16 @@
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:photo_view/photo_view.dart';
+import 'package:kyoryo/src/models/marking.dart';
+import 'package:kyoryo/src/ui/photo_view_with_marking.dart';
 
 class ImagesViewOverlay extends ModalRoute<void> {
   late List<String> imageUrls;
+  Map<int, Marking> markings;
   int initialPage;
 
-  ImagesViewOverlay(this.imageUrls, {this.initialPage = 0});
+  ImagesViewOverlay(this.imageUrls,
+      {this.initialPage = 0, this.markings = const {}});
 
   @override
   Duration get transitionDuration => const Duration(milliseconds: 200);
@@ -45,11 +49,12 @@ class ImagesViewOverlay extends ModalRoute<void> {
       children: <Widget>[
         CarouselSlider(
             items: imageUrls
-                .map((url) => PhotoView(
-                    imageProvider: NetworkImage(url),
-                    backgroundDecoration:
-                        const BoxDecoration(color: Colors.transparent),
-                    minScale: PhotoViewComputedScale.contained))
+                .mapIndexed((index, url) => PhotoViewWithMarking(
+                      imageProvider: NetworkImage(url),
+                      backgroundDecoration:
+                          const BoxDecoration(color: Colors.transparent),
+                      marking: markings[index],
+                    ))
                 .toList(),
             options: CarouselOptions(
               initialPage: initialPage,

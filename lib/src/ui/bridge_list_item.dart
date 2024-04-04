@@ -24,7 +24,7 @@ class BridgeListItem extends ConsumerWidget {
           children: <Widget>[
             GestureDetector(
               onTap: () {
-                viewImage(context, bridge.photoLink);
+                viewImage(context, imageUrl: bridge.photoLink);
               },
               child: AspectRatio(
                 aspectRatio: 1.0,
