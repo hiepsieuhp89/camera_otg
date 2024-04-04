@@ -99,7 +99,7 @@ class _BridgeInspectionScreenState
           ),
           actions: <Widget>[
             TextButton(
-              child: Text(AppLocalizations.of(context)!.cancel),
+              child: Text(AppLocalizations.of(context)!.cancelInspection),
               onPressed: () {
                 Navigator.of(context).pop();
                 _stopInspecting();
