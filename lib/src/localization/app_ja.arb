@@ -64,7 +64,7 @@
   "createInspectionPoints": "点検ポイント作成",
   "inspectionPoint": "点検ポイント",
   "pleaseFinishAllInspectionPoints": "全ての点検ポイントを完了してください",
-  "setPreferredPhoto": "優先写真設定",
+  "setPreferredPhoto": "採用写真とする",
   "photoRefNumber": "写真番号{number}",
   "@photoRefNumber": {
     "description": "Reference number of inspection point in diagram photo",

@@ -241,7 +241,7 @@ class BridgeInspectionEvaluationScreenState
           Expanded(
               child: CarouselSlider(
             options: CarouselOptions(
-              viewportFraction: 0.6,
+              viewportFraction: 0.8,
               initialPage: 0,
               enableInfiniteScroll: false,
               reverse: false,
