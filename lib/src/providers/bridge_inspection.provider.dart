@@ -11,7 +11,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'bridge_inspection.provider.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true)
 class BridgeInspection extends _$BridgeInspection {
   @override
   Inspection? build(int bridgeId) {
@@ -38,7 +38,7 @@ class BridgeInspection extends _$BridgeInspection {
 
     int numberOfReports = state!.reports.length;
     int numberOfPoints =
-        ref.watch(inspectionPointsProvider(bridgeId)).value?.length ?? 0;
+        ref.read(inspectionPointsProvider(bridgeId)).value?.length ?? 0;
 
     if (numberOfReports == numberOfPoints) {
       clearInspection();

@@ -157,10 +157,9 @@ class _NumberOfCreatedReportsProviderElement
   int get bridgeId => (origin as NumberOfCreatedReportsProvider).bridgeId;
 }
 
-String _$bridgeInspectionHash() => r'0b6b328ba149553553fe4ff01ab6c61d9fef0f1a';
+String _$bridgeInspectionHash() => r'7d6eb2d8967599c095ed11d705e6b951e6793584';
 
-abstract class _$BridgeInspection
-    extends BuildlessAutoDisposeNotifier<Inspection?> {
+abstract class _$BridgeInspection extends BuildlessNotifier<Inspection?> {
   late final int bridgeId;
 
   Inspection? build(
@@ -212,7 +211,7 @@ class BridgeInspectionFamily extends Family<Inspection?> {
 
 /// See also [BridgeInspection].
 class BridgeInspectionProvider
-    extends AutoDisposeNotifierProviderImpl<BridgeInspection, Inspection?> {
+    extends NotifierProviderImpl<BridgeInspection, Inspection?> {
   /// See also [BridgeInspection].
   BridgeInspectionProvider(
     int bridgeId,
@@ -268,8 +267,7 @@ class BridgeInspectionProvider
   }
 
   @override
-  AutoDisposeNotifierProviderElement<BridgeInspection, Inspection?>
-      createElement() {
+  NotifierProviderElement<BridgeInspection, Inspection?> createElement() {
     return _BridgeInspectionProviderElement(this);
   }
 
@@ -287,13 +285,13 @@ class BridgeInspectionProvider
   }
 }
 
-mixin BridgeInspectionRef on AutoDisposeNotifierProviderRef<Inspection?> {
+mixin BridgeInspectionRef on NotifierProviderRef<Inspection?> {
   /// The parameter `bridgeId` of this provider.
   int get bridgeId;
 }
 
 class _BridgeInspectionProviderElement
-    extends AutoDisposeNotifierProviderElement<BridgeInspection, Inspection?>
+    extends NotifierProviderElement<BridgeInspection, Inspection?>
     with BridgeInspectionRef {
   _BridgeInspectionProviderElement(super.provider);
 

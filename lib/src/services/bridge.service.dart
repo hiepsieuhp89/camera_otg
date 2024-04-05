@@ -20,8 +20,10 @@ class BridgeService extends BaseApiService {
         .toList();
   }
 
-  Future<List<InspectionPoint>> fetchInspectionPoints(int brdigeId) async {
-    final jsonResponse = await get('bridges/$brdigeId/inspection_points');
+  Future<List<InspectionPoint>> fetchInspectionPoints(int brdigeId,
+      {String? timestamp}) async {
+    final jsonResponse = await get(
+        'bridges/$brdigeId/inspection_points${timestamp != null ? '?timestamp=$timestamp' : ''}');
 
     return (jsonResponse as List)
         .map((inspectionPoint) => InspectionPoint.fromJson(inspectionPoint))
