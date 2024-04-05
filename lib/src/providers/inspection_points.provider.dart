@@ -10,7 +10,7 @@ class InspectionPoints extends _$InspectionPoints {
   @override
   Future<List<InspectionPoint>> build(int bridgeId) async {
     final inspection = ref.watch(bridgeInspectionProvider(bridgeId));
-    print('inspection: $inspection');
+
     return ref.watch(bridgeServiceProvider).fetchInspectionPoints(bridgeId,
         timestamp: inspection?.timestamp.toIso8601String());
   }

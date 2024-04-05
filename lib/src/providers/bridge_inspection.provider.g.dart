@@ -157,7 +157,7 @@ class _NumberOfCreatedReportsProviderElement
   int get bridgeId => (origin as NumberOfCreatedReportsProvider).bridgeId;
 }
 
-String _$bridgeInspectionHash() => r'7d6eb2d8967599c095ed11d705e6b951e6793584';
+String _$bridgeInspectionHash() => r'2382be4f20fef8b57b42563f74cdf98770dd0a9d';
 
 abstract class _$BridgeInspection extends BuildlessNotifier<Inspection?> {
   late final int bridgeId;

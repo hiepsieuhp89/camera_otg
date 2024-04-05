@@ -56,12 +56,18 @@ class _BridgeInspectionScreenState
   }
 
   void _endInspection() {
-    final ended = ref
-        .watch(bridgeInspectionProvider(ref.watch(currentBridgeProvider)!.id)
-            .notifier)
-        .endInspection();
+    final numberOfInspectionPoints = ref
+            .watch(
+                inspectionPointsProvider(ref.watch(currentBridgeProvider)!.id))
+            .value
+            ?.length ??
+        0;
+    final inspection = ref
+        .watch(bridgeInspectionProvider(ref.watch(currentBridgeProvider)!.id));
 
-    if (!ended) {
+    if (numberOfInspectionPoints == (inspection?.reports.length ?? 0)) {
+      _stopInspecting();
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           showCloseIcon: true,
           content: Text(
