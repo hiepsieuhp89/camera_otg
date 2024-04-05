@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:kyoryo/src/models/inspection.dart';
 import 'package:kyoryo/src/models/inspection_point_report.dart';
 import 'package:kyoryo/src/models/photo.dart';
@@ -48,11 +49,19 @@ class BridgeInspection extends _$BridgeInspection {
   }
 
   Future<void> createReport(int pointId, List<String> capturedPhotoPaths,
-      Map<String, dynamic>? metadata) async {
+      Map<String, dynamic>? metadata, int preferredPhotoIndex) async {
     if (state == null) throw Exception('Inspection not started');
+    int? preferredPhotoId;
 
     List<Future<Photo>> photoFutures = capturedPhotoPaths
-        .map((path) => ref.read(photoServiceProvider).uploadPhoto(path))
+        .mapIndexed((index, path) =>
+            ref.read(photoServiceProvider).uploadPhoto(path).then((photo) {
+              if (index == preferredPhotoIndex) {
+                preferredPhotoId = photo.id;
+              }
+
+              return photo;
+            }))
         .toList();
 
     final uploadedPhotos = await Future.wait(photoFutures);
@@ -60,6 +69,7 @@ class BridgeInspection extends _$BridgeInspection {
     // NOTE: This is a temporary workaround to group inspection results by timestamp
     final metadataWithTimestamp = <String, dynamic>{
       ...?metadata,
+      'preferred_photo_id': preferredPhotoId,
       'timestamp': state!.timestamp.toIso8601String()
     };
 
