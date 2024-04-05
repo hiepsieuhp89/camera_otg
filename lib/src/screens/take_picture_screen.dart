@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -308,34 +309,36 @@ class _TakePictureScreenState extends State<TakePictureScreen>
                           child: CollapsiblePanel(
                             collapsed: !showPreviousPhoto,
                             child: Container(
-                              height: 200,
-                              width: 250,
-                              alignment: Alignment.bottomRight,
+                              constraints: const BoxConstraints(maxHeight: 250),
                               decoration: BoxDecoration(
-                                  color: Colors.red,
                                   border: Border(
-                                    right: BorderSide(
-                                        width: 1,
-                                        color: Theme.of(context).dividerColor),
-                                    bottom: BorderSide(
-                                        width: 1,
-                                        color: Theme.of(context).dividerColor),
+                                right: BorderSide(
+                                    width: 1,
+                                    color: Theme.of(context).dividerColor),
+                                bottom: BorderSide(
+                                    width: 1,
+                                    color: Theme.of(context).dividerColor),
+                              )),
+                              child: Stack(
+                                children: [
+                                  CachedNetworkImage(
+                                    imageUrl: widget.inspectionPoint.photoUrl!,
+                                    height: 150,
                                   ),
-                                  image: DecorationImage(
-                                    image: Image.network(
-                                            widget.inspectionPoint.photoUrl!)
-                                        .image,
-                                    fit: BoxFit.cover,
-                                  )),
-                              child: IconButton(
-                                onPressed: () {
-                                  viewImage(context,
-                                      imageUrl:
-                                          widget.inspectionPoint.photoUrl!);
-                                },
-                                icon: const Icon(Icons.fullscreen),
-                                iconSize: 30,
-                                color: Colors.white,
+                                  Positioned(
+                                      bottom: 0,
+                                      right: 0,
+                                      child: IconButton(
+                                        onPressed: () {
+                                          viewImage(context,
+                                              imageUrl: widget
+                                                  .inspectionPoint.photoUrl!);
+                                        },
+                                        icon: const Icon(Icons.fullscreen),
+                                        iconSize: 30,
+                                        color: Colors.white,
+                                      ))
+                                ],
                               ),
                             ),
                           )),
