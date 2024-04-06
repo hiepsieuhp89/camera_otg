@@ -9,6 +9,7 @@ import 'package:kyoryo/src/models/damage_type.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
 import 'package:kyoryo/src/providers/misc.provider.dart';
+import 'package:kyoryo/src/screens/bridge_inspection_photo_selection_screen.dart';
 import 'package:kyoryo/src/screens/bridge_inspection_screen.dart';
 
 class BridgeInspectionEvaluationScreenArguments {
@@ -39,7 +40,6 @@ class BridgeInspectionEvaluationScreenState
   String? _selectedHealthLevel;
   DamageType? _selectedDamageType;
   String? _preferredPhotoPath;
-  String? _currentPhotoPath;
   late TextEditingController _textEditingController;
 
   Future<void> submitInspection() async {
@@ -69,7 +69,6 @@ class BridgeInspectionEvaluationScreenState
   @override
   void initState() {
     super.initState();
-    _currentPhotoPath = widget.arguments.capturedPhotos.first;
     _textEditingController = TextEditingController();
   }
 
@@ -79,26 +78,50 @@ class BridgeInspectionEvaluationScreenState
 
     return Scaffold(
         appBar: AppBar(
-          title: Text(widget.arguments.point.name!),
-        ),
+            title: Text(widget.arguments.point.name!),
+            actions: MediaQuery.of(context).orientation == Orientation.landscape
+                ? [
+                    buildGoToPhotoSelectionButton(context),
+                    const SizedBox(width: 12),
+                  ]
+                : null),
         body: OrientationBuilder(builder: ((context, orientation) {
           if (orientation == Orientation.portrait) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                buildPhotosCarousel(context),
+                buildPhotosCarousel(context, orientation),
                 buildEvaluationForm(context, damageTypes),
               ],
             );
           } else {
             return Row(
               children: [
-                buildPhotosCarousel(context),
+                buildPhotosCarousel(context, orientation),
                 buildEvaluationForm(context, damageTypes),
               ],
             );
           }
         })));
+  }
+
+  OutlinedButton buildGoToPhotoSelectionButton(BuildContext context) {
+    return OutlinedButton.icon(
+      onPressed: () {
+        Navigator.of(context)
+            .pushNamed(BridgeInspectionPhotoSelectionScreen.routeName,
+                arguments: BridgeInspectionPhotoSelectionScreenArguments(
+                    point: widget.arguments.point,
+                    photoPaths: widget.arguments.capturedPhotos))
+            .then((selectedPhotoPath) {
+          setState(() {
+            _preferredPhotoPath = selectedPhotoPath as String?;
+          });
+        });
+      },
+      icon: const Icon(Icons.image),
+      label: Text(AppLocalizations.of(context)!.goToPhotoSelectionButton),
+    );
   }
 
   Expanded buildEvaluationForm(
@@ -234,7 +257,7 @@ class BridgeInspectionEvaluationScreenState
         ));
   }
 
-  Expanded buildPhotosCarousel(BuildContext context) {
+  Expanded buildPhotosCarousel(BuildContext context, Orientation orientation) {
     return Expanded(
       flex: 1,
       child: Padding(
@@ -248,11 +271,6 @@ class BridgeInspectionEvaluationScreenState
               enableInfiniteScroll: false,
               reverse: false,
               enlargeCenterPage: true,
-              onPageChanged: (index, reason) {
-                setState(() {
-                  _currentPhotoPath = widget.arguments.capturedPhotos[index];
-                });
-              },
               scrollDirection: Axis.horizontal,
             ),
             items: widget.arguments.capturedPhotos.mapIndexed((index, photo) {
@@ -281,16 +299,8 @@ class BridgeInspectionEvaluationScreenState
               );
             }).toList(),
           )),
-          TextButton.icon(
-              icon: const Icon(Icons.check_circle),
-              onPressed: _currentPhotoPath == _preferredPhotoPath
-                  ? null
-                  : () {
-                      setState(() {
-                        _preferredPhotoPath = _currentPhotoPath;
-                      });
-                    },
-              label: Text(AppLocalizations.of(context)!.setPreferredPhoto)),
+          if (orientation == Orientation.portrait)
+            buildGoToPhotoSelectionButton(context)
         ]),
       ),
     );

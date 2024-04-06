@@ -226,6 +226,7 @@ class _TakePictureScreenState extends State<TakePictureScreen>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _exitFullScreen();
     _resetOrientation();
     _controller?.dispose();

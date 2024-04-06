@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/screens/bridge_filters_screen.dart';
 import 'package:kyoryo/src/screens/bridge_inspection_evaluation_screen.dart';
+import 'package:kyoryo/src/screens/bridge_inspection_photo_selection_screen.dart';
 import 'package:kyoryo/src/screens/bridge_inspection_screen.dart';
 import 'package:kyoryo/src/screens/bridge_list_screen.dart';
 import 'package:kyoryo/src/screens/inspection_point_damage_mark_screen.dart';
@@ -122,6 +123,12 @@ class MainApp extends StatelessWidget {
                     as InspectionPointDamageMarkScreenArguments;
 
                 return InspectionPointDamageMarkScreen(arguments: arguments);
+              case BridgeInspectionPhotoSelectionScreen.routeName:
+                final arguments = routeSettings.arguments
+                    as BridgeInspectionPhotoSelectionScreenArguments;
+
+                return BridgeInspectionPhotoSelectionScreen(
+                    arguments: arguments);
               case BridgeListScreen.routeName:
               default:
                 return const BridgeListScreen();
