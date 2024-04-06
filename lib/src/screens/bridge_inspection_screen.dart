@@ -34,7 +34,6 @@ class BridgeInspectionScreen extends ConsumerStatefulWidget {
 
 class _BridgeInspectionScreenState
     extends ConsumerState<BridgeInspectionScreen> {
-  bool isInspecting = false;
   int selectedFilterIndex = 0;
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -43,9 +42,6 @@ class _BridgeInspectionScreenState
   }
 
   void _startInspecting() {
-    setState(() {
-      isInspecting = true;
-    });
     ref
         .watch(bridgeInspectionProvider(ref.watch(currentBridgeProvider)!.id)
             .notifier)
@@ -57,22 +53,20 @@ class _BridgeInspectionScreenState
         .watch(bridgeInspectionProvider(ref.watch(currentBridgeProvider)!.id)
             .notifier)
         .clearInspection();
-
-    setState(() {
-      isInspecting = false;
-    });
   }
 
   void _endInspection() {
-    final ended = ref
-        .watch(bridgeInspectionProvider(ref.watch(currentBridgeProvider)!.id)
-            .notifier)
-        .endInspection();
+    final numberOfInspectionPoints = ref
+            .watch(
+                inspectionPointsProvider(ref.watch(currentBridgeProvider)!.id))
+            .value
+            ?.length ??
+        0;
+    final inspection = ref
+        .watch(bridgeInspectionProvider(ref.watch(currentBridgeProvider)!.id));
 
-    if (ended) {
-      setState(() {
-        isInspecting = false;
-      });
+    if (numberOfInspectionPoints == (inspection?.reports.length ?? 0)) {
+      _stopInspecting();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           showCloseIcon: true,
@@ -125,6 +119,8 @@ class _BridgeInspectionScreenState
         ref.watch(inspectionPointsProvider(currentBridge.id));
     final filteredInspectionPoints =
         ref.watch(filteredInspectionPointsProvider(currentBridge.id));
+    final isInspecting =
+        ref.watch(bridgeInspectionProvider(currentBridge.id)) != null;
 
     final List<InspectionPointFilter> filters = <InspectionPointFilter>[
       InspectionPointFilter(
@@ -147,7 +143,7 @@ class _BridgeInspectionScreenState
     return Scaffold(
         key: scaffoldKey,
         resizeToAvoidBottomInset: false,
-        drawer: buildNavigationDrawer(filters),
+        drawer: buildNavigationDrawer(filters, isInspecting),
         appBar: buildAppBar(currentBridge),
         body: OrientationBuilder(
           builder: (context, orientation) {
@@ -357,13 +353,14 @@ class _BridgeInspectionScreenState
             );
           },
         ),
-        bottomNavigationBar:
-            buildBottomAppBar(inspectionPoints, numberOfCreatedReports));
+        bottomNavigationBar: buildBottomAppBar(
+            inspectionPoints, numberOfCreatedReports, isInspecting));
   }
 
   BottomAppBar? buildBottomAppBar(
       AsyncValue<List<InspectionPoint>> inspectionPoints,
-      int numberOfCreatedReports) {
+      int numberOfCreatedReports,
+      bool isInspecting) {
     return MediaQuery.of(context).orientation == Orientation.portrait
         ? BottomAppBar(
             child: Row(
@@ -420,7 +417,8 @@ class _BridgeInspectionScreenState
         : null;
   }
 
-  Widget? buildNavigationDrawer(List<InspectionPointFilter> filters) {
+  Widget? buildNavigationDrawer(
+      List<InspectionPointFilter> filters, bool isInspecting) {
     final filteredInspectionPoints = ref.watch(
         filteredInspectionPointsProvider(ref.watch(currentBridgeProvider)!.id));
 

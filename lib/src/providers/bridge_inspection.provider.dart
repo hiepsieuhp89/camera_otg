@@ -4,14 +4,13 @@ import 'package:collection/collection.dart';
 import 'package:kyoryo/src/models/inspection.dart';
 import 'package:kyoryo/src/models/inspection_point_report.dart';
 import 'package:kyoryo/src/models/photo.dart';
-import 'package:kyoryo/src/providers/inspection_points.provider.dart';
 import 'package:kyoryo/src/services/inspection_point_report.service.dart';
 import 'package:kyoryo/src/services/photo.service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'bridge_inspection.provider.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true)
 class BridgeInspection extends _$BridgeInspection {
   @override
   Inspection? build(int bridgeId) {
@@ -31,21 +30,6 @@ class BridgeInspection extends _$BridgeInspection {
 
   void clearInspection() {
     state = null;
-  }
-
-  bool endInspection() {
-    if (state == null) return true;
-
-    int numberOfReports = state!.reports.length;
-    int numberOfPoints =
-        ref.watch(inspectionPointsProvider(bridgeId)).value?.length ?? 0;
-
-    if (numberOfReports == numberOfPoints) {
-      clearInspection();
-      return true;
-    } else {
-      return false;
-    }
   }
 
   Future<void> createReport(int pointId, List<String> capturedPhotoPaths,

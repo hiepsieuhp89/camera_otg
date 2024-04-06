@@ -34,7 +34,9 @@ class BridgeListScreen extends ConsumerWidget {
           ],
         ),
         body: bridges.when(
-            data: (data) => _bridgeList(data),
+            data: (data) => RefreshIndicator(
+                onRefresh: () => ref.refresh(bridgesProvider.future),
+                child: _bridgeList(data)),
             loading: () => const Center(
                   child: CircularProgressIndicator(),
                 ),
