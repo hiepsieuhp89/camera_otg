@@ -180,13 +180,17 @@ class _BridgeInspectionScreenState
                       destinations: isInspecting
                           ? [
                               NavigationRailDestination(
-                                  icon: const Icon(Icons.close),
-                                  label: Text(AppLocalizations.of(context)!
-                                      .cancelInspection)),
-                              NavigationRailDestination(
                                   icon: const Icon(Icons.broken_image_outlined),
                                   label: Text(AppLocalizations.of(context)!
                                       .createInspectionPoints)),
+                              NavigationRailDestination(
+                                  disabled: true,
+                                  icon: const Icon(
+                                    Icons.close,
+                                    color: Colors.white,
+                                  ),
+                                  label: Text(AppLocalizations.of(context)!
+                                      .cancelInspection)),
                             ]
                           : filters.map((filter) {
                               return NavigationRailDestination(
@@ -196,7 +200,7 @@ class _BridgeInspectionScreenState
                             }).toList(),
                       onDestinationSelected: (index) {
                         if (isInspecting) {
-                          if (index == 0) {
+                          if (index == 1) {
                             _confirmCancelDialog();
                           } else {
                             _createNewInspectionPoint();
@@ -373,9 +377,9 @@ class _BridgeInspectionScreenState
                 Row(
                   children: isInspecting
                       ? [
-                          IconButton(
-                              onPressed: _confirmCancelDialog,
-                              icon: const Icon(Icons.close)),
+                          // IconButton(
+                          //     onPressed: _confirmCancelDialog,
+                          //     icon: const Icon(Icons.close)),
                           IconButton(
                               onPressed: _createNewInspectionPoint,
                               icon: const Icon(Icons.broken_image_outlined)),
@@ -493,34 +497,6 @@ class _BridgeInspectionScreenState
                                     padding: MaterialStateProperty.all(
                                         const EdgeInsets.symmetric(
                                             vertical: 12, horizontal: 12))),
-                                onPressed: _confirmCancelDialog,
-                                child: Row(
-                                  children: [
-                                    const Icon(Icons.close),
-                                    Expanded(
-                                      child: Text(
-                                        AppLocalizations.of(context)!
-                                            .cancelInspection,
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 24),
-                                  ],
-                                )),
-                          ),
-                        ),
-                      ),
-                      Visibility(
-                        visible: isInspecting,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8.0),
-                          child: SizedBox(
-                            width: double.infinity,
-                            child: OutlinedButton(
-                                style: ButtonStyle(
-                                    padding: MaterialStateProperty.all(
-                                        const EdgeInsets.symmetric(
-                                            vertical: 12, horizontal: 12))),
                                 onPressed: _createNewInspectionPoint,
                                 child: Row(
                                   children: [
@@ -538,6 +514,34 @@ class _BridgeInspectionScreenState
                           ),
                         ),
                       ),
+                      // Visibility(
+                      //   visible: isInspecting,
+                      //   child: Padding(
+                      //     padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      //     child: SizedBox(
+                      //       width: double.infinity,
+                      //       child: OutlinedButton(
+                      //           style: ButtonStyle(
+                      //               padding: MaterialStateProperty.all(
+                      //                   const EdgeInsets.symmetric(
+                      //                       vertical: 12, horizontal: 12))),
+                      //           onPressed: _confirmCancelDialog,
+                      //           child: Row(
+                      //             children: [
+                      //               const Icon(Icons.close),
+                      //               Expanded(
+                      //                 child: Text(
+                      //                   AppLocalizations.of(context)!
+                      //                       .cancelInspection,
+                      //                   textAlign: TextAlign.center,
+                      //                 ),
+                      //               ),
+                      //               const SizedBox(width: 24),
+                      //             ],
+                      //           )),
+                      //     ),
+                      //   ),
+                      // ),
                       const Divider()
                     ],
                   ),
