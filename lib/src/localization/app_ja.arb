@@ -39,7 +39,7 @@
   "damageDetails": "損傷内容",
   "damage": "損傷度",
   "remark": "備考",
-  "pleaseSelectAPhoto": "写真を選択ください",
+  "pleaseSelectAPhoto": "採用用写真を選択してください",
   "failedToCreateInspectionReport": "点検報告書の作成に失敗しました",
   "failedToGetInspectionPoints": "点検ポイントの取得に失敗しました",
   "allInspection": "全点検",
@@ -70,5 +70,7 @@
     "placeholders": {
       "number": {}
     }
-  }
+  },
+  "noPastPhotoFound": "過去の写真が見つかりません",
+  "goToPhotoSelectionButton": "過年度写真表示"
 }
