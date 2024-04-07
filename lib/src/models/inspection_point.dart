@@ -24,6 +24,8 @@ class InspectionPoint with _$InspectionPoint {
       @JsonKey(name: 'diagram_marking_x') int? diagramMarkingX,
       @JsonKey(name: 'diagram_marking_y') int? diagramMarkingY,
       @JsonKey(name: 'photo_ref_number') int? photoRefNumber,
+      @JsonKey(name: 'diagram_marked_photo_link')
+      String? diagramMarkedPhotoLink,
       @JsonKey(name: 'last_inspection_date')
       DateTime? lastInspectionDate}) = _InpsectionPoint;
 

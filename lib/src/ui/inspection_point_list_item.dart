@@ -120,7 +120,7 @@ class InpsectionPointListItem extends ConsumerWidget {
   Widget _imageGroup(BuildContext context, InspectionPointReport? report) {
     final images = point.type == InspectionPointType.damage
         ? [
-            point.diagramUrl ?? '',
+            point.diagramMarkedPhotoLink ?? point.diagramUrl ?? '',
             point.photoUrl ?? '',
           ]
         : [point.photoUrl ?? ''];
