@@ -182,9 +182,11 @@ class InpsectionPointListItem extends ConsumerWidget {
     return GestureDetector(
       onTap: () {
         final viewableImages = imageUrls.where((url) => url != '').toList();
+
         final markings = point.diagramMarkingX != null &&
                 point.diagramMarkingY != null &&
-                point.type == InspectionPointType.damage
+                point.type == InspectionPointType.damage &&
+                imageUrl != point.diagramMarkedPhotoLink
             ? {
                 0: Marking(
                   x: point.diagramMarkingX!,
