@@ -11,6 +11,7 @@ import 'package:kyoryo/src/screens/bridge_inspection_evaluation_screen.dart';
 import 'package:kyoryo/src/screens/preview_pictures_screen.dart';
 import 'package:kyoryo/src/ui/collapsible_panel.dart';
 import 'package:kyoryo/src/utilities/image_utils.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 class TakePictureScreen extends StatefulWidget {
   const TakePictureScreen({super.key, required this.inspectionPoint});
@@ -98,10 +99,19 @@ class _TakePictureScreenState extends State<TakePictureScreen>
     try {
       await _initializeControllerFuture;
 
+      await _controller!.setFocusMode(FocusMode.locked);
+      await _controller!.setExposureMode(ExposureMode.locked);
+
       final XFile rawImage = await _controller!.takePicture();
+
+      final player = AudioPlayer();
+      player.play(AssetSource('sounds/camera_shoot.mp3'));
 
       processingQueue.add(rawImage);
       processNextImage();
+
+      await _controller!.setFocusMode(FocusMode.auto);
+      await _controller!.setExposureMode(ExposureMode.auto);
     } catch (e) {
       debugPrint(e.toString());
     }
