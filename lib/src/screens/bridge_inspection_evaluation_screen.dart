@@ -196,11 +196,11 @@ class BridgeInspectionEvaluationScreenState
                             });
                           },
                           dropdownMenuEntries: const [
-                            DropdownMenuEntry(value: 'A', label: 'A'),
-                            DropdownMenuEntry(value: 'B', label: 'B'),
-                            DropdownMenuEntry(value: 'C', label: 'C'),
-                            DropdownMenuEntry(value: 'D', label: 'D'),
-                            DropdownMenuEntry(value: 'E', label: 'E'),
+                            DropdownMenuEntry(value: 'a', label: 'a'),
+                            DropdownMenuEntry(value: 'b', label: 'b'),
+                            DropdownMenuEntry(value: 'c', label: 'c'),
+                            DropdownMenuEntry(value: 'd', label: 'd'),
+                            DropdownMenuEntry(value: 'e', label: 'e'),
                           ],
                         ),
                         const SizedBox(width: 8),
