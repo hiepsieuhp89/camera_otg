@@ -48,6 +48,12 @@ class _TakePictureScreenState extends State<TakePictureScreen>
     _enterFullScreen();
     _initCamera();
     _setLandscapeOrientation();
+
+    if (widget.inspectionPoint.photoUrl != null) {
+      setState(() {
+        showPreviousPhoto = true;
+      });
+    }
   }
 
   @override
@@ -294,12 +300,17 @@ class _TakePictureScreenState extends State<TakePictureScreen>
                   },
                   destinations: [
                     NavigationRailDestination(
+                      disabled: widget.inspectionPoint.photoUrl == null,
                       icon: const Icon(Icons.photo_outlined),
                       selectedIcon: const Icon(Icons.photo),
                       label: Text(
                           AppLocalizations.of(context)!.lastInspectionPhoto),
                     ),
                     NavigationRailDestination(
+                        disabled:
+                            widget.inspectionPoint.diagramMarkedPhotoLink ==
+                                    null &&
+                                widget.inspectionPoint.diagramUrl == null,
                         icon: const Icon(Icons.schema_outlined),
                         selectedIcon: const Icon(Icons.schema),
                         label:
