@@ -32,6 +32,9 @@ class _TakePictureScreenState extends State<TakePictureScreen>
   List<XFile> processingQueue = [];
   bool isProcessing = false;
   bool showPreviousPhoto = false;
+  double _currentZoomLevel = 1.0;
+  double _maxZoomLevel = 1.0;
+  double _minZoomLevel = 1.0;
 
   @override
   void initState() {
@@ -75,9 +78,17 @@ class _TakePictureScreenState extends State<TakePictureScreen>
     );
 
     setState(() {
-      _controller = CameraController(backCamera, ResolutionPreset.veryHigh,
-          enableAudio: false);
-      _initializeControllerFuture = _controller?.initialize();
+      _controller = CameraController(backCamera, ResolutionPreset.veryHigh, enableAudio: false);
+      _initializeControllerFuture = _controller?.initialize().then((_) async {
+        final maxZoomLevel = await _controller!.getMaxZoomLevel();
+        final minZoomLevel = await _controller!.getMinZoomLevel();
+
+        setState(() {
+          _maxZoomLevel = maxZoomLevel;
+          _minZoomLevel = minZoomLevel;
+        });
+      });
+
     });
   }
 
@@ -100,6 +111,20 @@ class _TakePictureScreenState extends State<TakePictureScreen>
   void _resetOrientation() {
     SystemChrome.setPreferredOrientations([]);
   }
+
+  void _setZoomLevel(zoomLevel) async {
+    try {
+      await _initializeControllerFuture;
+      await _controller!.setZoomLevel(zoomLevel);
+      setState(() {
+        _currentZoomLevel = zoomLevel;
+      });
+    }catch (e) {
+      debugPrint(e.toString());
+    }
+
+  }
+
 
   void _takePicture() async {
     try {
@@ -364,6 +389,36 @@ class _TakePictureScreenState extends State<TakePictureScreen>
                               ),
                             ),
                           )),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          RotatedBox(
+                            quarterTurns: 3,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.max,
+                              children: [
+                              const RotatedBox(
+                              quarterTurns: 3,
+                              child: Icon(Icons.remove, color: Colors.white),
+                              ),
+                                Expanded(
+                                  child:Slider(
+                                      value: _currentZoomLevel,
+                                      min: _minZoomLevel,
+                                      max: _maxZoomLevel,
+                                      onChanged: (zoomLevel) {
+                                        _setZoomLevel(zoomLevel);
+                                      },
+                                      activeColor: Colors.grey.shade100,
+                                      inactiveColor: Colors.grey.shade100,
+                                      thumbColor: Colors.purple.shade100,
+                                    ),
+
+                                ),
+                                const Icon(Icons.add, color: Colors.white),
+                              ],
+                            ),
+                          ),
                       Container(
                         width: 120,
                         color: Colors.black.withOpacity(0.5),
@@ -413,6 +468,8 @@ class _TakePictureScreenState extends State<TakePictureScreen>
                                 ),
                               ),
                             ]),
+                      )
+                        ],
                       )
                     ],
                   ),
