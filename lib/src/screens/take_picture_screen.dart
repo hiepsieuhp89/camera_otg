@@ -78,7 +78,8 @@ class _TakePictureScreenState extends State<TakePictureScreen>
     );
 
     setState(() {
-      _controller = CameraController(backCamera, ResolutionPreset.veryHigh, enableAudio: false);
+      _controller = CameraController(backCamera, ResolutionPreset.veryHigh,
+          enableAudio: false);
       _initializeControllerFuture = _controller?.initialize().then((_) async {
         final maxZoomLevel = await _controller!.getMaxZoomLevel();
         final minZoomLevel = await _controller!.getMinZoomLevel();
@@ -88,7 +89,6 @@ class _TakePictureScreenState extends State<TakePictureScreen>
           _minZoomLevel = minZoomLevel;
         });
       });
-
     });
   }
 
@@ -119,12 +119,10 @@ class _TakePictureScreenState extends State<TakePictureScreen>
       setState(() {
         _currentZoomLevel = zoomLevel;
       });
-    }catch (e) {
+    } catch (e) {
       debugPrint(e.toString());
     }
-
   }
-
 
   void _takePicture() async {
     try {
@@ -313,7 +311,9 @@ class _TakePictureScreenState extends State<TakePictureScreen>
 
                     if (index == 1) {
                       viewImage(context,
-                          imageUrl: widget.inspectionPoint.diagramUrl!,
+                          imageUrl:
+                              widget.inspectionPoint.diagramMarkedPhotoLink ??
+                                  widget.inspectionPoint.diagramUrl!,
                           marking: widget.inspectionPoint.diagramMarkingX !=
                                       null &&
                                   widget.inspectionPoint.diagramMarkingY != null
@@ -397,78 +397,82 @@ class _TakePictureScreenState extends State<TakePictureScreen>
                             child: Row(
                               mainAxisSize: MainAxisSize.max,
                               children: [
-                              const RotatedBox(
-                              quarterTurns: 3,
-                              child: Icon(Icons.remove, color: Colors.white),
-                              ),
+                                const RotatedBox(
+                                  quarterTurns: 3,
+                                  child:
+                                      Icon(Icons.remove, color: Colors.white),
+                                ),
                                 Expanded(
-                                  child:Slider(
-                                      value: _currentZoomLevel,
-                                      min: _minZoomLevel,
-                                      max: _maxZoomLevel,
-                                      onChanged: (zoomLevel) {
-                                        _setZoomLevel(zoomLevel);
-                                      },
-                                      activeColor: Colors.grey.shade100,
-                                      inactiveColor: Colors.grey.shade100,
-                                      thumbColor: Colors.purple.shade100,
-                                    ),
-
+                                  child: Slider(
+                                    value: _currentZoomLevel,
+                                    min: _minZoomLevel,
+                                    max: _maxZoomLevel,
+                                    onChanged: (zoomLevel) {
+                                      _setZoomLevel(zoomLevel);
+                                    },
+                                    activeColor: Colors.grey.shade100,
+                                    inactiveColor: Colors.grey.shade100,
+                                    thumbColor: Colors.purple.shade100,
+                                  ),
                                 ),
                                 const Icon(Icons.add, color: Colors.white),
                               ],
                             ),
                           ),
-                      Container(
-                        width: 120,
-                        color: Colors.black.withOpacity(0.5),
-                        child: Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              SizedBox(
-                                height: 48,
-                                child: IconButton(
-                                  onPressed: showFlashDialog,
-                                  icon: getFlashIcon(),
-                                  iconSize: 30,
-                                ),
-                              ),
-                              IconButton(
-                                onPressed: _takePicture,
-                                icon: const Icon(Icons.circle,
-                                    color: Colors.white),
-                                iconSize: 70,
-                              ),
-                              SizedBox(
-                                height: 48,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    if (capturedPhotos.isNotEmpty) {
-                                      _navigateToPreview();
-                                    }
-                                  },
-                                  child: Badge(
-                                    isLabelVisible: capturedPhotos.isNotEmpty,
-                                    label:
-                                        Text(capturedPhotos.length.toString()),
-                                    child: CircleAvatar(
-                                      radius: 20,
-                                      backgroundImage: capturedPhotos.isNotEmpty
-                                          ? FileImage(File(capturedPhotos.last))
-                                          : null,
-                                      child: capturedPhotos.isEmpty
-                                          ? const Icon(
-                                              Icons.photo_library_outlined,
-                                              color: Colors.white,
-                                              size: 20,
-                                            )
-                                          : null,
+                          Container(
+                            width: 120,
+                            color: Colors.black.withOpacity(0.5),
+                            child: Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  SizedBox(
+                                    height: 48,
+                                    child: IconButton(
+                                      onPressed: showFlashDialog,
+                                      icon: getFlashIcon(),
+                                      iconSize: 30,
                                     ),
                                   ),
-                                ),
-                              ),
-                            ]),
-                      )
+                                  IconButton(
+                                    onPressed: _takePicture,
+                                    icon: const Icon(Icons.circle,
+                                        color: Colors.white),
+                                    iconSize: 70,
+                                  ),
+                                  SizedBox(
+                                    height: 48,
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        if (capturedPhotos.isNotEmpty) {
+                                          _navigateToPreview();
+                                        }
+                                      },
+                                      child: Badge(
+                                        isLabelVisible:
+                                            capturedPhotos.isNotEmpty,
+                                        label: Text(
+                                            capturedPhotos.length.toString()),
+                                        child: CircleAvatar(
+                                          radius: 20,
+                                          backgroundImage:
+                                              capturedPhotos.isNotEmpty
+                                                  ? FileImage(
+                                                      File(capturedPhotos.last))
+                                                  : null,
+                                          child: capturedPhotos.isEmpty
+                                              ? const Icon(
+                                                  Icons.photo_library_outlined,
+                                                  color: Colors.white,
+                                                  size: 20,
+                                                )
+                                              : null,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ]),
+                          )
                         ],
                       )
                     ],
