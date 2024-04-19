@@ -350,45 +350,48 @@ class _TakePictureScreenState extends State<TakePictureScreen>
                       Positioned.fill(
                         child: CameraPreview(_controller!),
                       ),
-                      Positioned(
-                          top: 0,
-                          left: 0,
-                          child: CollapsiblePanel(
-                            collapsed: !showPreviousPhoto,
-                            child: Container(
-                              constraints: const BoxConstraints(maxHeight: 250),
-                              decoration: BoxDecoration(
-                                  border: Border(
-                                right: BorderSide(
-                                    width: 1,
-                                    color: Theme.of(context).dividerColor),
-                                bottom: BorderSide(
-                                    width: 1,
-                                    color: Theme.of(context).dividerColor),
-                              )),
-                              child: Stack(
-                                children: [
-                                  CachedNetworkImage(
-                                    imageUrl: widget.inspectionPoint.photoUrl!,
-                                    height: 150,
-                                  ),
-                                  Positioned(
-                                      bottom: 0,
-                                      right: 0,
-                                      child: IconButton(
-                                        onPressed: () {
-                                          viewImage(context,
-                                              imageUrl: widget
-                                                  .inspectionPoint.photoUrl!);
-                                        },
-                                        icon: const Icon(Icons.fullscreen),
-                                        iconSize: 30,
-                                        color: Colors.white,
-                                      ))
-                                ],
+                      if (widget.inspectionPoint.photoUrl != null)
+                        Positioned(
+                            top: 0,
+                            left: 0,
+                            child: CollapsiblePanel(
+                              collapsed: !showPreviousPhoto,
+                              child: Container(
+                                constraints:
+                                    const BoxConstraints(maxHeight: 250),
+                                decoration: BoxDecoration(
+                                    border: Border(
+                                  right: BorderSide(
+                                      width: 1,
+                                      color: Theme.of(context).dividerColor),
+                                  bottom: BorderSide(
+                                      width: 1,
+                                      color: Theme.of(context).dividerColor),
+                                )),
+                                child: Stack(
+                                  children: [
+                                    CachedNetworkImage(
+                                      imageUrl:
+                                          widget.inspectionPoint.photoUrl!,
+                                      height: 150,
+                                    ),
+                                    Positioned(
+                                        bottom: 0,
+                                        right: 0,
+                                        child: IconButton(
+                                          onPressed: () {
+                                            viewImage(context,
+                                                imageUrl: widget
+                                                    .inspectionPoint.photoUrl!);
+                                          },
+                                          icon: const Icon(Icons.fullscreen),
+                                          iconSize: 30,
+                                          color: Colors.white,
+                                        ))
+                                  ],
+                                ),
                               ),
-                            ),
-                          )),
+                            )),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
