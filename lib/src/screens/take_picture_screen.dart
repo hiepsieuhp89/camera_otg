@@ -313,7 +313,9 @@ class _TakePictureScreenState extends State<TakePictureScreen>
 
                     if (index == 1) {
                       viewImage(context,
-                          imageUrl: widget.inspectionPoint.diagramUrl!,
+                          imageUrl:
+                              widget.inspectionPoint.diagramMarkedPhotoLink ??
+                                  widget.inspectionPoint.diagramUrl!,
                           marking: widget.inspectionPoint.diagramMarkingX !=
                                       null &&
                                   widget.inspectionPoint.diagramMarkingY != null
