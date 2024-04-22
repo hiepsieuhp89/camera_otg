@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,26 +11,23 @@ import 'package:kyoryo/src/utilities/image_utils.dart';
 
 class InpsectionPointListItem extends ConsumerWidget {
   final InspectionPoint point;
-  final bool isInspecting;
   final Function(InspectionPoint) startInspect;
 
   const InpsectionPointListItem(
-      {super.key,
-      required this.point,
-      this.isInspecting = false,
-      required this.startInspect});
+      {super.key, required this.point, required this.startInspect});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final inspection = ref.watch(bridgeInspectionProvider(point.bridgeId!));
-    InspectionPointReport? createdReport;
+    final activeReport = ref
+        .read(bridgeInspectionProvider(point.bridgeId!).notifier)
+        .findActiveReportFromPoint(point.id!);
 
-    try {
-      createdReport = inspection?.reports
-          .firstWhere((report) => report.inspectionPointId == point.id);
-    } catch (e) {
-      createdReport = null;
-    }
+    final previousReport = ref
+        .read(bridgeInspectionProvider(point.bridgeId!).notifier)
+        .findPreviousReportFromPoint(point.id!);
+
+    final hasActiveInspection =
+        ref.watch(hasActiveInspectionProvider(point.bridgeId!));
 
     String photoRefNumber = point.photoRefNumber != null
         ? '${AppLocalizations.of(context)!.photoRefNumber(point.photoRefNumber.toString())}：'
@@ -49,7 +47,8 @@ class InpsectionPointListItem extends ConsumerWidget {
             Row(
               children: <Widget>[
                 Expanded(
-                  child: _imageGroup(context, createdReport),
+                  child: _imageGroup(context, previousReport, activeReport,
+                      hasActiveInspection),
                 )
               ],
             ),
@@ -86,7 +85,7 @@ class InpsectionPointListItem extends ConsumerWidget {
                     child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    createdReport != null
+                    activeReport != null
                         ? Chip(
                             backgroundColor: Theme.of(context)
                                 .primaryColor
@@ -101,7 +100,7 @@ class InpsectionPointListItem extends ConsumerWidget {
                               ],
                             ))
                         : IconButton.filled(
-                            onPressed: isInspecting
+                            onPressed: hasActiveInspection
                                 ? () {
                                     startInspect(point);
                                   }
@@ -117,18 +116,30 @@ class InpsectionPointListItem extends ConsumerWidget {
     );
   }
 
-  Widget _imageGroup(BuildContext context, InspectionPointReport? report) {
+  Widget _imageGroup(
+      BuildContext context,
+      InspectionPointReport? previousReport,
+      InspectionPointReport? activeReport,
+      bool hasActiveInspection) {
+    final String previousPhoto = previousReport == null
+        ? ''
+        : previousReport.photos
+                .firstWhereOrNull(
+                    (photo) => photo.id == previousReport.preferredPhotoId)
+                ?.photoLink ??
+            previousReport.photos.first.photoLink;
+
     final images = point.type == InspectionPointType.damage
         ? [
             point.diagramMarkedPhotoLink ?? point.diagramUrl ?? '',
-            point.photoUrl ?? '',
+            previousPhoto,
           ]
-        : [point.photoUrl ?? ''];
+        : [previousPhoto];
 
-    if (isInspecting && report == null) {
+    if (hasActiveInspection && activeReport == null) {
       images.add('');
-    } else if (isInspecting && report != null) {
-      images.addAll(report.photos!.map((photo) => photo.photoLink));
+    } else if (hasActiveInspection && activeReport != null) {
+      images.addAll(activeReport.photos.map((photo) => photo.photoLink));
     }
 
     return SizedBox(

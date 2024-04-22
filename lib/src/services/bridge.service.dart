@@ -1,5 +1,6 @@
 import "package:kyoryo/src/models/bridge.dart";
 import "package:kyoryo/src/models/diagram.dart";
+import "package:kyoryo/src/models/inspection.dart";
 import "package:kyoryo/src/models/inspection_point.dart";
 import "package:kyoryo/src/services/base.service.dart";
 import "package:riverpod_annotation/riverpod_annotation.dart";
@@ -20,10 +21,8 @@ class BridgeService extends BaseApiService {
         .toList();
   }
 
-  Future<List<InspectionPoint>> fetchInspectionPoints(int brdigeId,
-      {String? timestamp}) async {
-    final jsonResponse = await get('bridges/$brdigeId/inspection_points',
-        query: {'timestamp': timestamp});
+  Future<List<InspectionPoint>> fetchInspectionPoints(int brdigeId) async {
+    final jsonResponse = await get('bridges/$brdigeId/inspection_points');
 
     return (jsonResponse as List)
         .map((inspectionPoint) => InspectionPoint.fromJson(inspectionPoint))
@@ -52,5 +51,13 @@ class BridgeService extends BaseApiService {
         diagram.toJson());
 
     return Diagram.fromJson(jsonResponse);
+  }
+
+  Future<List<Inspection>> fetchInspections(int bridgeId) async {
+    final jsonResponse = await get('bridges/$bridgeId/inspections');
+
+    return (jsonResponse as List)
+        .map((inspection) => Inspection.fromJson(inspection))
+        .toList();
   }
 }

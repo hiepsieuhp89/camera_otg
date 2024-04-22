@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:kyoryo/src/models/bridge.dart';
+import 'package:kyoryo/src/models/inspection.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
 import 'package:kyoryo/src/providers/current_bridge.provider.dart';
@@ -9,6 +10,7 @@ import 'package:kyoryo/src/providers/inspection_points.provider.dart';
 import 'package:kyoryo/src/screens/inspection_point_diagram_select_screen.dart';
 import 'package:kyoryo/src/screens/take_picture_screen.dart';
 import 'package:kyoryo/src/ui/inspection_point_list_item.dart';
+import 'package:kyoryo/src/utilities/async_value_extensions.dart';
 
 class InspectionPointFilter {
   const InspectionPointFilter(
@@ -41,72 +43,9 @@ class _BridgeInspectionScreenState
     Navigator.pushNamed(context, TakePictureScreen.routeName, arguments: point);
   }
 
-  void _startInspecting() {
-    ref
-        .watch(bridgeInspectionProvider(ref.watch(currentBridgeProvider)!.id)
-            .notifier)
-        .startInspection();
-  }
-
-  void _stopInspecting() {
-    ref
-        .watch(bridgeInspectionProvider(ref.watch(currentBridgeProvider)!.id)
-            .notifier)
-        .clearInspection();
-  }
-
-  void _endInspection() {
-    final numberOfInspectionPoints = ref
-            .watch(
-                inspectionPointsProvider(ref.watch(currentBridgeProvider)!.id))
-            .value
-            ?.length ??
-        0;
-    final inspection = ref
-        .watch(bridgeInspectionProvider(ref.watch(currentBridgeProvider)!.id));
-
-    if (numberOfInspectionPoints == (inspection?.reports.length ?? 0)) {
-      _stopInspecting();
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          showCloseIcon: true,
-          content: Text(
-              AppLocalizations.of(context)!.pleaseFinishAllInspectionPoints)));
-    }
-  }
-
   void _createNewInspectionPoint() {
     Navigator.of(context).pushNamed(
       InpsectionPointDiagramSelectScreen.routeName,
-    );
-  }
-
-  Future<void> _confirmCancelDialog() async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(AppLocalizations.of(context)!.cancelInspection),
-          content: SingleChildScrollView(
-            child: Text(AppLocalizations.of(context)!.cancelInspectionConfirm),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: Text(AppLocalizations.of(context)!.cancelInspection),
-              onPressed: () {
-                Navigator.of(context).pop();
-                _stopInspecting();
-              },
-            ),
-            TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: Text(AppLocalizations.of(context)!.continueInspecting)),
-          ],
-        );
-      },
     );
   }
 
@@ -119,8 +58,13 @@ class _BridgeInspectionScreenState
         ref.watch(inspectionPointsProvider(currentBridge.id));
     final filteredInspectionPoints =
         ref.watch(filteredInspectionPointsProvider(currentBridge.id));
-    final isInspecting =
-        ref.watch(bridgeInspectionProvider(currentBridge.id)) != null;
+    final bridgeInspection =
+        ref.watch(bridgeInspectionProvider(currentBridge.id));
+    final hasActiveInspection =
+        ref.watch(hasActiveInspectionProvider(currentBridge.id));
+
+    AsyncValue<(List<InspectionPoint>, List<Inspection?>)> requiredData =
+        (filteredInspectionPoints, bridgeInspection).watch;
 
     final List<InspectionPointFilter> filters = <InspectionPointFilter>[
       InspectionPointFilter(
@@ -143,7 +87,7 @@ class _BridgeInspectionScreenState
     return Scaffold(
         key: scaffoldKey,
         resizeToAvoidBottomInset: false,
-        drawer: buildNavigationDrawer(filters, isInspecting),
+        drawer: buildNavigationDrawer(filters, hasActiveInspection),
         appBar: buildAppBar(currentBridge),
         body: OrientationBuilder(
           builder: (context, orientation) {
@@ -162,92 +106,41 @@ class _BridgeInspectionScreenState
                             scaffoldKey.currentState!.openDrawer();
                           },
                         ),
-                        isInspecting
-                            ? FloatingActionButton(
-                                elevation: 0,
-                                onPressed: _endInspection,
-                                child: const Icon(Icons.check))
-                            : FloatingActionButton(
-                                elevation: 0,
-                                onPressed: _startInspecting,
-                                child: const Icon(Icons.play_arrow),
-                              ),
                       ]),
-                      selectedIndex: isInspecting ? null : selectedFilterIndex,
-                      labelType: isInspecting
-                          ? NavigationRailLabelType.none
-                          : NavigationRailLabelType.all,
-                      destinations: isInspecting
-                          ? [
-                              NavigationRailDestination(
-                                  icon: const Icon(Icons.broken_image_outlined),
-                                  label: Text(AppLocalizations.of(context)!
-                                      .createInspectionPoints)),
-                              NavigationRailDestination(
-                                  disabled: true,
-                                  icon: const Icon(
-                                    Icons.close,
-                                    color: Colors.white,
-                                  ),
-                                  label: Text(AppLocalizations.of(context)!
-                                      .cancelInspection)),
-                            ]
-                          : filters.map((filter) {
-                              return NavigationRailDestination(
-                                  icon: filter.icon,
-                                  label: Text(filter.label),
-                                  selectedIcon: filter.selectedIcon);
-                            }).toList(),
+                      selectedIndex:
+                          hasActiveInspection ? null : selectedFilterIndex,
+                      labelType: NavigationRailLabelType.all,
+                      destinations: [
+                        ...filters.map((filter) {
+                          return NavigationRailDestination(
+                              icon: filter.icon,
+                              label: Text(filter.label),
+                              selectedIcon: filter.selectedIcon);
+                        }),
+                        if (hasActiveInspection)
+                          NavigationRailDestination(
+                              icon: const Icon(Icons.broken_image_outlined),
+                              label:
+                                  Text(AppLocalizations.of(context)!.newDamage))
+                      ],
                       onDestinationSelected: (index) {
-                        if (isInspecting) {
-                          if (index == 1) {
-                            _confirmCancelDialog();
-                          } else {
-                            _createNewInspectionPoint();
-                          }
-                        } else {
-                          setState(() {
-                            selectedFilterIndex = index;
-                          });
-
-                          ref
-                              .watch(
-                                  currentInspectionPointTypeProvider.notifier)
-                              .set(filters[selectedFilterIndex].type);
+                        if (index == filters.length) {
+                          _createNewInspectionPoint();
+                          return;
                         }
+
+                        setState(() {
+                          selectedFilterIndex = index;
+                        });
+
+                        ref
+                            .watch(currentInspectionPointTypeProvider.notifier)
+                            .set(filters[selectedFilterIndex].type);
                       },
                       trailing: Expanded(
                         child: Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              Visibility(
-                                  visible: isInspecting,
-                                  child: PopupMenuButton<InspectionPointFilter>(
-                                    initialValue: filters[selectedFilterIndex],
-                                    onSelected: (filter) {
-                                      ref
-                                          .watch(
-                                              currentInspectionPointTypeProvider
-                                                  .notifier)
-                                          .set(filter.type);
-
-                                      selectedFilterIndex =
-                                          filters.indexOf((filter));
-                                      setState(() {});
-                                    },
-                                    itemBuilder: (BuildContext context) {
-                                      return filters.map((filter) {
-                                        return PopupMenuItem<
-                                                InspectionPointFilter>(
-                                            value: filter,
-                                            child: ListTile(
-                                              title: Text(filter.label),
-                                              leading: filter.icon,
-                                            ));
-                                      }).toList();
-                                    },
-                                    icon: const Icon(Icons.more_horiz),
-                                  )),
                               IconButton(
                                   icon: const Icon(Icons.arrow_back),
                                   onPressed: () {
@@ -293,31 +186,41 @@ class _BridgeInspectionScreenState
                         ),
                       ),
                       Expanded(
-                        child: filteredInspectionPoints.when(
+                        child: requiredData.when(
                           data: (data) {
-                            return Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: GridView.builder(
-                                gridDelegate:
-                                    SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount:
-                                      orientation == Orientation.portrait
-                                          ? 1
-                                          : 2,
-                                  mainAxisExtent: 232,
-                                  mainAxisSpacing: 8.0,
-                                  crossAxisSpacing: 8.0,
-                                ),
-                                itemCount: data.length,
-                                itemBuilder: (BuildContext context, int index) {
-                                  final point = data[index];
+                            return RefreshIndicator(
+                              onRefresh: () => Future.wait([
+                                ref.refresh(
+                                    bridgeInspectionProvider(currentBridge.id)
+                                        .future),
+                                ref.refresh(
+                                    inspectionPointsProvider(currentBridge.id)
+                                        .future),
+                              ]),
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: GridView.builder(
+                                  gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount:
+                                        orientation == Orientation.portrait
+                                            ? 1
+                                            : 2,
+                                    mainAxisExtent: 232,
+                                    mainAxisSpacing: 8.0,
+                                    crossAxisSpacing: 8.0,
+                                  ),
+                                  itemCount: data.$1.length,
+                                  itemBuilder:
+                                      (BuildContext context, int index) {
+                                    final point = data.$1[index];
 
-                                  return InpsectionPointListItem(
-                                    point: point,
-                                    isInspecting: isInspecting,
-                                    startInspect: _startInspectingPoint,
-                                  );
-                                },
+                                    return InpsectionPointListItem(
+                                      point: point,
+                                      startInspect: _startInspectingPoint,
+                                    );
+                                  },
+                                ),
                               ),
                             );
                           },
@@ -358,7 +261,7 @@ class _BridgeInspectionScreenState
           },
         ),
         bottomNavigationBar: buildBottomAppBar(
-            inspectionPoints, numberOfCreatedReports, isInspecting));
+            inspectionPoints, numberOfCreatedReports, hasActiveInspection));
   }
 
   BottomAppBar? buildBottomAppBar(
@@ -375,32 +278,13 @@ class _BridgeInspectionScreenState
                         numberOfCreatedReports, inspectionPoints.value!.length)
                     : ''),
                 Row(
-                  children: isInspecting
-                      ? [
-                          // IconButton(
-                          //     onPressed: _confirmCancelDialog,
-                          //     icon: const Icon(Icons.close)),
-                          IconButton(
-                              onPressed: _createNewInspectionPoint,
-                              icon: const Icon(Icons.broken_image_outlined)),
-                          FilledButton.icon(
-                              onPressed: numberOfCreatedReports ==
-                                      inspectionPoints.value!.length
-                                  ? _stopInspecting
-                                  : null,
-                              icon: const Icon(Icons.check),
-                              label: Text(AppLocalizations.of(context)!
-                                  .finishInspection))
-                        ]
-                      : [
-                          FilledButton.icon(
-                            onPressed: _startInspecting,
-                            icon: const Icon(Icons.play_arrow),
-                            label: Text(
-                                AppLocalizations.of(context)!.startInspection),
-                          )
-                        ],
-                )
+                    children: isInspecting
+                        ? [
+                            IconButton(
+                                onPressed: _createNewInspectionPoint,
+                                icon: const Icon(Icons.broken_image_outlined)),
+                          ]
+                        : [])
               ],
             ),
           )
@@ -454,38 +338,6 @@ class _BridgeInspectionScreenState
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: Column(
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: SizedBox(
-                          width: double.infinity,
-                          child: FilledButton(
-                              style: ButtonStyle(
-                                  padding: MaterialStateProperty.all(
-                                      const EdgeInsets.symmetric(
-                                          vertical: 12, horizontal: 12))),
-                              onPressed: isInspecting
-                                  ? _endInspection
-                                  : _startInspecting,
-                              child: Row(
-                                children: [
-                                  isInspecting
-                                      ? const Icon(Icons.check)
-                                      : const Icon(Icons.play_arrow),
-                                  Expanded(
-                                    child: Text(
-                                      isInspecting
-                                          ? AppLocalizations.of(context)!
-                                              .finishInspection
-                                          : AppLocalizations.of(context)!
-                                              .startInspection,
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 24),
-                                ],
-                              )),
-                        ),
-                      ),
                       Visibility(
                         visible: isInspecting,
                         child: Padding(
@@ -514,34 +366,6 @@ class _BridgeInspectionScreenState
                           ),
                         ),
                       ),
-                      // Visibility(
-                      //   visible: isInspecting,
-                      //   child: Padding(
-                      //     padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      //     child: SizedBox(
-                      //       width: double.infinity,
-                      //       child: OutlinedButton(
-                      //           style: ButtonStyle(
-                      //               padding: MaterialStateProperty.all(
-                      //                   const EdgeInsets.symmetric(
-                      //                       vertical: 12, horizontal: 12))),
-                      //           onPressed: _confirmCancelDialog,
-                      //           child: Row(
-                      //             children: [
-                      //               const Icon(Icons.close),
-                      //               Expanded(
-                      //                 child: Text(
-                      //                   AppLocalizations.of(context)!
-                      //                       .cancelInspection,
-                      //                   textAlign: TextAlign.center,
-                      //                 ),
-                      //               ),
-                      //               const SizedBox(width: 24),
-                      //             ],
-                      //           )),
-                      //     ),
-                      //   ),
-                      // ),
                       const Divider()
                     ],
                   ),

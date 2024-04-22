@@ -7,7 +7,7 @@ part of 'bridge_inspection.provider.dart';
 // **************************************************************************
 
 String _$numberOfCreatedReportsHash() =>
-    r'7e46f12be9e4e4157d53c046946d75ceed7c9352';
+    r'16bc224d7ce3b4f88e5dc7024d9aec6d8eb12bb4';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -157,12 +157,142 @@ class _NumberOfCreatedReportsProviderElement
   int get bridgeId => (origin as NumberOfCreatedReportsProvider).bridgeId;
 }
 
-String _$bridgeInspectionHash() => r'2382be4f20fef8b57b42563f74cdf98770dd0a9d';
+String _$hasActiveInspectionHash() =>
+    r'd2215298ef00846b9e6bc847a7c550ffb3d0e707';
 
-abstract class _$BridgeInspection extends BuildlessNotifier<Inspection?> {
+/// See also [hasActiveInspection].
+@ProviderFor(hasActiveInspection)
+const hasActiveInspectionProvider = HasActiveInspectionFamily();
+
+/// See also [hasActiveInspection].
+class HasActiveInspectionFamily extends Family<bool> {
+  /// See also [hasActiveInspection].
+  const HasActiveInspectionFamily();
+
+  /// See also [hasActiveInspection].
+  HasActiveInspectionProvider call(
+    int bridgeId,
+  ) {
+    return HasActiveInspectionProvider(
+      bridgeId,
+    );
+  }
+
+  @override
+  HasActiveInspectionProvider getProviderOverride(
+    covariant HasActiveInspectionProvider provider,
+  ) {
+    return call(
+      provider.bridgeId,
+    );
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'hasActiveInspectionProvider';
+}
+
+/// See also [hasActiveInspection].
+class HasActiveInspectionProvider extends AutoDisposeProvider<bool> {
+  /// See also [hasActiveInspection].
+  HasActiveInspectionProvider(
+    int bridgeId,
+  ) : this._internal(
+          (ref) => hasActiveInspection(
+            ref as HasActiveInspectionRef,
+            bridgeId,
+          ),
+          from: hasActiveInspectionProvider,
+          name: r'hasActiveInspectionProvider',
+          debugGetCreateSourceHash:
+              const bool.fromEnvironment('dart.vm.product')
+                  ? null
+                  : _$hasActiveInspectionHash,
+          dependencies: HasActiveInspectionFamily._dependencies,
+          allTransitiveDependencies:
+              HasActiveInspectionFamily._allTransitiveDependencies,
+          bridgeId: bridgeId,
+        );
+
+  HasActiveInspectionProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.bridgeId,
+  }) : super.internal();
+
+  final int bridgeId;
+
+  @override
+  Override overrideWith(
+    bool Function(HasActiveInspectionRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: HasActiveInspectionProvider._internal(
+        (ref) => create(ref as HasActiveInspectionRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        bridgeId: bridgeId,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeProviderElement<bool> createElement() {
+    return _HasActiveInspectionProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is HasActiveInspectionProvider && other.bridgeId == bridgeId;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, bridgeId.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+mixin HasActiveInspectionRef on AutoDisposeProviderRef<bool> {
+  /// The parameter `bridgeId` of this provider.
+  int get bridgeId;
+}
+
+class _HasActiveInspectionProviderElement
+    extends AutoDisposeProviderElement<bool> with HasActiveInspectionRef {
+  _HasActiveInspectionProviderElement(super.provider);
+
+  @override
+  int get bridgeId => (origin as HasActiveInspectionProvider).bridgeId;
+}
+
+String _$bridgeInspectionHash() => r'27f5c3f1ba91c69fe3c95e10f6f2888e318518a0';
+
+abstract class _$BridgeInspection
+    extends BuildlessAutoDisposeAsyncNotifier<List<Inspection?>> {
   late final int bridgeId;
 
-  Inspection? build(
+  FutureOr<List<Inspection?>> build(
     int bridgeId,
   );
 }
@@ -172,7 +302,7 @@ abstract class _$BridgeInspection extends BuildlessNotifier<Inspection?> {
 const bridgeInspectionProvider = BridgeInspectionFamily();
 
 /// See also [BridgeInspection].
-class BridgeInspectionFamily extends Family<Inspection?> {
+class BridgeInspectionFamily extends Family<AsyncValue<List<Inspection?>>> {
   /// See also [BridgeInspection].
   const BridgeInspectionFamily();
 
@@ -210,8 +340,8 @@ class BridgeInspectionFamily extends Family<Inspection?> {
 }
 
 /// See also [BridgeInspection].
-class BridgeInspectionProvider
-    extends NotifierProviderImpl<BridgeInspection, Inspection?> {
+class BridgeInspectionProvider extends AutoDisposeAsyncNotifierProviderImpl<
+    BridgeInspection, List<Inspection?>> {
   /// See also [BridgeInspection].
   BridgeInspectionProvider(
     int bridgeId,
@@ -242,7 +372,7 @@ class BridgeInspectionProvider
   final int bridgeId;
 
   @override
-  Inspection? runNotifierBuild(
+  FutureOr<List<Inspection?>> runNotifierBuild(
     covariant BridgeInspection notifier,
   ) {
     return notifier.build(
@@ -267,7 +397,8 @@ class BridgeInspectionProvider
   }
 
   @override
-  NotifierProviderElement<BridgeInspection, Inspection?> createElement() {
+  AutoDisposeAsyncNotifierProviderElement<BridgeInspection, List<Inspection?>>
+      createElement() {
     return _BridgeInspectionProviderElement(this);
   }
 
@@ -285,14 +416,15 @@ class BridgeInspectionProvider
   }
 }
 
-mixin BridgeInspectionRef on NotifierProviderRef<Inspection?> {
+mixin BridgeInspectionRef
+    on AutoDisposeAsyncNotifierProviderRef<List<Inspection?>> {
   /// The parameter `bridgeId` of this provider.
   int get bridgeId;
 }
 
 class _BridgeInspectionProviderElement
-    extends NotifierProviderElement<BridgeInspection, Inspection?>
-    with BridgeInspectionRef {
+    extends AutoDisposeAsyncNotifierProviderElement<BridgeInspection,
+        List<Inspection?>> with BridgeInspectionRef {
   _BridgeInspectionProviderElement(super.provider);
 
   @override
