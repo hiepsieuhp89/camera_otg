@@ -4,37 +4,70 @@ import 'package:collection/collection.dart';
 import 'package:kyoryo/src/models/inspection.dart';
 import 'package:kyoryo/src/models/inspection_point_report.dart';
 import 'package:kyoryo/src/models/photo.dart';
-import 'package:kyoryo/src/services/inspection_point_report.service.dart';
+import 'package:kyoryo/src/services/bridge.service.dart';
+import 'package:kyoryo/src/services/inspection.service.dart';
 import 'package:kyoryo/src/services/photo.service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'bridge_inspection.provider.g.dart';
 
-@Riverpod(keepAlive: true)
+@riverpod
 class BridgeInspection extends _$BridgeInspection {
   @override
-  Inspection? build(int bridgeId) {
-    return null;
-  }
+  Future<List<Inspection?>> build(int bridgeId) async {
+    final inspections =
+        await ref.read(bridgeServiceProvider).fetchInspections(bridgeId);
 
-  void addInspectionPointReport(int pointId, InspectionPointReport report) {
-    if (state == null) throw Exception('Inspection not started');
+    Inspection? latestActiveInspection;
+    Inspection? latestFinishedInspection;
 
-    state = state!.copyWith(reports: [...state!.reports, report]);
-  }
+    for (var inspection in inspections) {
+      if (!inspection.isFinished) {
+        latestActiveInspection = inspection;
+        break;
+      }
+    }
 
-  void startInspection() {
-    state =
-        Inspection(reports: [], timestamp: DateTime.now(), bridgeId: bridgeId);
-  }
+    for (var inspection in inspections.reversed) {
+      if (inspection.isFinished) {
+        latestFinishedInspection = inspection;
+        break;
+      }
+    }
 
-  void clearInspection() {
-    state = null;
+    List<Inspection?> inspectionsToReturn = [];
+
+    if (latestFinishedInspection != null) {
+      final inspection = await ref
+          .read(inspectionServiceProvider)
+          .fetchInspection(latestFinishedInspection.id!);
+
+      inspectionsToReturn.add(inspection);
+    } else {
+      inspectionsToReturn.add(null);
+    }
+
+    if (latestActiveInspection != null) {
+      final inspection = await ref
+          .read(inspectionServiceProvider)
+          .fetchInspection(latestActiveInspection.id!);
+
+      inspectionsToReturn.add(inspection);
+    } else {
+      inspectionsToReturn.add(null);
+    }
+
+    return inspectionsToReturn;
   }
 
   Future<void> createReport(int pointId, List<String> capturedPhotoPaths,
       Map<String, dynamic>? metadata, int preferredPhotoIndex) async {
-    if (state == null) throw Exception('Inspection not started');
+    final currentState = await future;
+
+    if (currentState[1] == null) {
+      throw Exception('No active inspection found');
+    }
+
     int? preferredPhotoId;
 
     List<Future<Photo>> photoFutures = capturedPhotoPaths
@@ -50,26 +83,50 @@ class BridgeInspection extends _$BridgeInspection {
 
     final uploadedPhotos = await Future.wait(photoFutures);
 
-    // NOTE: This is a temporary workaround to group inspection results by timestamp
-    final metadataWithTimestamp = <String, dynamic>{
-      ...?metadata,
-      'preferred_photo_id': preferredPhotoId,
-      'timestamp': state!.timestamp.toIso8601String()
-    };
-
     final report = await ref
-        .read(inspectionPointReportServiceProvider)
+        .read(inspectionServiceProvider)
         .createReport(
+            currentState[1]!.id!,
             pointId,
             uploadedPhotos.map((photo) => photo.id!).toList(),
-            metadataWithTimestamp)
+            preferredPhotoId,
+            metadata)
         .then((report) => report.copyWith(photos: uploadedPhotos));
 
-    addInspectionPointReport(pointId, report);
+    final currentActiveInspection = currentState[1]!.copyWith(reports: [
+      ...currentState[1]!.reports,
+      report,
+    ]);
+    state = AsyncData([currentState[0], currentActiveInspection]);
+  }
+
+  InspectionPointReport? findPreviousReportFromPoint(int pointId) {
+    final previousInspection = state.value?[0];
+
+    return previousInspection?.reports
+        .firstWhereOrNull((report) => report.inspectionPointId == pointId);
+  }
+
+  InspectionPointReport? findActiveReportFromPoint(int pointId) {
+    final activeInspection = state.value?[1];
+
+    return activeInspection?.reports
+        .firstWhereOrNull((report) => report.inspectionPointId == pointId);
   }
 }
 
 @riverpod
 int numberOfCreatedReports(NumberOfCreatedReportsRef ref, int bridgeId) {
-  return ref.watch(bridgeInspectionProvider(bridgeId))?.reports.length ?? 0;
+  final activeInspection =
+      ref.watch(bridgeInspectionProvider(bridgeId)).value?[1];
+
+  return activeInspection?.reports.length ?? 0;
+}
+
+@riverpod
+bool hasActiveInspection(HasActiveInspectionRef ref, int bridgeId) {
+  final activeInspection =
+      ref.watch(bridgeInspectionProvider(bridgeId)).value?[1];
+
+  return activeInspection != null;
 }

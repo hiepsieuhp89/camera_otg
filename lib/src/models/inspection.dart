@@ -10,8 +10,10 @@ part 'inspection.g.dart';
 class Inspection with _$Inspection {
   factory Inspection({
     int? id,
-    required DateTime timestamp,
+    @JsonKey(name: 'is_finished') required bool isFinished,
     @JsonKey(name: 'bridge_id') required int bridgeId,
+    @JsonKey(name: 'start_date') DateTime? startDate,
+    @JsonKey(name: 'end_date') DateTime? endDate,
     @Default([]) List<InspectionPointReport> reports,
   }) = _Inspection;
 

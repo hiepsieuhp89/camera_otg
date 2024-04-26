@@ -11,8 +11,9 @@ class InspectionPointReport with _$InspectionPointReport {
   factory InspectionPointReport({
     int? id,
     @JsonKey(name: 'inspection_point_id') required int inspectionPointId,
+    @JsonKey(name: 'preferred_photo_id') int? preferredPhotoId,
     DateTime? date,
-    List<Photo>? photos,
+    @Default([]) List<Photo> photos,
   }) = _InspectionPointReport;
 
   factory InspectionPointReport.fromJson(Map<String, dynamic> json) =>

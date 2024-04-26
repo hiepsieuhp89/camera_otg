@@ -24,8 +24,10 @@ mixin _$InspectionPointReport {
   int? get id => throw _privateConstructorUsedError;
   @JsonKey(name: 'inspection_point_id')
   int get inspectionPointId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'preferred_photo_id')
+  int? get preferredPhotoId => throw _privateConstructorUsedError;
   DateTime? get date => throw _privateConstructorUsedError;
-  List<Photo>? get photos => throw _privateConstructorUsedError;
+  List<Photo> get photos => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -42,8 +44,9 @@ abstract class $InspectionPointReportCopyWith<$Res> {
   $Res call(
       {int? id,
       @JsonKey(name: 'inspection_point_id') int inspectionPointId,
+      @JsonKey(name: 'preferred_photo_id') int? preferredPhotoId,
       DateTime? date,
-      List<Photo>? photos});
+      List<Photo> photos});
 }
 
 /// @nodoc
@@ -62,8 +65,9 @@ class _$InspectionPointReportCopyWithImpl<$Res,
   $Res call({
     Object? id = freezed,
     Object? inspectionPointId = null,
+    Object? preferredPhotoId = freezed,
     Object? date = freezed,
-    Object? photos = freezed,
+    Object? photos = null,
   }) {
     return _then(_value.copyWith(
       id: freezed == id
@@ -74,14 +78,18 @@ class _$InspectionPointReportCopyWithImpl<$Res,
           ? _value.inspectionPointId
           : inspectionPointId // ignore: cast_nullable_to_non_nullable
               as int,
+      preferredPhotoId: freezed == preferredPhotoId
+          ? _value.preferredPhotoId
+          : preferredPhotoId // ignore: cast_nullable_to_non_nullable
+              as int?,
       date: freezed == date
           ? _value.date
           : date // ignore: cast_nullable_to_non_nullable
               as DateTime?,
-      photos: freezed == photos
+      photos: null == photos
           ? _value.photos
           : photos // ignore: cast_nullable_to_non_nullable
-              as List<Photo>?,
+              as List<Photo>,
     ) as $Val);
   }
 }
@@ -98,8 +106,9 @@ abstract class _$$InspectionPointReportImplCopyWith<$Res>
   $Res call(
       {int? id,
       @JsonKey(name: 'inspection_point_id') int inspectionPointId,
+      @JsonKey(name: 'preferred_photo_id') int? preferredPhotoId,
       DateTime? date,
-      List<Photo>? photos});
+      List<Photo> photos});
 }
 
 /// @nodoc
@@ -116,8 +125,9 @@ class __$$InspectionPointReportImplCopyWithImpl<$Res>
   $Res call({
     Object? id = freezed,
     Object? inspectionPointId = null,
+    Object? preferredPhotoId = freezed,
     Object? date = freezed,
-    Object? photos = freezed,
+    Object? photos = null,
   }) {
     return _then(_$InspectionPointReportImpl(
       id: freezed == id
@@ -128,14 +138,18 @@ class __$$InspectionPointReportImplCopyWithImpl<$Res>
           ? _value.inspectionPointId
           : inspectionPointId // ignore: cast_nullable_to_non_nullable
               as int,
+      preferredPhotoId: freezed == preferredPhotoId
+          ? _value.preferredPhotoId
+          : preferredPhotoId // ignore: cast_nullable_to_non_nullable
+              as int?,
       date: freezed == date
           ? _value.date
           : date // ignore: cast_nullable_to_non_nullable
               as DateTime?,
-      photos: freezed == photos
+      photos: null == photos
           ? _value._photos
           : photos // ignore: cast_nullable_to_non_nullable
-              as List<Photo>?,
+              as List<Photo>,
     ));
   }
 }
@@ -146,8 +160,9 @@ class _$InspectionPointReportImpl implements _InspectionPointReport {
   _$InspectionPointReportImpl(
       {this.id,
       @JsonKey(name: 'inspection_point_id') required this.inspectionPointId,
+      @JsonKey(name: 'preferred_photo_id') this.preferredPhotoId,
       this.date,
-      final List<Photo>? photos})
+      final List<Photo> photos = const []})
       : _photos = photos;
 
   factory _$InspectionPointReportImpl.fromJson(Map<String, dynamic> json) =>
@@ -159,20 +174,22 @@ class _$InspectionPointReportImpl implements _InspectionPointReport {
   @JsonKey(name: 'inspection_point_id')
   final int inspectionPointId;
   @override
-  final DateTime? date;
-  final List<Photo>? _photos;
+  @JsonKey(name: 'preferred_photo_id')
+  final int? preferredPhotoId;
   @override
-  List<Photo>? get photos {
-    final value = _photos;
-    if (value == null) return null;
+  final DateTime? date;
+  final List<Photo> _photos;
+  @override
+  @JsonKey()
+  List<Photo> get photos {
     if (_photos is EqualUnmodifiableListView) return _photos;
     // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(value);
+    return EqualUnmodifiableListView(_photos);
   }
 
   @override
   String toString() {
-    return 'InspectionPointReport(id: $id, inspectionPointId: $inspectionPointId, date: $date, photos: $photos)';
+    return 'InspectionPointReport(id: $id, inspectionPointId: $inspectionPointId, preferredPhotoId: $preferredPhotoId, date: $date, photos: $photos)';
   }
 
   @override
@@ -183,14 +200,16 @@ class _$InspectionPointReportImpl implements _InspectionPointReport {
             (identical(other.id, id) || other.id == id) &&
             (identical(other.inspectionPointId, inspectionPointId) ||
                 other.inspectionPointId == inspectionPointId) &&
+            (identical(other.preferredPhotoId, preferredPhotoId) ||
+                other.preferredPhotoId == preferredPhotoId) &&
             (identical(other.date, date) || other.date == date) &&
             const DeepCollectionEquality().equals(other._photos, _photos));
   }
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(runtimeType, id, inspectionPointId, date,
-      const DeepCollectionEquality().hash(_photos));
+  int get hashCode => Object.hash(runtimeType, id, inspectionPointId,
+      preferredPhotoId, date, const DeepCollectionEquality().hash(_photos));
 
   @JsonKey(ignore: true)
   @override
@@ -212,8 +231,9 @@ abstract class _InspectionPointReport implements InspectionPointReport {
       {final int? id,
       @JsonKey(name: 'inspection_point_id')
       required final int inspectionPointId,
+      @JsonKey(name: 'preferred_photo_id') final int? preferredPhotoId,
       final DateTime? date,
-      final List<Photo>? photos}) = _$InspectionPointReportImpl;
+      final List<Photo> photos}) = _$InspectionPointReportImpl;
 
   factory _InspectionPointReport.fromJson(Map<String, dynamic> json) =
       _$InspectionPointReportImpl.fromJson;
@@ -224,9 +244,12 @@ abstract class _InspectionPointReport implements InspectionPointReport {
   @JsonKey(name: 'inspection_point_id')
   int get inspectionPointId;
   @override
+  @JsonKey(name: 'preferred_photo_id')
+  int? get preferredPhotoId;
+  @override
   DateTime? get date;
   @override
-  List<Photo>? get photos;
+  List<Photo> get photos;
   @override
   @JsonKey(ignore: true)
   _$$InspectionPointReportImplCopyWith<_$InspectionPointReportImpl>

@@ -21,9 +21,14 @@ Inspection _$InspectionFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$Inspection {
   int? get id => throw _privateConstructorUsedError;
-  DateTime get timestamp => throw _privateConstructorUsedError;
+  @JsonKey(name: 'is_finished')
+  bool get isFinished => throw _privateConstructorUsedError;
   @JsonKey(name: 'bridge_id')
   int get bridgeId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'start_date')
+  DateTime? get startDate => throw _privateConstructorUsedError;
+  @JsonKey(name: 'end_date')
+  DateTime? get endDate => throw _privateConstructorUsedError;
   List<InspectionPointReport> get reports => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -40,8 +45,10 @@ abstract class $InspectionCopyWith<$Res> {
   @useResult
   $Res call(
       {int? id,
-      DateTime timestamp,
+      @JsonKey(name: 'is_finished') bool isFinished,
       @JsonKey(name: 'bridge_id') int bridgeId,
+      @JsonKey(name: 'start_date') DateTime? startDate,
+      @JsonKey(name: 'end_date') DateTime? endDate,
       List<InspectionPointReport> reports});
 }
 
@@ -59,8 +66,10 @@ class _$InspectionCopyWithImpl<$Res, $Val extends Inspection>
   @override
   $Res call({
     Object? id = freezed,
-    Object? timestamp = null,
+    Object? isFinished = null,
     Object? bridgeId = null,
+    Object? startDate = freezed,
+    Object? endDate = freezed,
     Object? reports = null,
   }) {
     return _then(_value.copyWith(
@@ -68,14 +77,22 @@ class _$InspectionCopyWithImpl<$Res, $Val extends Inspection>
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
               as int?,
-      timestamp: null == timestamp
-          ? _value.timestamp
-          : timestamp // ignore: cast_nullable_to_non_nullable
-              as DateTime,
+      isFinished: null == isFinished
+          ? _value.isFinished
+          : isFinished // ignore: cast_nullable_to_non_nullable
+              as bool,
       bridgeId: null == bridgeId
           ? _value.bridgeId
           : bridgeId // ignore: cast_nullable_to_non_nullable
               as int,
+      startDate: freezed == startDate
+          ? _value.startDate
+          : startDate // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+      endDate: freezed == endDate
+          ? _value.endDate
+          : endDate // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
       reports: null == reports
           ? _value.reports
           : reports // ignore: cast_nullable_to_non_nullable
@@ -94,8 +111,10 @@ abstract class _$$InspectionImplCopyWith<$Res>
   @useResult
   $Res call(
       {int? id,
-      DateTime timestamp,
+      @JsonKey(name: 'is_finished') bool isFinished,
       @JsonKey(name: 'bridge_id') int bridgeId,
+      @JsonKey(name: 'start_date') DateTime? startDate,
+      @JsonKey(name: 'end_date') DateTime? endDate,
       List<InspectionPointReport> reports});
 }
 
@@ -111,8 +130,10 @@ class __$$InspectionImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? id = freezed,
-    Object? timestamp = null,
+    Object? isFinished = null,
     Object? bridgeId = null,
+    Object? startDate = freezed,
+    Object? endDate = freezed,
     Object? reports = null,
   }) {
     return _then(_$InspectionImpl(
@@ -120,14 +141,22 @@ class __$$InspectionImplCopyWithImpl<$Res>
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
               as int?,
-      timestamp: null == timestamp
-          ? _value.timestamp
-          : timestamp // ignore: cast_nullable_to_non_nullable
-              as DateTime,
+      isFinished: null == isFinished
+          ? _value.isFinished
+          : isFinished // ignore: cast_nullable_to_non_nullable
+              as bool,
       bridgeId: null == bridgeId
           ? _value.bridgeId
           : bridgeId // ignore: cast_nullable_to_non_nullable
               as int,
+      startDate: freezed == startDate
+          ? _value.startDate
+          : startDate // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+      endDate: freezed == endDate
+          ? _value.endDate
+          : endDate // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
       reports: null == reports
           ? _value._reports
           : reports // ignore: cast_nullable_to_non_nullable
@@ -141,8 +170,10 @@ class __$$InspectionImplCopyWithImpl<$Res>
 class _$InspectionImpl implements _Inspection {
   _$InspectionImpl(
       {this.id,
-      required this.timestamp,
+      @JsonKey(name: 'is_finished') required this.isFinished,
       @JsonKey(name: 'bridge_id') required this.bridgeId,
+      @JsonKey(name: 'start_date') this.startDate,
+      @JsonKey(name: 'end_date') this.endDate,
       final List<InspectionPointReport> reports = const []})
       : _reports = reports;
 
@@ -152,10 +183,17 @@ class _$InspectionImpl implements _Inspection {
   @override
   final int? id;
   @override
-  final DateTime timestamp;
+  @JsonKey(name: 'is_finished')
+  final bool isFinished;
   @override
   @JsonKey(name: 'bridge_id')
   final int bridgeId;
+  @override
+  @JsonKey(name: 'start_date')
+  final DateTime? startDate;
+  @override
+  @JsonKey(name: 'end_date')
+  final DateTime? endDate;
   final List<InspectionPointReport> _reports;
   @override
   @JsonKey()
@@ -167,7 +205,7 @@ class _$InspectionImpl implements _Inspection {
 
   @override
   String toString() {
-    return 'Inspection(id: $id, timestamp: $timestamp, bridgeId: $bridgeId, reports: $reports)';
+    return 'Inspection(id: $id, isFinished: $isFinished, bridgeId: $bridgeId, startDate: $startDate, endDate: $endDate, reports: $reports)';
   }
 
   @override
@@ -176,17 +214,20 @@ class _$InspectionImpl implements _Inspection {
         (other.runtimeType == runtimeType &&
             other is _$InspectionImpl &&
             (identical(other.id, id) || other.id == id) &&
-            (identical(other.timestamp, timestamp) ||
-                other.timestamp == timestamp) &&
+            (identical(other.isFinished, isFinished) ||
+                other.isFinished == isFinished) &&
             (identical(other.bridgeId, bridgeId) ||
                 other.bridgeId == bridgeId) &&
+            (identical(other.startDate, startDate) ||
+                other.startDate == startDate) &&
+            (identical(other.endDate, endDate) || other.endDate == endDate) &&
             const DeepCollectionEquality().equals(other._reports, _reports));
   }
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(runtimeType, id, timestamp, bridgeId,
-      const DeepCollectionEquality().hash(_reports));
+  int get hashCode => Object.hash(runtimeType, id, isFinished, bridgeId,
+      startDate, endDate, const DeepCollectionEquality().hash(_reports));
 
   @JsonKey(ignore: true)
   @override
@@ -205,8 +246,10 @@ class _$InspectionImpl implements _Inspection {
 abstract class _Inspection implements Inspection {
   factory _Inspection(
       {final int? id,
-      required final DateTime timestamp,
+      @JsonKey(name: 'is_finished') required final bool isFinished,
       @JsonKey(name: 'bridge_id') required final int bridgeId,
+      @JsonKey(name: 'start_date') final DateTime? startDate,
+      @JsonKey(name: 'end_date') final DateTime? endDate,
       final List<InspectionPointReport> reports}) = _$InspectionImpl;
 
   factory _Inspection.fromJson(Map<String, dynamic> json) =
@@ -215,10 +258,17 @@ abstract class _Inspection implements Inspection {
   @override
   int? get id;
   @override
-  DateTime get timestamp;
+  @JsonKey(name: 'is_finished')
+  bool get isFinished;
   @override
   @JsonKey(name: 'bridge_id')
   int get bridgeId;
+  @override
+  @JsonKey(name: 'start_date')
+  DateTime? get startDate;
+  @override
+  @JsonKey(name: 'end_date')
+  DateTime? get endDate;
   @override
   List<InspectionPointReport> get reports;
   @override
