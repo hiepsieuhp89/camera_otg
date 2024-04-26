@@ -1,6 +1,7 @@
 // ignore_for_file: invalid_annotation_target
 
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:kyoryo/src/models/diagram.dart';
 part 'inspection_point.freezed.dart';
 part 'inspection_point.g.dart';
 
@@ -17,6 +18,7 @@ class InspectionPoint with _$InspectionPoint {
       {int? id,
       required InspectionPointType type,
       String? name,
+      Diagram? diagram,
       @JsonKey(name: 'bridge_id') int? bridgeId,
       @JsonKey(name: 'photo_url') String? photoUrl,
       @JsonKey(name: 'diagram_url') String? diagramUrl,
