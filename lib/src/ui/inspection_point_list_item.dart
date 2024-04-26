@@ -131,7 +131,9 @@ class InpsectionPointListItem extends ConsumerWidget {
 
     final images = point.type == InspectionPointType.damage
         ? [
-            point.diagramMarkedPhotoLink ?? point.diagramUrl ?? '',
+            point.diagramMarkedPhotoLink ??
+                point.diagram?.photo?.photoLink ??
+                '',
             previousPhoto,
           ]
         : [previousPhoto];
