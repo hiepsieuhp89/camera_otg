@@ -5,7 +5,10 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
+import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
+import 'package:kyoryo/src/services/inspection_point_report.service.dart';
 
 class BridgeInspectionPhotoSelectionScreenArguments {
   final List<String> photoPaths;
@@ -15,7 +18,7 @@ class BridgeInspectionPhotoSelectionScreenArguments {
       {required this.photoPaths, required this.point});
 }
 
-class BridgeInspectionPhotoSelectionScreen extends StatefulWidget {
+class BridgeInspectionPhotoSelectionScreen extends ConsumerStatefulWidget {
   final BridgeInspectionPhotoSelectionScreenArguments arguments;
 
   static const routeName = '/bridge-inspection-photo-selection';
@@ -24,17 +27,26 @@ class BridgeInspectionPhotoSelectionScreen extends StatefulWidget {
       {super.key, required this.arguments});
 
   @override
-  State<BridgeInspectionPhotoSelectionScreen> createState() =>
+  ConsumerState<BridgeInspectionPhotoSelectionScreen> createState() =>
       _BridgeInspectionPhotoSelectionScreenState();
 }
 
 class _BridgeInspectionPhotoSelectionScreenState
-    extends State<BridgeInspectionPhotoSelectionScreen> {
+    extends ConsumerState<BridgeInspectionPhotoSelectionScreen> {
   String? selectedPhotoPath;
   String? currentlyShowingPhoto;
 
   @override
   Widget build(BuildContext context) {
+    final previousReport = ref
+        .read(
+            bridgeInspectionProvider(widget.arguments.point.bridgeId!).notifier)
+        .findPreviousReportFromPoint(widget.arguments.point.id!);
+
+    final previousPhoto = ref
+        .read(inspectionPointReportServiceProvider)
+        .getPreferredPhotoFromReport(previousReport);
+
     return PopScope(
       canPop: false,
       onPopInvoked: (didPoke) {
@@ -64,12 +76,12 @@ class _BridgeInspectionPhotoSelectionScreenState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                    child: widget.arguments.point.photoUrl == null
+                    child: previousPhoto == null
                         ? Center(
                             child: Text(
                                 AppLocalizations.of(context)!.noPastPhotoFound))
                         : CachedNetworkImage(
-                            imageUrl: widget.arguments.point.photoUrl!)),
+                            imageUrl: previousPhoto.photoLink)),
                 buildPhotosCarousel(context, orientation),
               ],
             );
@@ -81,12 +93,12 @@ class _BridgeInspectionPhotoSelectionScreenState
                     flex: 1,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                      child: widget.arguments.point.photoUrl == null
+                      child: previousPhoto == null
                           ? Center(
                               child: Text(AppLocalizations.of(context)!
                                   .noPastPhotoFound))
                           : CachedNetworkImage(
-                              imageUrl: widget.arguments.point.photoUrl!,
+                              imageUrl: previousPhoto.photoLink,
                             ),
                     )),
               ],

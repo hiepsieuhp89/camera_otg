@@ -1,4 +1,3 @@
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,7 +5,9 @@ import 'package:intl/intl.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/models/inspection_point_report.dart';
 import 'package:kyoryo/src/models/marking.dart';
+import 'package:kyoryo/src/models/photo.dart';
 import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
+import 'package:kyoryo/src/services/inspection_point_report.service.dart';
 import 'package:kyoryo/src/utilities/image_utils.dart';
 
 class InpsectionPointListItem extends ConsumerWidget {
@@ -25,6 +26,10 @@ class InpsectionPointListItem extends ConsumerWidget {
     final previousReport = ref
         .read(bridgeInspectionProvider(point.bridgeId!).notifier)
         .findPreviousReportFromPoint(point.id!);
+
+    final previousPhoto = ref
+        .read(inspectionPointReportServiceProvider)
+        .getPreferredPhotoFromReport(previousReport);
 
     final hasActiveInspection =
         ref.watch(hasActiveInspectionProvider(point.bridgeId!));
@@ -47,7 +52,7 @@ class InpsectionPointListItem extends ConsumerWidget {
             Row(
               children: <Widget>[
                 Expanded(
-                  child: _imageGroup(context, previousReport, activeReport,
+                  child: _imageGroup(context, previousPhoto, activeReport,
                       hasActiveInspection),
                 )
               ],
@@ -116,39 +121,28 @@ class InpsectionPointListItem extends ConsumerWidget {
     );
   }
 
-  Widget _imageGroup(
-      BuildContext context,
-      InspectionPointReport? previousReport,
-      InspectionPointReport? activeReport,
-      bool hasActiveInspection) {
-    final String previousPhoto = previousReport == null
-        ? ''
-        : previousReport.photos
-                .firstWhereOrNull(
-                    (photo) => photo.id == previousReport.preferredPhotoId)
-                ?.photoLink ??
-            previousReport.photos.first.photoLink;
-
-    final images = point.type == InspectionPointType.damage
+  Widget _imageGroup(BuildContext context, Photo? previousPhoto,
+      InspectionPointReport? activeReport, bool hasActiveInspection) {
+    final List<String> imagePaths = point.type == InspectionPointType.damage
         ? [
             point.diagramMarkedPhotoLink ??
                 point.diagram?.photo?.photoLink ??
                 '',
-            previousPhoto,
+            previousPhoto?.photoLink ?? '',
           ]
-        : [previousPhoto];
+        : [previousPhoto?.photoLink ?? ''];
 
     if (hasActiveInspection && activeReport == null) {
-      images.add('');
+      imagePaths.add('');
     } else if (hasActiveInspection && activeReport != null) {
-      images.addAll(activeReport.photos.map((photo) => photo.photoLink));
+      imagePaths.addAll(activeReport.photos.map((photo) => photo.photoLink));
     }
 
     return SizedBox(
         height: 120,
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
-          itemCount: images.length,
+          itemCount: imagePaths.length,
           separatorBuilder: (context, index) {
             if ((point.type == InspectionPointType.damage && index == 1) ||
                 (point.type == InspectionPointType.presentCondition &&
@@ -165,7 +159,7 @@ class InpsectionPointListItem extends ConsumerWidget {
             return const SizedBox(width: 12);
           },
           itemBuilder: (context, index) {
-            if (images[index] == '') {
+            if (imagePaths[index] == '') {
               return Container(
                 width: 120,
                 height: 120,
@@ -185,7 +179,7 @@ class InpsectionPointListItem extends ConsumerWidget {
               );
             }
 
-            return buildImageContainer(context, images, images[index]);
+            return buildImageContainer(context, imagePaths, imagePaths[index]);
           },
         ));
   }

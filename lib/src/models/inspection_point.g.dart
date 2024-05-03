@@ -16,7 +16,6 @@ _$InpsectionPointImpl _$$InpsectionPointImplFromJson(
           ? null
           : Diagram.fromJson(json['diagram'] as Map<String, dynamic>),
       bridgeId: json['bridge_id'] as int?,
-      photoUrl: json['photo_url'] as String?,
       diagramUrl: json['diagram_url'] as String?,
       diagramId: json['diagram_id'] as int?,
       diagramMarkingX: json['diagram_marking_x'] as int?,
@@ -36,7 +35,6 @@ Map<String, dynamic> _$$InpsectionPointImplToJson(
       'name': instance.name,
       'diagram': instance.diagram,
       'bridge_id': instance.bridgeId,
-      'photo_url': instance.photoUrl,
       'diagram_url': instance.diagramUrl,
       'diagram_id': instance.diagramId,
       'diagram_marking_x': instance.diagramMarkingX,
