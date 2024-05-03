@@ -5,29 +5,34 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/models/marking.dart';
+import 'package:kyoryo/src/models/photo.dart';
+import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
 import 'package:kyoryo/src/screens/bridge_inspection_evaluation_screen.dart';
 import 'package:kyoryo/src/screens/preview_pictures_screen.dart';
+import 'package:kyoryo/src/services/inspection_point_report.service.dart';
 import 'package:kyoryo/src/ui/collapsible_panel.dart';
 import 'package:kyoryo/src/utilities/image_utils.dart';
 import 'package:audioplayers/audioplayers.dart';
 
-class TakePictureScreen extends StatefulWidget {
+class TakePictureScreen extends ConsumerStatefulWidget {
   const TakePictureScreen({super.key, required this.inspectionPoint});
 
   final InspectionPoint inspectionPoint;
   static const routeName = '/take-picture';
 
   @override
-  State<TakePictureScreen> createState() => _TakePictureScreenState();
+  ConsumerState<TakePictureScreen> createState() => _TakePictureScreenState();
 }
 
-class _TakePictureScreenState extends State<TakePictureScreen>
+class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
     with WidgetsBindingObserver {
   CameraController? _controller;
   Future<void>? _initializeControllerFuture;
   Orientation? currentOrientation;
+  Photo? previousPhoto;
   List<String> capturedPhotos = [];
   List<XFile> processingQueue = [];
   bool isProcessing = false;
@@ -52,11 +57,19 @@ class _TakePictureScreenState extends State<TakePictureScreen>
     _initCamera();
     _setLandscapeOrientation();
 
-    if (widget.inspectionPoint.photoUrl != null) {
-      setState(() {
-        showPreviousPhoto = true;
-      });
-    }
+    final previousReport = ref
+        .read(
+            bridgeInspectionProvider(widget.inspectionPoint.bridgeId!).notifier)
+        .findPreviousReportFromPoint(widget.inspectionPoint.id!);
+
+    final preferredPhotoFromPreviousReport = ref
+        .read(inspectionPointReportServiceProvider)
+        .getPreferredPhotoFromReport(previousReport);
+
+    setState(() {
+      previousPhoto = preferredPhotoFromPreviousReport;
+      showPreviousPhoto = preferredPhotoFromPreviousReport != null;
+    });
   }
 
   @override
@@ -325,7 +338,7 @@ class _TakePictureScreenState extends State<TakePictureScreen>
                   },
                   destinations: [
                     NavigationRailDestination(
-                      disabled: widget.inspectionPoint.photoUrl == null,
+                      disabled: previousPhoto == null,
                       icon: const Icon(Icons.photo_outlined),
                       selectedIcon: const Icon(Icons.photo),
                       label: Text(
@@ -350,7 +363,7 @@ class _TakePictureScreenState extends State<TakePictureScreen>
                       Positioned.fill(
                         child: CameraPreview(_controller!),
                       ),
-                      if (widget.inspectionPoint.photoUrl != null)
+                      if (previousPhoto != null)
                         Positioned(
                             top: 0,
                             left: 0,
@@ -371,8 +384,7 @@ class _TakePictureScreenState extends State<TakePictureScreen>
                                 child: Stack(
                                   children: [
                                     CachedNetworkImage(
-                                      imageUrl:
-                                          widget.inspectionPoint.photoUrl!,
+                                      imageUrl: previousPhoto!.photoLink,
                                       height: 150,
                                     ),
                                     Positioned(
@@ -381,8 +393,8 @@ class _TakePictureScreenState extends State<TakePictureScreen>
                                         child: IconButton(
                                           onPressed: () {
                                             viewImage(context,
-                                                imageUrl: widget
-                                                    .inspectionPoint.photoUrl!);
+                                                imageUrl:
+                                                    previousPhoto!.photoLink);
                                           },
                                           icon: const Icon(Icons.fullscreen),
                                           iconSize: 30,
