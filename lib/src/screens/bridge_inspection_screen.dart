@@ -228,7 +228,7 @@ class _BridgeInspectionScreenState
                             child: CircularProgressIndicator(),
                           ),
                           error: (error, stackTrace) {
-                            debugPrint('Error: $error');
+                            debugPrint('Error: $error, $stackTrace');
 
                             return Center(
                               child: Column(
@@ -241,10 +241,12 @@ class _BridgeInspectionScreenState
                                           .textTheme
                                           .bodySmall),
                                   IconButton(
-                                    onPressed: () => ref.invalidate(
-                                        inspectionPointsProvider(ref
-                                            .watch(currentBridgeProvider)!
-                                            .id)),
+                                    onPressed: () {
+                                      ref.invalidate(inspectionPointsProvider(
+                                          currentBridge.id));
+                                      ref.invalidate(bridgeInspectionProvider(
+                                          currentBridge.id));
+                                    },
                                     icon: const Icon(Icons.refresh),
                                   ),
                                 ],
