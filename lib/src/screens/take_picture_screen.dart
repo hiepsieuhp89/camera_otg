@@ -34,8 +34,6 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
   Orientation? currentOrientation;
   Photo? previousPhoto;
   List<String> capturedPhotos = [];
-  List<XFile> processingQueue = [];
-  bool isProcessing = false;
   bool showPreviousPhoto = false;
   double _currentZoomLevel = 1.0;
   double _maxZoomLevel = 1.0;
@@ -146,43 +144,16 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
 
       final XFile rawImage = await _controller!.takePicture();
 
-      final player = AudioPlayer();
-      player.play(AssetSource('sounds/camera_shoot.mp3'));
+      AudioPlayer().play(AssetSource('sounds/camera_shoot.mp3'));
 
-      processingQueue.add(rawImage);
-      processNextImage();
+      setState(() {
+        capturedPhotos.add(rawImage.path);
+      });
 
       await _controller!.setFocusMode(FocusMode.auto);
       await _controller!.setExposureMode(ExposureMode.auto);
     } catch (e) {
       debugPrint(e.toString());
-    }
-  }
-
-  Future<void> processNextImage() async {
-    if (isProcessing || processingQueue.isEmpty) return;
-
-    setState(() {
-      isProcessing = true;
-    });
-
-    var batch = processingQueue.take(5).toList();
-    processingQueue = processingQueue.skip(5).toList();
-
-    var futures = batch.map((image) async {
-      String imagePath = await compressAndRotateImage(image,
-          currentOrientation: currentOrientation);
-      capturedPhotos.add(imagePath);
-    }).toList();
-
-    await Future.wait(futures);
-
-    setState(() {
-      isProcessing = false;
-    });
-
-    if (processingQueue.isNotEmpty) {
-      processNextImage();
     }
   }
 
@@ -212,7 +183,7 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
   }
 
   Widget getFlashIcon() {
-    switch (_controller!.value.flashMode) {
+    switch (_controller?.value.flashMode) {
       case FlashMode.off:
         return const Icon(Icons.flash_off, color: Colors.white);
       case FlashMode.auto:
@@ -221,6 +192,8 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
         return const Icon(Icons.flash_on, color: Colors.white);
       case FlashMode.torch:
         return const Icon(Icons.lightbulb, color: Colors.white);
+      default:
+        return const Icon(Icons.flash_auto, color: Colors.white);
     }
   }
 
@@ -288,217 +261,204 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: FutureBuilder<void>(
-        future: _initializeControllerFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done &&
-              _controller != null) {
-            return Row(
-              children: <Widget>[
-                NavigationRail(
-                  selectedIndex: null,
-                  leading: Column(
-                    children: [
-                      IconButton(
-                          icon: const Icon(Icons.arrow_back),
-                          onPressed: () {
-                            Navigator.pop(context);
-                          }),
-                      FloatingActionButton(
-                        elevation: 0,
-                        onPressed: capturedPhotos.isEmpty
-                            ? null
-                            : _navigateToReportScreen,
-                        child: const Icon(Icons.check),
-                      ),
-                      const SizedBox(height: 16)
-                    ],
-                  ),
-                  labelType: NavigationRailLabelType.all,
-                  onDestinationSelected: (int index) {
-                    if (index == 0) {
-                      setState(() {
-                        showPreviousPhoto = !showPreviousPhoto;
-                      });
-                    }
-
-                    if (index == 1) {
-                      viewImage(context,
-                          imageUrl:
-                              widget.inspectionPoint.diagramMarkedPhotoLink ??
-                                  widget.inspectionPoint.diagramUrl!,
-                          marking: widget.inspectionPoint.diagramMarkingX !=
-                                      null &&
-                                  widget.inspectionPoint.diagramMarkingY != null
-                              ? Marking(
-                                  x: widget.inspectionPoint.diagramMarkingX!,
-                                  y: widget.inspectionPoint.diagramMarkingY!)
-                              : null);
-                    }
-                  },
-                  destinations: [
-                    NavigationRailDestination(
-                      disabled: previousPhoto == null,
-                      icon: const Icon(Icons.photo_outlined),
-                      selectedIcon: const Icon(Icons.photo),
-                      label: Text(
-                          AppLocalizations.of(context)!.lastInspectionPhoto),
-                    ),
-                    NavigationRailDestination(
-                        disabled:
-                            widget.inspectionPoint.diagramMarkedPhotoLink ==
-                                    null &&
-                                widget.inspectionPoint.diagramUrl == null,
-                        icon: const Icon(Icons.schema_outlined),
-                        selectedIcon: const Icon(Icons.schema),
-                        label:
-                            Text(AppLocalizations.of(context)!.diagramPicture)),
-                  ],
+      body: Row(
+        children: <Widget>[
+          NavigationRail(
+            selectedIndex: null,
+            leading: Column(
+              children: [
+                IconButton(
+                    icon: const Icon(Icons.arrow_back),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    }),
+                FloatingActionButton(
+                  elevation: 0,
+                  onPressed:
+                      capturedPhotos.isEmpty ? null : _navigateToReportScreen,
+                  child: const Icon(Icons.check),
                 ),
-                const VerticalDivider(thickness: 1, width: 1),
-                Expanded(
-                  child: Stack(
-                    alignment: Alignment.centerRight,
-                    children: [
-                      Positioned.fill(
-                        child: CameraPreview(_controller!),
-                      ),
-                      if (previousPhoto != null)
-                        Positioned(
-                            top: 0,
-                            left: 0,
-                            child: CollapsiblePanel(
-                              collapsed: !showPreviousPhoto,
-                              child: Container(
-                                constraints:
-                                    const BoxConstraints(maxHeight: 250),
-                                decoration: BoxDecoration(
-                                    border: Border(
-                                  right: BorderSide(
-                                      width: 1,
-                                      color: Theme.of(context).dividerColor),
-                                  bottom: BorderSide(
-                                      width: 1,
-                                      color: Theme.of(context).dividerColor),
-                                )),
-                                child: Stack(
-                                  children: [
-                                    CachedNetworkImage(
-                                      imageUrl: previousPhoto!.photoLink,
-                                      height: 150,
-                                    ),
-                                    Positioned(
-                                        bottom: 0,
-                                        right: 0,
-                                        child: IconButton(
-                                          onPressed: () {
-                                            viewImage(context,
-                                                imageUrl:
-                                                    previousPhoto!.photoLink);
-                                          },
-                                          icon: const Icon(Icons.fullscreen),
-                                          iconSize: 30,
-                                          color: Colors.white,
-                                        ))
-                                  ],
-                                ),
+                const SizedBox(height: 16)
+              ],
+            ),
+            labelType: NavigationRailLabelType.all,
+            onDestinationSelected: (int index) {
+              if (index == 0) {
+                setState(() {
+                  showPreviousPhoto = !showPreviousPhoto;
+                });
+              }
+
+              if (index == 1) {
+                viewImage(context,
+                    imageUrl: widget.inspectionPoint.diagramMarkedPhotoLink ??
+                        widget.inspectionPoint.diagramUrl!,
+                    marking: widget.inspectionPoint.diagramMarkingX != null &&
+                            widget.inspectionPoint.diagramMarkingY != null
+                        ? Marking(
+                            x: widget.inspectionPoint.diagramMarkingX!,
+                            y: widget.inspectionPoint.diagramMarkingY!)
+                        : null);
+              }
+            },
+            destinations: [
+              NavigationRailDestination(
+                disabled: previousPhoto == null,
+                icon: const Icon(Icons.photo_outlined),
+                selectedIcon: const Icon(Icons.photo),
+                label: Text(AppLocalizations.of(context)!.lastInspectionPhoto),
+              ),
+              NavigationRailDestination(
+                  disabled:
+                      widget.inspectionPoint.diagramMarkedPhotoLink == null &&
+                          widget.inspectionPoint.diagramUrl == null,
+                  icon: const Icon(Icons.schema_outlined),
+                  selectedIcon: const Icon(Icons.schema),
+                  label: Text(AppLocalizations.of(context)!.diagramPicture)),
+            ],
+          ),
+          const VerticalDivider(thickness: 1, width: 1),
+          Expanded(
+            child: Stack(
+              alignment: Alignment.centerRight,
+              children: [
+                Positioned.fill(
+                  child: FutureBuilder(
+                    future: _initializeControllerFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.done) {
+                        return CameraPreview(_controller!);
+                      } else {
+                        return Container(
+                          color: Colors.black,
+                        );
+                      }
+                    },
+                  ),
+                ),
+                if (previousPhoto != null)
+                  Positioned(
+                      top: 0,
+                      left: 0,
+                      child: CollapsiblePanel(
+                        collapsed: !showPreviousPhoto,
+                        child: Container(
+                          constraints: const BoxConstraints(maxHeight: 250),
+                          decoration: BoxDecoration(
+                              border: Border(
+                            right: BorderSide(
+                                width: 1,
+                                color: Theme.of(context).dividerColor),
+                            bottom: BorderSide(
+                                width: 1,
+                                color: Theme.of(context).dividerColor),
+                          )),
+                          child: Stack(
+                            children: [
+                              CachedNetworkImage(
+                                imageUrl: previousPhoto!.photoLink,
+                                height: 150,
                               ),
-                            )),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          RotatedBox(
-                            quarterTurns: 3,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.max,
-                              children: [
-                                const RotatedBox(
-                                  quarterTurns: 3,
-                                  child:
-                                      Icon(Icons.remove, color: Colors.white),
-                                ),
-                                Expanded(
-                                  child: Slider(
-                                    value: _currentZoomLevel,
-                                    min: _minZoomLevel,
-                                    max: _maxZoomLevel,
-                                    onChanged: (zoomLevel) {
-                                      _setZoomLevel(zoomLevel);
+                              Positioned(
+                                  bottom: 0,
+                                  right: 0,
+                                  child: IconButton(
+                                    onPressed: () {
+                                      viewImage(context,
+                                          imageUrl: previousPhoto!.photoLink);
                                     },
-                                    activeColor: Colors.grey.shade100,
-                                    inactiveColor: Colors.grey.shade100,
-                                    thumbColor: Colors.purple.shade100,
-                                  ),
-                                ),
-                                const Icon(Icons.add, color: Colors.white),
-                              ],
+                                    icon: const Icon(Icons.fullscreen),
+                                    iconSize: 30,
+                                    color: Colors.white,
+                                  ))
+                            ],
+                          ),
+                        ),
+                      )),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    RotatedBox(
+                      quarterTurns: 3,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          const RotatedBox(
+                            quarterTurns: 3,
+                            child: Icon(Icons.remove, color: Colors.white),
+                          ),
+                          Expanded(
+                            child: Slider(
+                              value: _currentZoomLevel,
+                              min: _minZoomLevel,
+                              max: _maxZoomLevel,
+                              onChanged: (zoomLevel) {
+                                _setZoomLevel(zoomLevel);
+                              },
+                              activeColor: Colors.grey.shade100,
+                              inactiveColor: Colors.grey.shade100,
+                              thumbColor: Colors.purple.shade100,
                             ),
                           ),
-                          Container(
-                            width: 120,
-                            color: Colors.black.withOpacity(0.5),
-                            child: Column(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  SizedBox(
-                                    height: 48,
-                                    child: IconButton(
-                                      onPressed: showFlashDialog,
-                                      icon: getFlashIcon(),
-                                      iconSize: 30,
-                                    ),
-                                  ),
-                                  IconButton(
-                                    onPressed: _takePicture,
-                                    icon: const Icon(Icons.circle,
-                                        color: Colors.white),
-                                    iconSize: 70,
-                                  ),
-                                  SizedBox(
-                                    height: 48,
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        if (capturedPhotos.isNotEmpty) {
-                                          _navigateToPreview();
-                                        }
-                                      },
-                                      child: Badge(
-                                        isLabelVisible:
-                                            capturedPhotos.isNotEmpty,
-                                        label: Text(
-                                            capturedPhotos.length.toString()),
-                                        child: CircleAvatar(
-                                          radius: 20,
-                                          backgroundImage:
-                                              capturedPhotos.isNotEmpty
-                                                  ? FileImage(
-                                                      File(capturedPhotos.last))
-                                                  : null,
-                                          child: capturedPhotos.isEmpty
-                                              ? const Icon(
-                                                  Icons.photo_library_outlined,
-                                                  color: Colors.white,
-                                                  size: 20,
-                                                )
-                                              : null,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ]),
-                          )
+                          const Icon(Icons.add, color: Colors.white),
                         ],
-                      )
-                    ],
-                  ),
+                      ),
+                    ),
+                    Container(
+                      width: 120,
+                      color: Colors.black.withOpacity(0.5),
+                      child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            SizedBox(
+                              height: 48,
+                              child: IconButton(
+                                onPressed: showFlashDialog,
+                                icon: getFlashIcon(),
+                                iconSize: 30,
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: _takePicture,
+                              icon:
+                                  const Icon(Icons.circle, color: Colors.white),
+                              iconSize: 70,
+                            ),
+                            SizedBox(
+                              height: 48,
+                              child: GestureDetector(
+                                onTap: () {
+                                  if (capturedPhotos.isNotEmpty) {
+                                    _navigateToPreview();
+                                  }
+                                },
+                                child: Badge(
+                                  isLabelVisible: capturedPhotos.isNotEmpty,
+                                  label: Text(capturedPhotos.length.toString()),
+                                  child: CircleAvatar(
+                                    radius: 20,
+                                    backgroundImage: capturedPhotos.isNotEmpty
+                                        ? FileImage(File(capturedPhotos.last))
+                                        : null,
+                                    child: capturedPhotos.isEmpty
+                                        ? const Icon(
+                                            Icons.photo_library_outlined,
+                                            color: Colors.white,
+                                            size: 20,
+                                          )
+                                        : null,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ]),
+                    )
+                  ],
                 )
               ],
-            );
-          } else {
-            return const Center(child: CircularProgressIndicator());
-          }
-        },
+            ),
+          )
+        ],
       ),
     );
   }
