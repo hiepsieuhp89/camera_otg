@@ -26,6 +26,8 @@ mixin _$InspectionPointReport {
   int get inspectionPointId => throw _privateConstructorUsedError;
   @JsonKey(name: 'preferred_photo_id')
   int? get preferredPhotoId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'is_skipped')
+  bool? get isSkipped => throw _privateConstructorUsedError;
   DateTime? get date => throw _privateConstructorUsedError;
   List<Photo> get photos => throw _privateConstructorUsedError;
 
@@ -45,6 +47,7 @@ abstract class $InspectionPointReportCopyWith<$Res> {
       {int? id,
       @JsonKey(name: 'inspection_point_id') int inspectionPointId,
       @JsonKey(name: 'preferred_photo_id') int? preferredPhotoId,
+      @JsonKey(name: 'is_skipped') bool? isSkipped,
       DateTime? date,
       List<Photo> photos});
 }
@@ -66,6 +69,7 @@ class _$InspectionPointReportCopyWithImpl<$Res,
     Object? id = freezed,
     Object? inspectionPointId = null,
     Object? preferredPhotoId = freezed,
+    Object? isSkipped = freezed,
     Object? date = freezed,
     Object? photos = null,
   }) {
@@ -82,6 +86,10 @@ class _$InspectionPointReportCopyWithImpl<$Res,
           ? _value.preferredPhotoId
           : preferredPhotoId // ignore: cast_nullable_to_non_nullable
               as int?,
+      isSkipped: freezed == isSkipped
+          ? _value.isSkipped
+          : isSkipped // ignore: cast_nullable_to_non_nullable
+              as bool?,
       date: freezed == date
           ? _value.date
           : date // ignore: cast_nullable_to_non_nullable
@@ -107,6 +115,7 @@ abstract class _$$InspectionPointReportImplCopyWith<$Res>
       {int? id,
       @JsonKey(name: 'inspection_point_id') int inspectionPointId,
       @JsonKey(name: 'preferred_photo_id') int? preferredPhotoId,
+      @JsonKey(name: 'is_skipped') bool? isSkipped,
       DateTime? date,
       List<Photo> photos});
 }
@@ -126,6 +135,7 @@ class __$$InspectionPointReportImplCopyWithImpl<$Res>
     Object? id = freezed,
     Object? inspectionPointId = null,
     Object? preferredPhotoId = freezed,
+    Object? isSkipped = freezed,
     Object? date = freezed,
     Object? photos = null,
   }) {
@@ -142,6 +152,10 @@ class __$$InspectionPointReportImplCopyWithImpl<$Res>
           ? _value.preferredPhotoId
           : preferredPhotoId // ignore: cast_nullable_to_non_nullable
               as int?,
+      isSkipped: freezed == isSkipped
+          ? _value.isSkipped
+          : isSkipped // ignore: cast_nullable_to_non_nullable
+              as bool?,
       date: freezed == date
           ? _value.date
           : date // ignore: cast_nullable_to_non_nullable
@@ -161,6 +175,7 @@ class _$InspectionPointReportImpl implements _InspectionPointReport {
       {this.id,
       @JsonKey(name: 'inspection_point_id') required this.inspectionPointId,
       @JsonKey(name: 'preferred_photo_id') this.preferredPhotoId,
+      @JsonKey(name: 'is_skipped') this.isSkipped,
       this.date,
       final List<Photo> photos = const []})
       : _photos = photos;
@@ -177,6 +192,9 @@ class _$InspectionPointReportImpl implements _InspectionPointReport {
   @JsonKey(name: 'preferred_photo_id')
   final int? preferredPhotoId;
   @override
+  @JsonKey(name: 'is_skipped')
+  final bool? isSkipped;
+  @override
   final DateTime? date;
   final List<Photo> _photos;
   @override
@@ -189,7 +207,7 @@ class _$InspectionPointReportImpl implements _InspectionPointReport {
 
   @override
   String toString() {
-    return 'InspectionPointReport(id: $id, inspectionPointId: $inspectionPointId, preferredPhotoId: $preferredPhotoId, date: $date, photos: $photos)';
+    return 'InspectionPointReport(id: $id, inspectionPointId: $inspectionPointId, preferredPhotoId: $preferredPhotoId, isSkipped: $isSkipped, date: $date, photos: $photos)';
   }
 
   @override
@@ -202,14 +220,22 @@ class _$InspectionPointReportImpl implements _InspectionPointReport {
                 other.inspectionPointId == inspectionPointId) &&
             (identical(other.preferredPhotoId, preferredPhotoId) ||
                 other.preferredPhotoId == preferredPhotoId) &&
+            (identical(other.isSkipped, isSkipped) ||
+                other.isSkipped == isSkipped) &&
             (identical(other.date, date) || other.date == date) &&
             const DeepCollectionEquality().equals(other._photos, _photos));
   }
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(runtimeType, id, inspectionPointId,
-      preferredPhotoId, date, const DeepCollectionEquality().hash(_photos));
+  int get hashCode => Object.hash(
+      runtimeType,
+      id,
+      inspectionPointId,
+      preferredPhotoId,
+      isSkipped,
+      date,
+      const DeepCollectionEquality().hash(_photos));
 
   @JsonKey(ignore: true)
   @override
@@ -232,6 +258,7 @@ abstract class _InspectionPointReport implements InspectionPointReport {
       @JsonKey(name: 'inspection_point_id')
       required final int inspectionPointId,
       @JsonKey(name: 'preferred_photo_id') final int? preferredPhotoId,
+      @JsonKey(name: 'is_skipped') final bool? isSkipped,
       final DateTime? date,
       final List<Photo> photos}) = _$InspectionPointReportImpl;
 
@@ -246,6 +273,9 @@ abstract class _InspectionPointReport implements InspectionPointReport {
   @override
   @JsonKey(name: 'preferred_photo_id')
   int? get preferredPhotoId;
+  @override
+  @JsonKey(name: 'is_skipped')
+  bool? get isSkipped;
   @override
   DateTime? get date;
   @override

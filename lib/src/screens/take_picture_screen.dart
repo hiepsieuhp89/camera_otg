@@ -206,7 +206,8 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
                     .createReport(
                         pointId: widget.inspectionPoint.id!,
                         capturedPhotoPaths: [],
-                        metadata: {'remark': '点検をスキップした。'});
+                        metadata: {'remark': '点検をスキップした。'},
+                        isSkipped: true);
 
                 Navigator.popUntil(context,
                     ModalRoute.withName(BridgeInspectionScreen.routeName));

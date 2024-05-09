@@ -17,13 +17,19 @@ class InspectionService extends BaseApiService {
     return Inspection.fromJson(jsonResponse);
   }
 
-  Future<InspectionPointReport> createReport(int inspectionId, int pointId,
-      List<int> photoIds, int? preferredPhotoId, Object? metadata) async {
+  Future<InspectionPointReport> createReport(
+      int inspectionId,
+      int pointId,
+      List<int> photoIds,
+      int? preferredPhotoId,
+      Object? metadata,
+      bool? isSkipped) async {
     final jsonResponse = await post('inspections/$inspectionId/reports', {
       'photos_ids': photoIds,
       'meta_data': metadata,
       'preferred_photo_id': preferredPhotoId,
-      'inspection_point_id': pointId
+      'inspection_point_id': pointId,
+      'is_skipped': isSkipped,
     });
 
     return InspectionPointReport.fromJson(jsonResponse);

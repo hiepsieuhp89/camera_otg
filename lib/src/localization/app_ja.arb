@@ -75,5 +75,13 @@
   "goToPhotoSelectionButton": "過年度写真表示",
   "confirmationForNoPhoto": "写真撮影していないけどいいですか",
   "yesOption": "「YES」",
-  "noOption": "「NO」"
+  "noOption": "「NO」",
+  "skip": "スキップ",
+  "confirmationForReinspection": "{photo_ref_number}を再点検したいですか？",
+  "@confirmationForReinspection": {
+    "description": "photo reference number",
+    "placeholders": {
+      "photo_ref_number": {}
+    }
+  }
 }

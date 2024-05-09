@@ -12,6 +12,7 @@ class InspectionPointReport with _$InspectionPointReport {
     int? id,
     @JsonKey(name: 'inspection_point_id') required int inspectionPointId,
     @JsonKey(name: 'preferred_photo_id') int? preferredPhotoId,
+    @JsonKey(name: 'is_skipped') bool? isSkipped,
     DateTime? date,
     @Default([]) List<Photo> photos,
   }) = _InspectionPointReport;
