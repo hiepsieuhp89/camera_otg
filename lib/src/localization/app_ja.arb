@@ -72,5 +72,8 @@
     }
   },
   "noPastPhotoFound": "過去の写真が見つかりません",
-  "goToPhotoSelectionButton": "過年度写真表示"
+  "goToPhotoSelectionButton": "過年度写真表示",
+  "confirmationForNoPhoto": "写真撮影していないけどいいですか",
+  "yesOption": "「YES」",
+  "noOption": "「NO」"
 }

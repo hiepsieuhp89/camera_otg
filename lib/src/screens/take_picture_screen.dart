@@ -11,6 +11,7 @@ import 'package:kyoryo/src/models/marking.dart';
 import 'package:kyoryo/src/models/photo.dart';
 import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
 import 'package:kyoryo/src/screens/bridge_inspection_evaluation_screen.dart';
+import 'package:kyoryo/src/screens/bridge_inspection_screen.dart';
 import 'package:kyoryo/src/screens/preview_pictures_screen.dart';
 import 'package:kyoryo/src/services/inspection_point_report.service.dart';
 import 'package:kyoryo/src/ui/collapsible_panel.dart';
@@ -182,6 +183,41 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
     });
   }
 
+  void _confirmSkippingPoint() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: Text(AppLocalizations.of(context)!.confirmationForNoPhoto),
+          actions: [
+            TextButton(
+              child: Text(AppLocalizations.of(context)!.noOption),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text(AppLocalizations.of(context)!.yesOption),
+              onPressed: () {
+                ref
+                    .read(bridgeInspectionProvider(
+                            widget.inspectionPoint.bridgeId!)
+                        .notifier)
+                    .createReport(
+                        pointId: widget.inspectionPoint.id!,
+                        capturedPhotoPaths: [],
+                        metadata: {'remark': '点検をスキップした。'});
+
+                Navigator.popUntil(context,
+                    ModalRoute.withName(BridgeInspectionScreen.routeName));
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget getFlashIcon() {
     switch (_controller?.value.flashMode) {
       case FlashMode.off:
@@ -274,8 +310,9 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
                     }),
                 FloatingActionButton(
                   elevation: 0,
-                  onPressed:
-                      capturedPhotos.isEmpty ? null : _navigateToReportScreen,
+                  onPressed: capturedPhotos.isEmpty
+                      ? _confirmSkippingPoint
+                      : _navigateToReportScreen,
                   child: const Icon(Icons.check),
                 ),
                 const SizedBox(height: 16)

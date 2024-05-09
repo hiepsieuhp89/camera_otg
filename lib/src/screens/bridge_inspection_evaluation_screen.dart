@@ -47,15 +47,16 @@ class BridgeInspectionEvaluationScreenState
         .read(
             bridgeInspectionProvider(widget.arguments.point.bridgeId!).notifier)
         .createReport(
-            widget.arguments.point.id!,
-            widget.arguments.capturedPhotos,
-            {
+            pointId: widget.arguments.point.id!,
+            capturedPhotoPaths: widget.arguments.capturedPhotos,
+            metadata: {
               'damage_category': _selectedCategory ?? '',
               'damage_type': _selectedDamageType?.nameJp ?? '',
               'damage_level': _selectedHealthLevel ?? '',
               'remark': _textEditingController.text,
             },
-            widget.arguments.capturedPhotos.indexOf(_preferredPhotoPath ?? ''))
+            preferredPhotoIndex: widget.arguments.capturedPhotos
+                .indexOf(_preferredPhotoPath ?? ''))
         .then((_) {
       Navigator.popUntil(
           context, ModalRoute.withName(BridgeInspectionScreen.routeName));

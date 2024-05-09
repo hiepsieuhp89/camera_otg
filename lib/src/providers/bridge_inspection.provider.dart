@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:kyoryo/src/models/inspection.dart';
+import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/models/inspection_point_report.dart';
 import 'package:kyoryo/src/models/photo.dart';
 import 'package:kyoryo/src/services/bridge.service.dart';
@@ -60,8 +61,11 @@ class BridgeInspection extends _$BridgeInspection {
     return inspectionsToReturn;
   }
 
-  Future<void> createReport(int pointId, List<String> capturedPhotoPaths,
-      Map<String, dynamic>? metadata, int preferredPhotoIndex) async {
+  Future<void> createReport(
+      {required int pointId,
+      required List<String> capturedPhotoPaths,
+      Map<String, dynamic>? metadata,
+      int? preferredPhotoIndex}) async {
     final currentState = await future;
 
     if (currentState[1] == null) {
