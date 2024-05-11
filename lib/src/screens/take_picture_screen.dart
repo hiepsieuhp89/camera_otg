@@ -220,15 +220,17 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
             TextButton(
               child: Text(AppLocalizations.of(context)!.yesOption),
               onPressed: () {
-                ref
-                    .read(bridgeInspectionProvider(
-                            widget.arguments.inspectionPoint.bridgeId!)
-                        .notifier)
-                    .createReport(
-                        pointId: widget.arguments.inspectionPoint.id!,
-                        capturedPhotoPaths: [],
-                        metadata: {'remark': '点検をスキップした。'},
-                        isSkipped: true);
+                if (widget.arguments.createdReport == null) {
+                  ref
+                      .read(bridgeInspectionProvider(
+                              widget.arguments.inspectionPoint.bridgeId!)
+                          .notifier)
+                      .createReport(
+                          pointId: widget.arguments.inspectionPoint.id!,
+                          capturedPhotoPaths: [],
+                          metadata: {'remark': '点検をスキップした。'},
+                          isSkipped: true);
+                }
 
                 Navigator.popUntil(context,
                     ModalRoute.withName(BridgeInspectionScreen.routeName));
