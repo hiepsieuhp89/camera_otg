@@ -1,14 +1,32 @@
 import 'dart:io'; // Import dart:io for using File class
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:kyoryo/src/models/photo.dart';
+
+class PreviewPicturesScreenArguments {
+  final List<String> imagePaths;
+  final List<Photo> photos;
+
+  PreviewPicturesScreenArguments(
+      {required this.imagePaths, required this.photos});
+}
+
+class PreviewPicturesScreenResult {
+  final List<String> updatedImagePaths;
+  final List<Photo> updatedUploadedPhotos;
+
+  PreviewPicturesScreenResult(
+      {required this.updatedImagePaths, required this.updatedUploadedPhotos});
+}
 
 class PreviewPicturesScreen extends StatefulWidget {
-  final List<String> imagePaths;
+  final PreviewPicturesScreenArguments arguments;
 
   static const routeName = '/preview-pictures';
 
-  const PreviewPicturesScreen({super.key, required this.imagePaths});
+  const PreviewPicturesScreen({super.key, required this.arguments});
 
   @override
   State<PreviewPicturesScreen> createState() => _PreviewPicturesScreenState();
@@ -16,16 +34,24 @@ class PreviewPicturesScreen extends StatefulWidget {
 
 class _PreviewPicturesScreenState extends State<PreviewPicturesScreen> {
   late List<String> imagePaths;
+  late List<Photo> photos;
 
   @override
   void initState() {
     super.initState();
-    imagePaths = widget.imagePaths;
+    imagePaths = widget.arguments.imagePaths;
+    photos = widget.arguments.photos;
   }
 
   void removeImage(String path) {
     setState(() {
       imagePaths.remove(path);
+    });
+  }
+
+  void removePhoto(Photo photo) {
+    setState(() {
+      photos = photos.where((p) => p.id != photo.id).toList();
     });
   }
 
@@ -35,7 +61,11 @@ class _PreviewPicturesScreenState extends State<PreviewPicturesScreen> {
       canPop: false,
       onPopInvoked: (didPoke) {
         if (!didPoke) {
-          Navigator.pop(context, imagePaths);
+          Navigator.pop(
+              context,
+              PreviewPicturesScreenResult(
+                  updatedImagePaths: imagePaths,
+                  updatedUploadedPhotos: photos));
         }
       },
       child: Scaffold(
@@ -43,11 +73,17 @@ class _PreviewPicturesScreenState extends State<PreviewPicturesScreen> {
           title: Text(AppLocalizations.of(context)!.previewPicturesTitle),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
-            onPressed: () => Navigator.pop(context, imagePaths),
+            onPressed: () => Navigator.pop(
+                context,
+                PreviewPicturesScreenResult(
+                    updatedImagePaths: imagePaths,
+                    updatedUploadedPhotos: photos)),
           ),
         ),
         body: OrientationBuilder(
           builder: (context, orientation) {
+            List<dynamic> combinedList = [...photos, ...imagePaths];
+
             return Padding(
               padding: const EdgeInsets.all(8.0),
               child: GridView.builder(
@@ -56,7 +92,7 @@ class _PreviewPicturesScreenState extends State<PreviewPicturesScreen> {
                   crossAxisSpacing: 4,
                   mainAxisSpacing: 4,
                 ),
-                itemCount: imagePaths.length,
+                itemCount: combinedList.length,
                 itemBuilder: (context, index) {
                   return Stack(
                     alignment: Alignment.topRight,
@@ -64,7 +100,11 @@ class _PreviewPicturesScreenState extends State<PreviewPicturesScreen> {
                       Container(
                         decoration: BoxDecoration(
                           image: DecorationImage(
-                            image: FileImage(File(imagePaths[index])),
+                            image: combinedList[index] is String
+                                ? FileImage(File(combinedList[index]))
+                                    as ImageProvider
+                                : CachedNetworkImageProvider(
+                                    combinedList[index].photoLink),
                             fit: BoxFit.cover,
                           ),
                         ),
@@ -74,7 +114,9 @@ class _PreviewPicturesScreenState extends State<PreviewPicturesScreen> {
                         bottom: 0,
                         child: FloatingActionButton.small(
                           heroTag: 'image-$index',
-                          onPressed: () => removeImage(imagePaths[index]),
+                          onPressed: () => combinedList[index] is String
+                              ? removeImage(combinedList[index])
+                              : removePhoto(combinedList[index]),
                           child: const Icon(Icons.delete, color: Colors.red),
                         ),
                       ),

@@ -11,8 +11,10 @@ class InspectionPointReport with _$InspectionPointReport {
   factory InspectionPointReport({
     int? id,
     @JsonKey(name: 'inspection_point_id') required int inspectionPointId,
+    @JsonKey(name: 'inspection_id') required int inspectionId,
     @JsonKey(name: 'preferred_photo_id') int? preferredPhotoId,
     @JsonKey(name: 'is_skipped') bool? isSkipped,
+    @JsonKey(name: 'meta_data') dynamic metadata,
     DateTime? date,
     @Default([]) List<Photo> photos,
   }) = _InspectionPointReport;

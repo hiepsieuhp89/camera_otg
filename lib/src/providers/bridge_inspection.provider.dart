@@ -1,12 +1,13 @@
 import 'dart:async';
 
 import 'package:collection/collection.dart';
+import 'package:flutter/material.dart';
 import 'package:kyoryo/src/models/inspection.dart';
-import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/models/inspection_point_report.dart';
 import 'package:kyoryo/src/models/photo.dart';
 import 'package:kyoryo/src/services/bridge.service.dart';
 import 'package:kyoryo/src/services/inspection.service.dart';
+import 'package:kyoryo/src/services/inspection_point_report.service.dart';
 import 'package:kyoryo/src/services/photo.service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -65,7 +66,7 @@ class BridgeInspection extends _$BridgeInspection {
       {required int pointId,
       required List<String> capturedPhotoPaths,
       Map<String, dynamic>? metadata,
-      int? preferredPhotoIndex,
+      String? preferredPhotoPath,
       bool isSkipped = false}) async {
     final currentState = await future;
 
@@ -78,7 +79,7 @@ class BridgeInspection extends _$BridgeInspection {
     List<Future<Photo>> photoFutures = capturedPhotoPaths
         .mapIndexed((index, path) =>
             ref.read(photoServiceProvider).uploadPhoto(path).then((photo) {
-              if (index == preferredPhotoIndex) {
+              if (capturedPhotoPaths[index] == preferredPhotoPath) {
                 preferredPhotoId = photo.id;
               }
 
@@ -103,6 +104,58 @@ class BridgeInspection extends _$BridgeInspection {
       ...currentState[1]!.reports,
       report,
     ]);
+    state = AsyncData([currentState[0], currentActiveInspection]);
+  }
+
+  Future<void> updateReport(
+      {required InspectionPointReport report,
+      required List<String> capturedPhotoPaths,
+      required List<Photo> uploadedPhotos,
+      String? preferredPhotoPath}) async {
+    final currentState = await future;
+
+    if (currentState[1] == null) {
+      throw Exception('No active inspection found');
+    }
+
+    if (report.inspectionId != currentState[1]!.id) {
+      debugPrint('Report does not belong to active inspection');
+      return;
+    }
+
+    int? preferredPhotoId;
+
+    List<Photo> newPhotos = await Future.wait(capturedPhotoPaths
+        .mapIndexed((index, path) =>
+            ref.read(photoServiceProvider).uploadPhoto(path).then((photo) {
+              if (capturedPhotoPaths[index] == preferredPhotoPath) {
+                preferredPhotoId = photo.id;
+              }
+
+              return photo;
+            }))
+        .toList());
+
+    for (Photo photo in uploadedPhotos) {
+      if (photo.photoLink == preferredPhotoPath) {
+        preferredPhotoId = photo.id;
+        break;
+      }
+    }
+
+    final updatedReport = await ref
+        .read(inspectionPointReportServiceProvider)
+        .updateReport(report.copyWith(
+            photos: [...newPhotos, ...uploadedPhotos],
+            preferredPhotoId: preferredPhotoId));
+
+    final currentActiveInspection = currentState[1]!.copyWith(
+      reports: [
+        ...currentState[1]!.reports.where((r) => r.id != updatedReport.id),
+        updatedReport,
+      ],
+    );
+
     state = AsyncData([currentState[0], currentActiveInspection]);
   }
 

@@ -4,6 +4,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:kyoryo/src/models/bridge.dart';
 import 'package:kyoryo/src/models/inspection.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
+import 'package:kyoryo/src/models/inspection_point_report.dart';
 import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
 import 'package:kyoryo/src/providers/current_bridge.provider.dart';
 import 'package:kyoryo/src/providers/inspection_points.provider.dart';
@@ -39,8 +40,11 @@ class _BridgeInspectionScreenState
   int selectedFilterIndex = 0;
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
-  void _startInspectingPoint(InspectionPoint point) {
-    Navigator.pushNamed(context, TakePictureScreen.routeName, arguments: point);
+  void _startInspectingPoint(InspectionPoint point,
+      {InspectionPointReport? createdReport}) {
+    Navigator.pushNamed(context, TakePictureScreen.routeName,
+        arguments: TakePictureScreenArguments(
+            inspectionPoint: point, createdReport: createdReport));
   }
 
   void _createNewInspectionPoint() {
