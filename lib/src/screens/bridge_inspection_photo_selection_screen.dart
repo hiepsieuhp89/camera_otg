@@ -41,6 +41,14 @@ class _BridgeInspectionPhotoSelectionScreenState
   dynamic currentlyShowingPhoto;
 
   @override
+  void initState() {
+    super.initState();
+    currentlyShowingPhoto = widget.arguments.uploadedPhotos.isNotEmpty
+        ? widget.arguments.uploadedPhotos.first
+        : widget.arguments.capturedPhotoPaths.first;
+  }
+
+  @override
   Widget build(BuildContext context) {
     final previousReport = ref
         .read(
