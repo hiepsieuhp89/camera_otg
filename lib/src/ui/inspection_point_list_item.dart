@@ -12,7 +12,8 @@ import 'package:kyoryo/src/utilities/image_utils.dart';
 
 class InpsectionPointListItem extends ConsumerWidget {
   final InspectionPoint point;
-  final Function(InspectionPoint) startInspect;
+  final Function(InspectionPoint, {InspectionPointReport? createdReport})
+      startInspect;
 
   const InpsectionPointListItem(
       {super.key, required this.point, required this.startInspect});
@@ -91,19 +92,25 @@ class InpsectionPointListItem extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     activeReport != null
-                        ? Chip(
-                            backgroundColor: Theme.of(context)
-                                .primaryColor
-                                .withOpacity(0.15),
-                            label: Row(
-                              children: [
-                                Icon(Icons.check,
-                                    color: Theme.of(context).primaryColor,
-                                    size: 20.0),
-                                const SizedBox(width: 5.0),
-                                Text(AppLocalizations.of(context)!.finished)
-                              ],
-                            ))
+                        ? activeReport.isSkipped ?? false
+                            ? FilledButton.icon(
+                                label: Text(AppLocalizations.of(context)!.skip),
+                                onPressed: () => confirmForReinspection(
+                                    context, activeReport),
+                                icon: const Icon(Icons.do_not_disturb))
+                            : Chip(
+                                backgroundColor: Theme.of(context)
+                                    .primaryColor
+                                    .withOpacity(0.15),
+                                label: Row(
+                                  children: [
+                                    Icon(Icons.check,
+                                        color: Theme.of(context).primaryColor,
+                                        size: 20.0),
+                                    const SizedBox(width: 5.0),
+                                    Text(AppLocalizations.of(context)!.finished)
+                                  ],
+                                ))
                         : IconButton.filled(
                             onPressed: hasActiveInspection
                                 ? () {
@@ -118,6 +125,34 @@ class InpsectionPointListItem extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Future<dynamic> confirmForReinspection(
+      BuildContext context, InspectionPointReport? activeReport) {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: Text(AppLocalizations.of(context)!
+              .confirmationForReinspection(point.photoRefNumber.toString())),
+          actions: [
+            TextButton(
+              child: Text(AppLocalizations.of(context)!.noOption),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text(AppLocalizations.of(context)!.yesOption),
+              onPressed: () {
+                Navigator.of(context).pop();
+                startInspect(point, createdReport: activeReport);
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 

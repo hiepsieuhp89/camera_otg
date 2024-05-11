@@ -13,17 +13,6 @@ InspectionPointReportService inspectionPointReportService(
 }
 
 class InspectionPointReportService extends BaseApiService {
-  Future<InspectionPointReport> createReport(
-      int pointId, List<int> photoIds, Object? metadata) async {
-    final jsonResponse = await post('inspection_points/$pointId/reports', {
-      'date': DateTime.now().toIso8601String(),
-      'photos_ids': photoIds,
-      'meta_data': metadata
-    });
-
-    return InspectionPointReport.fromJson(jsonResponse);
-  }
-
   Photo? getPreferredPhotoFromReport(InspectionPointReport? report) {
     if (report == null) {
       return null;
@@ -32,5 +21,18 @@ class InspectionPointReportService extends BaseApiService {
     return report.photos
             .firstWhereOrNull((photo) => photo.id == report.preferredPhotoId) ??
         report.photos.first;
+  }
+
+  Future<InspectionPointReport> updateReport(
+      InspectionPointReport report) async {
+    final jsonResponse = await put('reports/${report.id}', body: {
+      'photos': report.photos.map((photo) => photo.id).toList(),
+      'meta_data': report.metadata,
+      'preferred_photo_id': report.preferredPhotoId,
+      'inspection_point_id': report.inspectionPointId,
+      'is_skipped': report.isSkipped
+    });
+
+    return InspectionPointReport.fromJson(jsonResponse);
   }
 }

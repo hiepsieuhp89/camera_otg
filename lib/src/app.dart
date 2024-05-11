@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/screens/bridge_filters_screen.dart';
 import 'package:kyoryo/src/screens/bridge_inspection_evaluation_screen.dart';
 import 'package:kyoryo/src/screens/bridge_inspection_photo_selection_screen.dart';
@@ -10,7 +9,6 @@ import 'package:kyoryo/src/screens/bridge_inspection_screen.dart';
 import 'package:kyoryo/src/screens/bridge_list_screen.dart';
 import 'package:kyoryo/src/screens/inspection_point_damage_mark_screen.dart';
 import 'package:kyoryo/src/screens/inspection_point_diagram_select_screen.dart';
-import 'package:kyoryo/src/screens/preview_pictures_screen.dart';
 import 'package:kyoryo/src/screens/take_picture_screen.dart';
 
 import 'providers/app_start_up.provider.dart';
@@ -103,14 +101,10 @@ class MainApp extends StatelessWidget {
               case BridgeInspectionScreen.routeName:
                 return const BridgeInspectionScreen();
               case TakePictureScreen.routeName:
-                final inspectionPoint =
-                    routeSettings.arguments as InspectionPoint;
+                final arguments =
+                    routeSettings.arguments as TakePictureScreenArguments;
 
-                return TakePictureScreen(inspectionPoint: inspectionPoint);
-              case PreviewPicturesScreen.routeName:
-                final images = routeSettings.arguments as List<String>? ?? [];
-
-                return PreviewPicturesScreen(imagePaths: images);
+                return TakePictureScreen(arguments: arguments);
               case BridgeInspectionEvaluationScreen.routeName:
                 final arguments = routeSettings.arguments
                     as BridgeInspectionEvaluationScreenArguments;

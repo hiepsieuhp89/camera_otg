@@ -7,15 +7,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
+import 'package:kyoryo/src/models/photo.dart';
 import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
 import 'package:kyoryo/src/services/inspection_point_report.service.dart';
 
 class BridgeInspectionPhotoSelectionScreenArguments {
-  final List<String> photoPaths;
+  final List<String> capturedPhotoPaths;
+  final List<Photo> uploadedPhotos;
   final InspectionPoint point;
 
   BridgeInspectionPhotoSelectionScreenArguments(
-      {required this.photoPaths, required this.point});
+      {required this.capturedPhotoPaths,
+      required this.point,
+      required this.uploadedPhotos});
 }
 
 class BridgeInspectionPhotoSelectionScreen extends ConsumerStatefulWidget {
@@ -34,7 +38,15 @@ class BridgeInspectionPhotoSelectionScreen extends ConsumerStatefulWidget {
 class _BridgeInspectionPhotoSelectionScreenState
     extends ConsumerState<BridgeInspectionPhotoSelectionScreen> {
   String? selectedPhotoPath;
-  String? currentlyShowingPhoto;
+  dynamic currentlyShowingPhoto;
+
+  @override
+  void initState() {
+    super.initState();
+    currentlyShowingPhoto = widget.arguments.uploadedPhotos.isNotEmpty
+        ? widget.arguments.uploadedPhotos.first
+        : widget.arguments.capturedPhotoPaths.first;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -109,7 +121,24 @@ class _BridgeInspectionPhotoSelectionScreenState
     );
   }
 
+  bool isPhotoSelected(dynamic photo) {
+    if (photo == null) {
+      return false;
+    }
+
+    if (photo is String) {
+      return photo == selectedPhotoPath;
+    } else {
+      return photo.photoLink == selectedPhotoPath;
+    }
+  }
+
   Expanded buildPhotosCarousel(BuildContext context, Orientation orientation) {
+    List<dynamic> combinedList = [
+      ...widget.arguments.uploadedPhotos,
+      ...widget.arguments.capturedPhotoPaths,
+    ];
+
     return Expanded(
       flex: 1,
       child: Padding(
@@ -133,26 +162,30 @@ class _BridgeInspectionPhotoSelectionScreenState
                 reverse: false,
                 onPageChanged: (index, reason) {
                   setState(() {
-                    currentlyShowingPhoto = widget.arguments.photoPaths[index];
+                    currentlyShowingPhoto = combinedList[index];
                   });
                 },
                 scrollDirection: Axis.horizontal,
               ),
-              items: widget.arguments.photoPaths.mapIndexed((index, photo) {
+              items: combinedList.mapIndexed((index, photo) {
                 return Builder(
                   builder: (BuildContext context) {
                     return Stack(
                       children: [
-                        Image(
-                          image: FileImage(File(photo)),
-                        ),
+                        combinedList[index] is String
+                            ? Image.file(
+                                File(combinedList[index]),
+                                fit: BoxFit.cover,
+                              )
+                            : CachedNetworkImage(
+                                imageUrl: combinedList[index].photoLink,
+                                fit: BoxFit.cover),
                         Positioned(
                             top: 2,
                             right: 2,
                             child: Icon(
                               Icons.check_circle,
-                              color: widget.arguments.photoPaths[index] ==
-                                      selectedPhotoPath
+                              color: isPhotoSelected(combinedList[index])
                                   ? Theme.of(context).primaryColor
                                   : Theme.of(context).disabledColor,
                             )),
@@ -165,11 +198,15 @@ class _BridgeInspectionPhotoSelectionScreenState
           ),
           TextButton.icon(
               icon: const Icon(Icons.check_circle),
-              onPressed: currentlyShowingPhoto == selectedPhotoPath
+              onPressed: isPhotoSelected(currentlyShowingPhoto)
                   ? null
                   : () {
                       setState(() {
-                        selectedPhotoPath = currentlyShowingPhoto;
+                        if (currentlyShowingPhoto is String) {
+                          selectedPhotoPath = currentlyShowingPhoto;
+                        } else if (currentlyShowingPhoto?.photoLink != null) {
+                          selectedPhotoPath = currentlyShowingPhoto.photoLink;
+                        }
                       });
                     },
               label: Text(AppLocalizations.of(context)!.setPreferredPhoto)),

@@ -11,7 +11,10 @@ _$InspectionPointReportImpl _$$InspectionPointReportImplFromJson(
     _$InspectionPointReportImpl(
       id: json['id'] as int?,
       inspectionPointId: json['inspection_point_id'] as int,
+      inspectionId: json['inspection_id'] as int,
       preferredPhotoId: json['preferred_photo_id'] as int?,
+      isSkipped: json['is_skipped'] as bool?,
+      metadata: json['meta_data'],
       date:
           json['date'] == null ? null : DateTime.parse(json['date'] as String),
       photos: (json['photos'] as List<dynamic>?)
@@ -25,7 +28,10 @@ Map<String, dynamic> _$$InspectionPointReportImplToJson(
     <String, dynamic>{
       'id': instance.id,
       'inspection_point_id': instance.inspectionPointId,
+      'inspection_id': instance.inspectionId,
       'preferred_photo_id': instance.preferredPhotoId,
+      'is_skipped': instance.isSkipped,
+      'meta_data': instance.metadata,
       'date': instance.date?.toIso8601String(),
       'photos': instance.photos,
     };

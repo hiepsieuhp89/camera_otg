@@ -286,7 +286,7 @@ class _HasActiveInspectionProviderElement
   int get bridgeId => (origin as HasActiveInspectionProvider).bridgeId;
 }
 
-String _$bridgeInspectionHash() => r'27f5c3f1ba91c69fe3c95e10f6f2888e318518a0';
+String _$bridgeInspectionHash() => r'fdf401f77ed4afabe6f88d27b37f3394e1e89c91';
 
 abstract class _$BridgeInspection
     extends BuildlessAutoDisposeAsyncNotifier<List<Inspection?>> {

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:kyoryo/src/models/diagram.dart';
 import 'package:kyoryo/src/services/bridge.service.dart';
 import 'package:kyoryo/src/services/photo.service.dart';
@@ -17,22 +16,13 @@ class Diagrams extends _$Diagrams {
 
   Future<Diagram> createDiagram(
       int bridgeId, String diagramPath, Orientation? orientation) async {
-    final compressedDiagramPath = await compressAndRotateImage(
-        XFile(diagramPath),
-        currentOrientation: orientation,
-        quality: 70);
-    final diagramPhoto = await ref
-        .watch(photoServiceProvider)
-        .uploadPhoto(compressedDiagramPath);
+    await compressAndRotateImage(diagramPath,
+        currentOrientation: orientation, quality: 70);
+    final diagramPhoto =
+        await ref.watch(photoServiceProvider).uploadPhoto(diagramPath);
 
-    final inspectionPoint = await ref
+    return await ref
         .watch(bridgeServiceProvider)
         .createDiagram(Diagram(bridgeId: bridgeId, photoId: diagramPhoto.id!));
-
-    // final previousState = await future;
-
-    // state = AsyncData([inspectionPoint, ...previousState]);
-
-    return inspectionPoint;
   }
 }
