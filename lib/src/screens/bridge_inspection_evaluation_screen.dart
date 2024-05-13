@@ -342,16 +342,14 @@ class BridgeInspectionEvaluationScreenState
                 builder: (BuildContext context) {
                   return Stack(
                     children: [
-                      Positioned.fill(
-                        child: combinedList[index] is String
-                            ? Image.file(
-                                File(combinedList[index]),
-                                fit: BoxFit.cover,
-                              )
-                            : CachedNetworkImage(
-                                imageUrl: combinedList[index].photoLink,
-                              ),
-                      ),
+                      combinedList[index] is String
+                          ? Image.file(
+                              File(combinedList[index]),
+                              fit: BoxFit.fill,
+                            )
+                          : CachedNetworkImage(
+                              imageUrl: combinedList[index].photoLink,
+                              fit: BoxFit.fill),
                       Positioned(
                           top: 2,
                           right: 2,
