@@ -36,7 +36,7 @@ jobs:
             uses: subosito/flutter-action@v2
             with:
               channel: "stable"
-              flutter-version: "3.16.9"
+              flutter-version: "3.22.0"
               cache: true
 
           - name: Get Packages
@@ -45,12 +45,12 @@ jobs:
           - name: Generate .env file
             run: |
               echo "API_URL=${{ secrets.API_URL }}" > .env
-      
+
           - name: Build Android App Bundle
             run: |
               flutter build apk --release
               flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64,android-x64
-      
+
           - name: Publish Android Artifact
             uses: actions/upload-artifact@v4
             with:

@@ -76,9 +76,10 @@ class InspectionPointDamageMarkScreenState
               diagramMarkingY: markCoordinateY,
               diagramId: widget.arguments.diagram.id))
           .then(
-        (value) {
+        (createdPoint) {
           Navigator.pushNamed(context, TakePictureScreen.routeName,
-              arguments: value);
+              arguments:
+                  TakePictureScreenArguments(inspectionPoint: createdPoint));
         },
       );
     }
