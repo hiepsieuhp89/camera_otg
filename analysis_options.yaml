@@ -28,5 +28,7 @@ linter:
 # https://dart.dev/guides/language/analysis-options
 
 analyzer:
+  exclude:
+    - lib/src/localization/app_localizations**.dart
   plugins:
     - custom_lint

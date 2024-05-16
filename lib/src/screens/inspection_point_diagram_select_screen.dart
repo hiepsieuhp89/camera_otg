@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:kyoryo/src/models/diagram.dart';
 import 'package:kyoryo/src/providers/current_bridge.provider.dart';
 import 'package:kyoryo/src/providers/diagrams.provider.dart';

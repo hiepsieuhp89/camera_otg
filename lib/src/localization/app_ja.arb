@@ -1,4 +1,5 @@
 {
+  "@@locale": "ja",
   "appTitle": "Smart Buddy",
   "@appTitle": {
     "description": "Smart Buddy"
@@ -77,11 +78,13 @@
   "yesOption": "「YES」",
   "noOption": "「NO」",
   "skip": "スキップ",
-  "confirmationForReinspection": "{photo_ref_number}を再点検したいですか？",
+  "confirmationForReinspection": "{photoRefNumber}を再点検したいですか？",
   "@confirmationForReinspection": {
     "description": "photo reference number",
     "placeholders": {
-      "photo_ref_number": {}
+      "photoRefNumber": {}
     }
-  }
+  },
+  "finishInspectionConfirm": "まだ点検されない項目があります。点検を終了してもよろしいですか？",
+  "backToInspectingConfirm": "点検中に戻してよろしいですか？"
 }
