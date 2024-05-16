@@ -190,16 +190,18 @@ class _BridgeInspectionScreenState
                         isInspectionInProgress
                             ? FloatingActionButton(
                                 elevation: 0,
-                                onPressed: _confirmForReinspection,
-                                child: const Icon(Icons.replay_outlined))
+                                onPressed: _confirmFinishInspection,
+                                child: const Icon(Icons.check))
                             : FloatingActionButton(
                                 elevation: 0,
-                                onPressed: _confirmFinishInspection,
-                                child: const Icon(Icons.check),
+                                onPressed: _confirmForReinspection,
+                                child: const Icon(Icons.replay_outlined),
                               ),
                       ]),
                       selectedIndex: selectedFilterIndex,
-                      labelType: NavigationRailLabelType.all,
+                      labelType: isInspectionInProgress
+                          ? NavigationRailLabelType.selected
+                          : NavigationRailLabelType.all,
                       destinations: [
                         ...filters.map((filter) {
                           return NavigationRailDestination(
@@ -209,7 +211,7 @@ class _BridgeInspectionScreenState
                         }),
                         if (isInspectionInProgress)
                           NavigationRailDestination(
-                              icon: const Icon(Icons.broken_image_outlined),
+                              icon: const Icon(Icons.add_circle),
                               label:
                                   Text(AppLocalizations.of(context)!.newDamage))
                       ],

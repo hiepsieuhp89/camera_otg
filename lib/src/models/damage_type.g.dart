@@ -8,7 +8,7 @@ part of 'damage_type.dart';
 
 _$DamageTypeImpl _$$DamageTypeImplFromJson(Map<String, dynamic> json) =>
     _$DamageTypeImpl(
-      id: json['id'] as int,
+      id: (json['id'] as num).toInt(),
       category: json['category'] as String,
       nameJp: json['name_jp'] as String,
       nameEn: json['name_en'] as String,

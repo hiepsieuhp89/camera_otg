@@ -32,8 +32,8 @@ class InpsectionPointListItem extends ConsumerWidget {
         .read(inspectionPointReportServiceProvider)
         .getPreferredPhotoFromReport(previousReport);
 
-    final hasActiveInspection =
-        ref.watch(hasActiveInspectionProvider(point.bridgeId!));
+    final isInspectionInProgress =
+        ref.watch(isInspectionInProgressProvider(point.bridgeId!));
 
     String photoRefNumber = point.photoRefNumber != null
         ? '${AppLocalizations.of(context)!.photoRefNumber(point.photoRefNumber.toString())}：'
@@ -54,7 +54,7 @@ class InpsectionPointListItem extends ConsumerWidget {
               children: <Widget>[
                 Expanded(
                   child: _imageGroup(context, previousPhoto, activeReport,
-                      hasActiveInspection),
+                      isInspectionInProgress),
                 )
               ],
             ),
@@ -95,8 +95,10 @@ class InpsectionPointListItem extends ConsumerWidget {
                         ? activeReport.isSkipped ?? false
                             ? FilledButton.icon(
                                 label: Text(AppLocalizations.of(context)!.skip),
-                                onPressed: () => confirmForReinspection(
-                                    context, activeReport),
+                                onPressed: isInspectionInProgress
+                                    ? () => confirmForReinspection(
+                                        context, activeReport)
+                                    : null,
                                 icon: const Icon(Icons.do_not_disturb))
                             : Chip(
                                 backgroundColor: Theme.of(context)
@@ -112,7 +114,7 @@ class InpsectionPointListItem extends ConsumerWidget {
                                   ],
                                 ))
                         : IconButton.filled(
-                            onPressed: hasActiveInspection
+                            onPressed: isInspectionInProgress
                                 ? () {
                                     startInspect(point);
                                   }
@@ -167,9 +169,7 @@ class InpsectionPointListItem extends ConsumerWidget {
           ]
         : [previousPhoto?.photoLink ?? ''];
 
-    if (hasActiveInspection && activeReport == null) {
-      imagePaths.add('');
-    } else if (hasActiveInspection && activeReport != null) {
+    if (activeReport != null) {
       imagePaths.addAll(activeReport.photos.map((photo) => photo.photoLink));
     }
 

@@ -20,39 +20,39 @@ class BridgeInspection extends _$BridgeInspection {
     final inspections =
         await ref.read(bridgeServiceProvider).fetchInspections(bridgeId);
 
-    Inspection? latestActiveInspection;
-    Inspection? latestFinishedInspection;
+    Inspection? activeInspection;
+    Inspection? importedInspection;
 
     for (var inspection in inspections) {
-      if (!inspection.isFinished) {
-        latestActiveInspection = inspection;
+      if (!inspection.isImported) {
+        activeInspection = inspection;
         break;
       }
     }
 
     for (var inspection in inspections.reversed) {
-      if (inspection.isFinished) {
-        latestFinishedInspection = inspection;
+      if (inspection.isImported) {
+        importedInspection = inspection;
         break;
       }
     }
 
     List<Inspection?> inspectionsToReturn = [];
 
-    if (latestFinishedInspection != null) {
+    if (importedInspection != null) {
       final inspection = await ref
           .read(inspectionServiceProvider)
-          .fetchInspection(latestFinishedInspection.id!);
+          .fetchInspection(importedInspection.id!);
 
       inspectionsToReturn.add(inspection);
     } else {
       inspectionsToReturn.add(null);
     }
 
-    if (latestActiveInspection != null) {
+    if (activeInspection != null) {
       final inspection = await ref
           .read(inspectionServiceProvider)
-          .fetchInspection(latestActiveInspection.id!);
+          .fetchInspection(activeInspection.id!);
 
       inspectionsToReturn.add(inspection);
     } else {
@@ -159,6 +159,21 @@ class BridgeInspection extends _$BridgeInspection {
     state = AsyncData([currentState[0], currentActiveInspection]);
   }
 
+  Future<void> setActiveInspectionFinished(bool isFinished) async {
+    final currentState = await future;
+
+    if (currentState[1] == null) {
+      throw Exception('No active inspection found');
+    }
+
+    await ref
+        .read(inspectionServiceProvider)
+        .finishInspection(currentState[1]!.id!, isFinished);
+
+    state = AsyncData(
+        [currentState[0], currentState[1]!.copyWith(isFinished: isFinished)]);
+  }
+
   InspectionPointReport? findPreviousReportFromPoint(int pointId) {
     final previousInspection = state.value?[0];
 
@@ -183,9 +198,9 @@ int numberOfCreatedReports(NumberOfCreatedReportsRef ref, int bridgeId) {
 }
 
 @riverpod
-bool hasActiveInspection(HasActiveInspectionRef ref, int bridgeId) {
-  final activeInspection =
+bool isInspectionInProgress(IsInspectionInProgressRef ref, int bridgeId) {
+  Inspection? activeInspection =
       ref.watch(bridgeInspectionProvider(bridgeId)).value?[1];
 
-  return activeInspection != null;
+  return activeInspection != null ? !activeInspection.isFinished : false;
 }

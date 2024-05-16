@@ -34,4 +34,11 @@ class InspectionService extends BaseApiService {
 
     return InspectionPointReport.fromJson(jsonResponse);
   }
+
+  Future<Inspection> finishInspection(int inspectionId, bool isFinished) async {
+    final jsonResponse = await put('inspections/$inspectionId',
+        body: {'is_finished': isFinished});
+
+    return Inspection.fromJson(jsonResponse);
+  }
 }
