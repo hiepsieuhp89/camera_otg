@@ -352,7 +352,7 @@ class _BridgeInspectionScreenState
                             width: double.infinity,
                             child: OutlinedButton(
                                 style: ButtonStyle(
-                                    padding: MaterialStateProperty.all(
+                                    padding: WidgetStateProperty.all(
                                         const EdgeInsets.symmetric(
                                             vertical: 12, horizontal: 12))),
                                 onPressed: _createNewInspectionPoint,
