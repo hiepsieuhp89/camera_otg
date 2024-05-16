@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:kyoryo/src/models/bridge.dart';
 import 'package:kyoryo/src/models/inspection.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
@@ -53,6 +53,83 @@ class _BridgeInspectionScreenState
     );
   }
 
+  void _confirmFinishInspection() {
+    final currentBridge = ref.watch(currentBridgeProvider);
+    final numberOfCreatedReports =
+        ref.watch(numberOfCreatedReportsProvider(currentBridge!.id));
+    final inspectionPoints =
+        ref.watch(inspectionPointsProvider(currentBridge.id));
+
+    if (!inspectionPoints.hasValue) return;
+
+    if (inspectionPoints.value!.length == numberOfCreatedReports) {
+      ref
+          .read(bridgeInspectionProvider(ref.read(currentBridgeProvider)!.id)
+              .notifier)
+          .setActiveInspectionFinished(true);
+
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: Text(AppLocalizations.of(context)!.finishInspectionConfirm),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text(AppLocalizations.of(context)!.noOption),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                ref
+                    .read(bridgeInspectionProvider(
+                            ref.read(currentBridgeProvider)!.id)
+                        .notifier)
+                    .setActiveInspectionFinished(true);
+              },
+              child: Text(AppLocalizations.of(context)!.yesOption),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _confirmForReinspection() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: Text(AppLocalizations.of(context)!.backToInspectingConfirm),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text(AppLocalizations.of(context)!.noOption),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                ref
+                    .read(bridgeInspectionProvider(
+                            ref.read(currentBridgeProvider)!.id)
+                        .notifier)
+                    .setActiveInspectionFinished(false);
+              },
+              child: Text(AppLocalizations.of(context)!.yesOption),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentBridge = ref.watch(currentBridgeProvider);
@@ -64,8 +141,8 @@ class _BridgeInspectionScreenState
         ref.watch(filteredInspectionPointsProvider(currentBridge.id));
     final bridgeInspection =
         ref.watch(bridgeInspectionProvider(currentBridge.id));
-    final hasActiveInspection =
-        ref.watch(hasActiveInspectionProvider(currentBridge.id));
+    final isInspectionInProgress =
+        ref.watch(isInspectionInProgressProvider(currentBridge.id));
 
     AsyncValue<(List<InspectionPoint>, List<Inspection?>)> requiredData =
         (filteredInspectionPoints, bridgeInspection).watch;
@@ -91,7 +168,7 @@ class _BridgeInspectionScreenState
     return Scaffold(
         key: scaffoldKey,
         resizeToAvoidBottomInset: false,
-        drawer: buildNavigationDrawer(filters, hasActiveInspection),
+        drawer: buildNavigationDrawer(filters, isInspectionInProgress),
         appBar: buildAppBar(currentBridge),
         body: OrientationBuilder(
           builder: (context, orientation) {
@@ -110,10 +187,21 @@ class _BridgeInspectionScreenState
                             scaffoldKey.currentState!.openDrawer();
                           },
                         ),
+                        isInspectionInProgress
+                            ? FloatingActionButton(
+                                elevation: 0,
+                                onPressed: _confirmFinishInspection,
+                                child: const Icon(Icons.check))
+                            : FloatingActionButton(
+                                elevation: 0,
+                                onPressed: _confirmForReinspection,
+                                child: const Icon(Icons.replay_outlined),
+                              ),
                       ]),
-                      selectedIndex:
-                          hasActiveInspection ? null : selectedFilterIndex,
-                      labelType: NavigationRailLabelType.all,
+                      selectedIndex: selectedFilterIndex,
+                      labelType: isInspectionInProgress
+                          ? NavigationRailLabelType.selected
+                          : NavigationRailLabelType.all,
                       destinations: [
                         ...filters.map((filter) {
                           return NavigationRailDestination(
@@ -121,9 +209,9 @@ class _BridgeInspectionScreenState
                               label: Text(filter.label),
                               selectedIcon: filter.selectedIcon);
                         }),
-                        if (hasActiveInspection)
+                        if (isInspectionInProgress)
                           NavigationRailDestination(
-                              icon: const Icon(Icons.broken_image_outlined),
+                              icon: const Icon(Icons.add_circle),
                               label:
                                   Text(AppLocalizations.of(context)!.newDamage))
                       ],
@@ -267,7 +355,7 @@ class _BridgeInspectionScreenState
           },
         ),
         bottomNavigationBar: buildBottomAppBar(
-            inspectionPoints, numberOfCreatedReports, hasActiveInspection));
+            inspectionPoints, numberOfCreatedReports, isInspectionInProgress));
   }
 
   BottomAppBar? buildBottomAppBar(
@@ -352,7 +440,7 @@ class _BridgeInspectionScreenState
                             width: double.infinity,
                             child: OutlinedButton(
                                 style: ButtonStyle(
-                                    padding: MaterialStateProperty.all(
+                                    padding: WidgetStateProperty.all(
                                         const EdgeInsets.symmetric(
                                             vertical: 12, horizontal: 12))),
                                 onPressed: _createNewInspectionPoint,

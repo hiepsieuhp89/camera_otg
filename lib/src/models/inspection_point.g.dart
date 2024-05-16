@@ -9,18 +9,18 @@ part of 'inspection_point.dart';
 _$InpsectionPointImpl _$$InpsectionPointImplFromJson(
         Map<String, dynamic> json) =>
     _$InpsectionPointImpl(
-      id: json['id'] as int?,
+      id: (json['id'] as num?)?.toInt(),
       type: $enumDecode(_$InspectionPointTypeEnumMap, json['type']),
       name: json['name'] as String?,
       diagram: json['diagram'] == null
           ? null
           : Diagram.fromJson(json['diagram'] as Map<String, dynamic>),
-      bridgeId: json['bridge_id'] as int?,
+      bridgeId: (json['bridge_id'] as num?)?.toInt(),
       diagramUrl: json['diagram_url'] as String?,
-      diagramId: json['diagram_id'] as int?,
-      diagramMarkingX: json['diagram_marking_x'] as int?,
-      diagramMarkingY: json['diagram_marking_y'] as int?,
-      photoRefNumber: json['photo_ref_number'] as int?,
+      diagramId: (json['diagram_id'] as num?)?.toInt(),
+      diagramMarkingX: (json['diagram_marking_x'] as num?)?.toInt(),
+      diagramMarkingY: (json['diagram_marking_y'] as num?)?.toInt(),
+      photoRefNumber: (json['photo_ref_number'] as num?)?.toInt(),
       diagramMarkedPhotoLink: json['diagram_marked_photo_link'] as String?,
       lastInspectionDate: json['last_inspection_date'] == null
           ? null

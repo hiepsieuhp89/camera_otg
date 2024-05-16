@@ -8,7 +8,7 @@ part of 'contractor.dart';
 
 _$ContractorImpl _$$ContractorImplFromJson(Map<String, dynamic> json) =>
     _$ContractorImpl(
-      id: json['id'] as int,
+      id: (json['id'] as num).toInt(),
       nameJp: json['name_jp'] as String,
       nameEn: json['name_en'] as String,
     );

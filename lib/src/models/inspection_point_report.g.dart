@@ -9,10 +9,10 @@ part of 'inspection_point_report.dart';
 _$InspectionPointReportImpl _$$InspectionPointReportImplFromJson(
         Map<String, dynamic> json) =>
     _$InspectionPointReportImpl(
-      id: json['id'] as int?,
-      inspectionPointId: json['inspection_point_id'] as int,
-      inspectionId: json['inspection_id'] as int,
-      preferredPhotoId: json['preferred_photo_id'] as int?,
+      id: (json['id'] as num?)?.toInt(),
+      inspectionPointId: (json['inspection_point_id'] as num).toInt(),
+      inspectionId: (json['inspection_id'] as num).toInt(),
+      preferredPhotoId: (json['preferred_photo_id'] as num?)?.toInt(),
       isSkipped: json['is_skipped'] as bool?,
       metadata: json['meta_data'],
       date:

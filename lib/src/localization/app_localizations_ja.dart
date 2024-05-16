@@ -1,0 +1,191 @@
+import 'app_localizations.dart';
+
+/// The translations for Japanese (`ja`).
+class AppLocalizationsJa extends AppLocalizations {
+  AppLocalizationsJa([String locale = 'ja']) : super(locale);
+
+  @override
+  String get appTitle => 'Smart Buddy';
+
+  @override
+  String get pleaseSelectAreaAndContractor => '点検エリアを選択ください';
+
+  @override
+  String get showBridgeList => '橋リストを表示';
+
+  @override
+  String get bridgeListTitle => '点検橋を選択ください';
+
+  @override
+  String get unableToLoadBridges => '橋をロードできません';
+
+  @override
+  String get takePictureTitle => '写真撮影';
+
+  @override
+  String get takePictureDone => '終わり';
+
+  @override
+  String get previewPicturesTitle => 'プレビュー画像';
+
+  @override
+  String get noDamageFound => '損傷なし';
+
+  @override
+  String finishedTasks(Object finished, Object total) {
+    return '$finished/$total 完了';
+  }
+
+  @override
+  String get startInspection => '点検開始';
+
+  @override
+  String get finishInspection => '点検終了';
+
+  @override
+  String get finishEvaluation => '入力完了';
+
+  @override
+  String lastInspectionDate(Object dateTime) {
+    return '最終点検日時：$dateTime';
+  }
+
+  @override
+  String get municipalityName => '市町村';
+
+  @override
+  String get contractorName => '点検業者';
+
+  @override
+  String get cancelInspectionConfirm => 'キャンセルすると、完了した点検の情報が削除されます。キャンセルしますか';
+
+  @override
+  String get cancelInspection => '点検キャンセル';
+
+  @override
+  String get noPreviousImageFound => '前回の画像が見つかりません';
+
+  @override
+  String get lastInspectionPhoto => '前回の写真';
+
+  @override
+  String get damageType => '対象部材';
+
+  @override
+  String get damageDetails => '損傷の種類';
+
+  @override
+  String get damage => '損傷度';
+
+  @override
+  String get remark => '備考';
+
+  @override
+  String get pleaseSelectAPhoto => '採用用写真を選択してください';
+
+  @override
+  String get failedToCreateInspectionReport => '点検報告書の作成に失敗しました';
+
+  @override
+  String get failedToGetInspectionPoints => '点検ポイントの取得に失敗しました';
+
+  @override
+  String get allInspection => '全点検';
+
+  @override
+  String get presentConditionInspection => '現況点検';
+
+  @override
+  String get damageInspection => '損傷点検';
+
+  @override
+  String get finished => '完了';
+
+  @override
+  String get capturedPhotos => '撮影写真';
+
+  @override
+  String get diagramPicture => '図面';
+
+  @override
+  String get continueInspecting => '続行';
+
+  @override
+  String get diagramSelection => '図面選択';
+
+  @override
+  String get newDiagramPhotos => '新しい図面写真';
+
+  @override
+  String get currentDiagramPhotos => '現在の図面写真';
+
+  @override
+  String get takePhoto => '写真撮影';
+
+  @override
+  String get selectPhoto => '写真選択';
+
+  @override
+  String get noPhotosYet => '写真がありません';
+
+  @override
+  String get damageMarking => '損傷箇所マーキング';
+
+  @override
+  String get pleaseTapOnWhereTheDamageLocates => '損傷箇所をタップしてください';
+
+  @override
+  String get newDamage => '新規損傷';
+
+  @override
+  String get name => '名前';
+
+  @override
+  String get createThenEvalutatePoints => '点検ポイントを作成してください';
+
+  @override
+  String get createInspectionPoints => '点検ポイント作成';
+
+  @override
+  String get inspectionPoint => '点検ポイント';
+
+  @override
+  String get pleaseFinishAllInspectionPoints => '全ての点検ポイントを完了してください';
+
+  @override
+  String get setPreferredPhoto => '採用写真とする';
+
+  @override
+  String photoRefNumber(Object number) {
+    return '写真番号$number';
+  }
+
+  @override
+  String get noPastPhotoFound => '過去の写真が見つかりません';
+
+  @override
+  String get goToPhotoSelectionButton => '過年度写真表示';
+
+  @override
+  String get confirmationForNoPhoto => '写真撮影していないけどいいですか';
+
+  @override
+  String get yesOption => '「YES」';
+
+  @override
+  String get noOption => '「NO」';
+
+  @override
+  String get skip => 'スキップ';
+
+  @override
+  String confirmationForReinspection(Object photoRefNumber) {
+    return '$photoRefNumberを再点検したいですか？';
+  }
+
+  @override
+  String get finishInspectionConfirm => 'まだ点検されない項目があります。点検を終了してもよろしいですか？';
+
+  @override
+  String get backToInspectingConfirm => '点検中に戻してよろしいですか？';
+}

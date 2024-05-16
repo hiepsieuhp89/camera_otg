@@ -7,7 +7,7 @@ part of 'bridge.dart';
 // **************************************************************************
 
 _$BridgeImpl _$$BridgeImplFromJson(Map<String, dynamic> json) => _$BridgeImpl(
-      id: json['id'] as int,
+      id: (json['id'] as num).toInt(),
       condition: json['condition'] as String?,
       bridgeNo: json['bridge_no'] as String,
       managementNo: json['management_no'] as String,

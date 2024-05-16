@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:kyoryo/src/providers/current_bridge.provider.dart';
 import 'package:kyoryo/src/utilities/image_utils.dart';
 
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:kyoryo/src/models/bridge.dart';
 import 'package:kyoryo/src/screens/bridge_inspection_screen.dart';
 

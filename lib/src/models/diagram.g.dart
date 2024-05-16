@@ -8,9 +8,9 @@ part of 'diagram.dart';
 
 _$DiagramImpl _$$DiagramImplFromJson(Map<String, dynamic> json) =>
     _$DiagramImpl(
-      id: json['id'] as int?,
-      bridgeId: json['bridge_id'] as int,
-      photoId: json['photo_id'] as int,
+      id: (json['id'] as num?)?.toInt(),
+      bridgeId: (json['bridge_id'] as num).toInt(),
+      photoId: (json['photo_id'] as num).toInt(),
       photo: json['photo'] == null
           ? null
           : Photo.fromJson(json['photo'] as Map<String, dynamic>),
