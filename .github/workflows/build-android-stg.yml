@@ -1,10 +1,10 @@
-name: Build Android STG API
+name: Build Android with STG API
 
 on:
   workflow_dispatch:
 
 jobs:
-  build:
+  call-reusable-build:
     uses: ./.github/workflows/build-android.yml
     with:
       ref: ${{ github.event.inputs.ref }}
