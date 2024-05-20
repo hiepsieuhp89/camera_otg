@@ -1,58 +1,58 @@
 name: Build Android
 
 on:
-  workflow_dispatch:
   workflow_call:
     inputs:
       ref:
+        description: 'Git ref to checkout'
         required: false
+        default: 'main'
         type: string
-  push:
-    branches: [main]
+    secrets:
+      apiURL:
+        required: true
+
 
 jobs:
-    build:
-        runs-on: macos-14
-        steps:
-          - name: Determine ref
-            id: get-ref
-            run: |
-              input_ref="${{ inputs.ref }}"
-              github_ref="${{ github.sha }}"
-              ref="${input_ref:-$github_ref}"
-              echo "ref=$ref" >> $GITHUB_OUTPUT
+  build:
+    runs-on: macos-14
+    steps:
+      - name: Determine ref
+        id: get-ref
+        run: |
+          echo "ref=${{ inputs.ref }}" >> $GITHUB_ENV
 
-          - uses: actions/checkout@v4
-            with:
-              ref: ${{ steps.get-ref.outputs.ref }}
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
 
-          - uses: actions/setup-java@v4
-            with:
-              distribution: "zulu"
-              java-version: "11.0.21+9"
-              cache: "gradle"
+      - uses: actions/setup-java@v4
+        with:
+          distribution: "zulu"
+          java-version: "11.0.21+9"
+          cache: "gradle"
 
-          - name: Setup Flutter SDK
-            uses: subosito/flutter-action@v2
-            with:
-              channel: "stable"
-              flutter-version: "3.22.0"
-              cache: true
+      - name: Setup Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+          flutter-version: "3.22.0"
+          cache: true
 
-          - name: Get Packages
-            run: flutter pub get
+      - name: Get Packages
+        run: flutter pub get
 
-          - name: Generate .env file
-            run: |
-              echo "API_URL=${{ secrets.API_URL }}" > .env
+      - name: Generate .env file
+        run: |
+          echo "API_URL=${{ secrets.apiURL }}" > .env
 
-          - name: Build Android App Bundle
-            run: |
-              flutter build apk --release
-              flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64,android-x64
+      - name: Build Android App Bundle
+        run: |
+          flutter build apk --release
+          flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64,android-x64
 
-          - name: Publish Android Artifact
-            uses: actions/upload-artifact@v4
-            with:
-              name: release-apk
-              path: build/app/outputs/flutter-apk/*.apk
+      - name: Publish Android Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-apk
+          path: build/app/outputs/flutter-apk/*.apk
