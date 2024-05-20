@@ -1,0 +1,12 @@
+name: Build Android STG API
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: ./.github/workflows/build-android.yml
+    with:
+      ref: ${{ github.event.inputs.ref }}
+    secrets:
+      apiURL: ${{ secrets.API_URL_STG }}
