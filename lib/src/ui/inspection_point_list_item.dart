@@ -82,10 +82,10 @@ class InpsectionPointListItem extends ConsumerWidget {
               children: [
                 Text(
                     AppLocalizations.of(context)!.lastInspectionDate(
-                        point.lastInspectionDate == null
+                        activeReport?.date == null
                             ? ''
                             : DateFormat('yy年MM月dd日 HH:mm')
-                                .format(point.lastInspectionDate!)),
+                                .format(activeReport!.date!)),
                     style: Theme.of(context).textTheme.bodySmall),
                 Expanded(
                     child: Row(
