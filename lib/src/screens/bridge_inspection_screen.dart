@@ -362,27 +362,39 @@ class _BridgeInspectionScreenState
       AsyncValue<List<InspectionPoint>> inspectionPoints,
       int numberOfCreatedReports,
       bool isInspecting) {
-    return MediaQuery.of(context).orientation == Orientation.portrait
-        ? BottomAppBar(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Text(isInspecting && inspectionPoints.value!.isNotEmpty
-                    ? AppLocalizations.of(context)!.finishedTasks(
-                        numberOfCreatedReports, inspectionPoints.value!.length)
-                    : ''),
-                Row(
-                    children: isInspecting
-                        ? [
-                            IconButton(
-                                onPressed: _createNewInspectionPoint,
-                                icon: const Icon(Icons.broken_image_outlined)),
-                          ]
-                        : [])
-              ],
-            ),
-          )
-        : null;
+    if (MediaQuery.of(context).orientation == Orientation.landscape) {
+      return null;
+    }
+
+    return BottomAppBar(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          Text(isInspecting && inspectionPoints.value!.isNotEmpty
+              ? AppLocalizations.of(context)!.finishedTasks(
+                  numberOfCreatedReports, inspectionPoints.value!.length)
+              : ''),
+          Row(children: [
+            if (isInspecting)
+              IconButton(
+                  onPressed: _createNewInspectionPoint,
+                  icon: const Icon(Icons.broken_image_outlined)),
+            if (isInspecting)
+              FilledButton.icon(
+                onPressed: _confirmFinishInspection,
+                icon: const Icon(Icons.check),
+                label: Text(AppLocalizations.of(context)!.finishInspection),
+              )
+            else
+              FilledButton.icon(
+                onPressed: _confirmForReinspection,
+                icon: const Icon(Icons.replay_outlined),
+                label: Text(AppLocalizations.of(context)!.backToInspecting),
+              )
+          ])
+        ],
+      ),
+    );
   }
 
   AppBar? buildAppBar(Bridge currentBridge) {
@@ -446,7 +458,7 @@ class _BridgeInspectionScreenState
                                 onPressed: _createNewInspectionPoint,
                                 child: Row(
                                   children: [
-                                    const Icon(Icons.broken_image_outlined),
+                                    const Icon(Icons.add_circle_outlined),
                                     Expanded(
                                       child: Text(
                                         AppLocalizations.of(context)!

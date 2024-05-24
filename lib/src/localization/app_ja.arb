@@ -30,6 +30,13 @@
       "dateTime": {}
     }
   },
+  "inspectionDate": "点検日時：{dateTime}",
+  "@inspectionDate": {
+    "description": "inspection date and time",
+    "placeholders": {
+      "dateTime": {}
+    }
+  },
   "municipalityName": "市町村",
   "contractorName": "点検業者",
   "cancelInspectionConfirm": "キャンセルすると、完了した点検の情報が削除されます。キャンセルしますか",
@@ -86,5 +93,6 @@
     }
   },
   "finishInspectionConfirm": "まだ点検されない項目があります。点検を終了してもよろしいですか？",
-  "backToInspectingConfirm": "点検中に戻してよろしいですか？"
+  "backToInspectingConfirm": "点検中に戻してよろしいですか？",
+  "backToInspecting": "点検中に戻る"
 }

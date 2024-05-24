@@ -338,9 +338,10 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
                     }),
                 FloatingActionButton(
                   elevation: 0,
-                  onPressed: capturedPhotoPaths.isEmpty
-                      ? _confirmSkippingPoint
-                      : _navigateToReportScreen,
+                  onPressed:
+                      capturedPhotoPaths.isEmpty && uploadedPhotos.isEmpty
+                          ? _confirmSkippingPoint
+                          : _navigateToReportScreen,
                   child: const Icon(Icons.check),
                 ),
                 const SizedBox(height: 16)

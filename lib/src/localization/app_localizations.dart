@@ -175,6 +175,12 @@ abstract class AppLocalizations {
   /// **'最終点検日時：{dateTime}'**
   String lastInspectionDate(Object dateTime);
 
+  /// inspection date and time
+  ///
+  /// In ja, this message translates to:
+  /// **'点検日時：{dateTime}'**
+  String inspectionDate(Object dateTime);
+
   /// No description provided for @municipalityName.
   ///
   /// In ja, this message translates to:
@@ -444,6 +450,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'点検中に戻してよろしいですか？'**
   String get backToInspectingConfirm;
+
+  /// No description provided for @backToInspecting.
+  ///
+  /// In ja, this message translates to:
+  /// **'点検中に戻る'**
+  String get backToInspecting;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
