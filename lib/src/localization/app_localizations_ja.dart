@@ -51,6 +51,11 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String inspectionDate(Object dateTime) {
+    return '点検日時：$dateTime';
+  }
+
+  @override
   String get municipalityName => '市町村';
 
   @override

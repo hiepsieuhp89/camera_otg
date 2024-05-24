@@ -30,6 +30,13 @@
       "dateTime": {}
     }
   },
+  "inspectionDate": "点検日時：{dateTime}",
+  "@inspectionDate": {
+    "description": "inspection date and time",
+    "placeholders": {
+      "dateTime": {}
+    }
+  },
   "municipalityName": "市町村",
   "contractorName": "点検業者",
   "cancelInspectionConfirm": "キャンセルすると、完了した点検の情報が削除されます。キャンセルしますか",

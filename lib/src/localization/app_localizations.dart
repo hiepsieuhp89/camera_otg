@@ -175,6 +175,12 @@ abstract class AppLocalizations {
   /// **'最終点検日時：{dateTime}'**
   String lastInspectionDate(Object dateTime);
 
+  /// inspection date and time
+  ///
+  /// In ja, this message translates to:
+  /// **'点検日時：{dateTime}'**
+  String inspectionDate(Object dateTime);
+
   /// No description provided for @municipalityName.
   ///
   /// In ja, this message translates to:

@@ -81,7 +81,7 @@ class InpsectionPointListItem extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                    AppLocalizations.of(context)!.lastInspectionDate(
+                    AppLocalizations.of(context)!.inspectionDate(
                         activeReport?.date == null
                             ? ''
                             : DateFormat('yy年MM月dd日 HH:mm')
@@ -100,19 +100,16 @@ class InpsectionPointListItem extends ConsumerWidget {
                                         context, activeReport)
                                     : null,
                                 icon: const Icon(Icons.do_not_disturb))
-                            : Chip(
-                                backgroundColor: Theme.of(context)
-                                    .primaryColor
-                                    .withOpacity(0.15),
-                                label: Row(
-                                  children: [
-                                    Icon(Icons.check,
-                                        color: Theme.of(context).primaryColor,
-                                        size: 20.0),
-                                    const SizedBox(width: 5.0),
-                                    Text(AppLocalizations.of(context)!.finished)
-                                  ],
-                                ))
+                            : FilledButton.icon(
+                                onPressed: isInspectionInProgress
+                                    ? () {
+                                        startInspect(point,
+                                            createdReport: activeReport);
+                                      }
+                                    : null,
+                                icon: const Icon(Icons.edit),
+                                label: Text(
+                                    AppLocalizations.of(context)!.finished))
                         : IconButton.filled(
                             onPressed: isInspectionInProgress
                                 ? () {
