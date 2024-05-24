@@ -155,19 +155,23 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
     try {
       await _initializeControllerFuture;
 
-      await _controller!.setFocusMode(FocusMode.locked);
-      await _controller!.setExposureMode(ExposureMode.locked);
+      await Future.wait([
+        _controller!.setFocusMode(FocusMode.locked),
+        _controller!.setExposureMode(ExposureMode.locked)
+      ]);
 
-      final XFile image = await _controller!.takePicture();
+      _controller!.takePicture().then((image) {
+        setState(() {
+          capturedPhotoPaths.add(image.path);
+        });
 
-      AudioPlayer().play(AssetSource('sounds/camera_shoot.mp3'));
+        AudioPlayer().play(AssetSource('sounds/camera_shoot.mp3'));
 
-      setState(() {
-        capturedPhotoPaths.add(image.path);
+        Future.wait([
+          _controller!.setFocusMode(FocusMode.auto),
+          _controller!.setExposureMode(ExposureMode.auto),
+        ]);
       });
-
-      await _controller!.setFocusMode(FocusMode.auto);
-      await _controller!.setExposureMode(ExposureMode.auto);
     } catch (e) {
       debugPrint(e.toString());
     }
