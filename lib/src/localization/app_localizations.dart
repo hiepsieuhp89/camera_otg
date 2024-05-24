@@ -444,6 +444,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'点検中に戻してよろしいですか？'**
   String get backToInspectingConfirm;
+
+  /// No description provided for @backToInspecting.
+  ///
+  /// In ja, this message translates to:
+  /// **'点検中に戻る'**
+  String get backToInspecting;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

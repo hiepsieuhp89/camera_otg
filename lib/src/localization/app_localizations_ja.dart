@@ -188,4 +188,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get backToInspectingConfirm => '点検中に戻してよろしいですか？';
+
+  @override
+  String get backToInspecting => '点検中に戻る';
 }
