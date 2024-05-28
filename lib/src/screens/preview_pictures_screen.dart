@@ -97,18 +97,10 @@ class _PreviewPicturesScreenState extends State<PreviewPicturesScreen> {
                   return Stack(
                     alignment: Alignment.topRight,
                     children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                            image: combinedList[index] is String
-                                ? FileImage(File(combinedList[index]))
-                                    as ImageProvider
-                                : CachedNetworkImageProvider(
-                                    combinedList[index].photoLink),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
+                      combinedList[index] is String
+                          ? Image.file(File(combinedList[index]))
+                          : CachedNetworkImage(
+                              imageUrl: combinedList[index].photoLink),
                       Positioned(
                         right: 0,
                         bottom: 0,
