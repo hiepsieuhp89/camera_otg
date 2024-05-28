@@ -46,3 +46,36 @@ void viewImages(BuildContext context, List<String> imageUrls, int initialImage,
       ImagesViewOverlay(imageUrls,
           initialPage: initialImage, markings: markings ?? {}));
 }
+
+Future<void> cropPhoto(String imagePath) async {
+  img.Image? image = await img.decodeImageFile(imagePath);
+  if (image == null) {
+    return;
+  }
+
+  int originalWidth = image.width;
+  int originalHeight = image.height;
+  int newWidth, newHeight;
+  double originalRatio = originalWidth / originalHeight;
+  double targetRatio = 4 / 3;
+
+  if (originalRatio > targetRatio) {
+    // Crop the width
+    newWidth = (originalHeight * targetRatio).round();
+    newHeight = originalHeight;
+    int offsetX = (originalWidth - newWidth) ~/ 2;
+    image = img.copyCrop(image,
+        x: offsetX, y: 0, width: newWidth, height: newHeight);
+  } else if (originalRatio < targetRatio) {
+    // Crop the height
+    newWidth = originalWidth;
+    newHeight = (originalWidth / targetRatio).round();
+    int offsetY = (originalHeight - newHeight) ~/ 2;
+    image = img.copyCrop(image,
+        x: 0, y: offsetY, width: newWidth, height: newHeight);
+  }
+
+  Uint8List croppedImageBytes = img.encodeJpg(image);
+
+  await File(imagePath).writeAsBytes(croppedImageBytes);
+}

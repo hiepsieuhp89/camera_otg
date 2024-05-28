@@ -412,7 +412,7 @@ abstract class AppLocalizations {
   /// No description provided for @confirmationForNoPhoto.
   ///
   /// In ja, this message translates to:
-  /// **'写真撮影していないけどいいですか'**
+  /// **'写真撮影が完了していませんが、よろしいですか？'**
   String get confirmationForNoPhoto;
 
   /// No description provided for @yesOption.

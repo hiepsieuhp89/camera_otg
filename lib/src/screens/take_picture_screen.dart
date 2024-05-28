@@ -168,6 +168,7 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
         AudioPlayer().play(AssetSource('sounds/camera_shoot.mp3'));
 
         Future.wait([
+          cropPhoto(image.path),
           _controller!.setFocusMode(FocusMode.auto),
           _controller!.setExposureMode(ExposureMode.auto),
         ]);
@@ -322,6 +323,78 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
     super.dispose();
   }
 
+  Widget _buildCameraPreview() {
+    final double screenHeight = MediaQuery.of(context).size.height;
+
+    return Stack(alignment: Alignment.centerLeft, children: [
+      SizedBox(
+        width: screenHeight / 3 * 4,
+        height: screenHeight,
+        child: ClipRect(
+          child: OverflowBox(
+            alignment: Alignment.centerLeft,
+            child: FittedBox(
+                fit: BoxFit.fitHeight,
+                alignment: Alignment.centerLeft,
+                child: FutureBuilder(
+                  future: _initializeControllerFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.done) {
+                      return SizedBox(
+                        width: screenHeight * _controller!.value.aspectRatio,
+                        height: screenHeight,
+                        child: CameraPreview(_controller!),
+                      );
+                    } else {
+                      return Container(
+                        color: Colors.black,
+                      );
+                    }
+                  },
+                )),
+          ),
+        ),
+      ),
+      if (previousPhoto != null)
+        Positioned(
+            top: 0,
+            left: 0,
+            child: CollapsiblePanel(
+              collapsed: !showPreviousPhoto,
+              child: Container(
+                constraints: const BoxConstraints(maxHeight: 250),
+                decoration: BoxDecoration(
+                    border: Border(
+                  right: BorderSide(
+                      width: 1, color: Theme.of(context).dividerColor),
+                  bottom: BorderSide(
+                      width: 1, color: Theme.of(context).dividerColor),
+                )),
+                child: Stack(
+                  children: [
+                    CachedNetworkImage(
+                      imageUrl: previousPhoto!.photoLink,
+                      height: 150,
+                    ),
+                    Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: IconButton(
+                          onPressed: () {
+                            viewImage(context,
+                                imageUrl: previousPhoto!.photoLink);
+                          },
+                          icon: const Icon(Icons.fullscreen),
+                          iconSize: 30,
+                          color: Colors.white,
+                        ))
+                  ],
+                ),
+              ),
+            )),
+    ]);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -390,123 +463,63 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
             ],
           ),
           const VerticalDivider(thickness: 1, width: 1),
+          _buildCameraPreview(),
           Expanded(
-            child: Stack(
-              alignment: Alignment.centerRight,
+              child: Container(
+            color: Colors.black,
+            child: Row(
               children: [
-                Positioned.fill(
-                  child: FutureBuilder(
-                    future: _initializeControllerFuture,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.done) {
-                        return CameraPreview(_controller!);
-                      } else {
-                        return Container(
-                          color: Colors.black,
-                        );
-                      }
-                    },
+                RotatedBox(
+                  quarterTurns: 3,
+                  child: Row(
+                    children: [
+                      const RotatedBox(
+                        quarterTurns: 3,
+                        child: Icon(Icons.remove, color: Colors.white),
+                      ),
+                      Expanded(
+                        child: Slider(
+                          value: _currentZoomLevel,
+                          min: _minZoomLevel,
+                          max: _maxZoomLevel,
+                          onChanged: (zoomLevel) {
+                            _setZoomLevel(zoomLevel);
+                          },
+                          activeColor: Colors.grey.shade100,
+                          inactiveColor: Colors.grey.shade100,
+                          thumbColor: Colors.purple.shade100,
+                        ),
+                      ),
+                      const Icon(Icons.add, color: Colors.white),
+                    ],
                   ),
                 ),
-                if (previousPhoto != null)
-                  Positioned(
-                      top: 0,
-                      left: 0,
-                      child: CollapsiblePanel(
-                        collapsed: !showPreviousPhoto,
-                        child: Container(
-                          constraints: const BoxConstraints(maxHeight: 250),
-                          decoration: BoxDecoration(
-                              border: Border(
-                            right: BorderSide(
-                                width: 1,
-                                color: Theme.of(context).dividerColor),
-                            bottom: BorderSide(
-                                width: 1,
-                                color: Theme.of(context).dividerColor),
-                          )),
-                          child: Stack(
-                            children: [
-                              CachedNetworkImage(
-                                imageUrl: previousPhoto!.photoLink,
-                                height: 150,
-                              ),
-                              Positioned(
-                                  bottom: 0,
-                                  right: 0,
-                                  child: IconButton(
-                                    onPressed: () {
-                                      viewImage(context,
-                                          imageUrl: previousPhoto!.photoLink);
-                                    },
-                                    icon: const Icon(Icons.fullscreen),
-                                    iconSize: 30,
-                                    color: Colors.white,
-                                  ))
-                            ],
+                Expanded(
+                  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        SizedBox(
+                          height: 48,
+                          child: IconButton(
+                            onPressed: showFlashDialog,
+                            icon: getFlashIcon(),
+                            iconSize: 30,
                           ),
                         ),
-                      )),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    RotatedBox(
-                      quarterTurns: 3,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.max,
-                        children: [
-                          const RotatedBox(
-                            quarterTurns: 3,
-                            child: Icon(Icons.remove, color: Colors.white),
-                          ),
-                          Expanded(
-                            child: Slider(
-                              value: _currentZoomLevel,
-                              min: _minZoomLevel,
-                              max: _maxZoomLevel,
-                              onChanged: (zoomLevel) {
-                                _setZoomLevel(zoomLevel);
-                              },
-                              activeColor: Colors.grey.shade100,
-                              inactiveColor: Colors.grey.shade100,
-                              thumbColor: Colors.purple.shade100,
-                            ),
-                          ),
-                          const Icon(Icons.add, color: Colors.white),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      width: 120,
-                      color: Colors.black.withOpacity(0.5),
-                      child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            SizedBox(
-                              height: 48,
-                              child: IconButton(
-                                onPressed: showFlashDialog,
-                                icon: getFlashIcon(),
-                                iconSize: 30,
-                              ),
-                            ),
-                            IconButton(
-                              onPressed: _takePicture,
-                              icon:
-                                  const Icon(Icons.circle, color: Colors.white),
-                              iconSize: 70,
-                            ),
-                            SizedBox(
-                              height: 48,
-                              child: _buildLatestPhotoPreview(),
-                            ),
-                          ]),
-                    )
-                  ],
+                        IconButton(
+                          onPressed: _takePicture,
+                          icon: const Icon(Icons.circle, color: Colors.white),
+                          iconSize: 70,
+                        ),
+                        SizedBox(
+                          height: 48,
+                          child: _buildLatestPhotoPreview(),
+                        ),
+                      ]),
                 )
               ],
             ),
-          )
+          ))
         ],
       ),
     );
