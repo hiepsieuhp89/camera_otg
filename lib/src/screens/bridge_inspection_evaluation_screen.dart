@@ -87,6 +87,7 @@ class BridgeInspectionEvaluationScreenState
               'remark': _textEditingController.text,
             }),
             capturedPhotoPaths: widget.arguments.capturedPhotos,
+            preferredPhotoPath: _preferredPhotoPath,
             uploadedPhotos: widget.arguments.uploadedPhotos);
   }
 
@@ -99,6 +100,7 @@ class BridgeInspectionEvaluationScreenState
             pointId: widget.arguments.point.id!,
             capturedPhotoPaths: widget.arguments.capturedPhotos,
             isSkipped: false,
+            preferredPhotoPath: _preferredPhotoPath,
             metadata: {
           'damage_category': _selectedCategory ?? '',
           'damage_type': _selectedDamageType ?? '',
