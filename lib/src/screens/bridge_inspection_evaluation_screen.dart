@@ -190,6 +190,7 @@ class BridgeInspectionEvaluationScreenState
                       children: [
                         Expanded(
                             child: DropdownMenu<String>(
+                          initialSelection: _selectedCategory,
                           label: Text(AppLocalizations.of(context)!.damageType),
                           expandedInsets: const EdgeInsets.all(0),
                           onSelected: (category) {
@@ -213,6 +214,10 @@ class BridgeInspectionEvaluationScreenState
                         const SizedBox(width: 8),
                         Expanded(
                             child: DropdownMenu<DamageType>(
+                          initialSelection: damageTypes.hasValue
+                              ? damageTypes.value!.firstWhereOrNull(
+                                  (type) => type.nameJp == _selectedDamageType)
+                              : null,
                           label:
                               Text(AppLocalizations.of(context)!.damageDetails),
                           enabled: _selectedCategory != null,
@@ -240,6 +245,7 @@ class BridgeInspectionEvaluationScreenState
                     Row(
                       children: [
                         DropdownMenu<String>(
+                          initialSelection: _selectedHealthLevel,
                           label: Text(AppLocalizations.of(context)!.damage),
                           onSelected: (healthLevel) {
                             setState(() {
