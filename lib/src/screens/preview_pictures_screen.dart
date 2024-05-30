@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:kyoryo/src/models/photo.dart';
+import 'package:kyoryo/src/utilities/image_utils.dart';
 
 class PreviewPicturesScreenArguments {
   final List<String> imagePaths;
@@ -86,13 +87,10 @@ class _PreviewPicturesScreenState extends State<PreviewPicturesScreen> {
 
             return Padding(
               padding: const EdgeInsets.all(8.0),
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4,
-                  crossAxisSpacing: 4,
-                  mainAxisSpacing: 4,
-                ),
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
                 itemCount: combinedList.length,
+                separatorBuilder: (context, index) => const SizedBox(width: 8),
                 itemBuilder: (context, index) {
                   return Stack(
                     alignment: Alignment.topRight,
@@ -102,16 +100,45 @@ class _PreviewPicturesScreenState extends State<PreviewPicturesScreen> {
                           : CachedNetworkImage(
                               imageUrl: combinedList[index].photoLink),
                       Positioned(
-                        right: 0,
-                        bottom: 0,
-                        child: FloatingActionButton.small(
-                          heroTag: 'image-$index',
-                          onPressed: () => combinedList[index] is String
-                              ? removeImage(combinedList[index])
-                              : removePhoto(combinedList[index]),
-                          child: const Icon(Icons.delete, color: Colors.red),
-                        ),
-                      ),
+                          bottom: 2,
+                          left: 2,
+                          child: Container(
+                            height: 40,
+                            width: 40,
+                            decoration: const BoxDecoration(
+                                shape: BoxShape.circle, color: Colors.black54),
+                            child: IconButton(
+                                icon: const Icon(
+                                  Icons.open_in_full,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                                onPressed: () {
+                                  viewImage(context,
+                                      imageUrl: combinedList[index] is String
+                                          ? combinedList[index]
+                                          : combinedList[index].photoLink);
+                                }),
+                          )),
+                      Positioned(
+                          bottom: 2,
+                          right: 2,
+                          child: Container(
+                            height: 40,
+                            width: 40,
+                            decoration: const BoxDecoration(
+                                shape: BoxShape.circle, color: Colors.black54),
+                            child: IconButton(
+                              icon: const Icon(
+                                Icons.delete,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                              onPressed: () => combinedList[index] is String
+                                  ? removeImage(combinedList[index])
+                                  : removePhoto(combinedList[index]),
+                            ),
+                          )),
                     ],
                   );
                 },

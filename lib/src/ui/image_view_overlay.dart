@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:kyoryo/src/models/marking.dart';
 import 'package:kyoryo/src/ui/photo_view_with_marking.dart';
@@ -42,7 +44,9 @@ class ImageViewOverlay extends ModalRoute<void> {
     return Stack(
       children: <Widget>[
         PhotoViewWithMarking(
-          imageProvider: NetworkImage(imageUrl),
+          imageProvider: imageUrl.startsWith('http')
+              ? NetworkImage(imageUrl)
+              : FileImage(File(imageUrl)) as ImageProvider,
           backgroundDecoration: const BoxDecoration(color: Colors.transparent),
           marking: marking,
         ),
