@@ -63,16 +63,12 @@ Future<void> cropPhoto(String imagePath) async {
     // Crop the width
     newWidth = (originalHeight * targetRatio).round();
     newHeight = originalHeight;
-    int offsetX = (originalWidth - newWidth) ~/ 2;
-    image = img.copyCrop(image,
-        x: offsetX, y: 0, width: newWidth, height: newHeight);
+    image = img.copyCrop(image, x: 0, y: 0, width: newWidth, height: newHeight);
   } else if (originalRatio < targetRatio) {
     // Crop the height
     newWidth = originalWidth;
     newHeight = (originalWidth / targetRatio).round();
-    int offsetY = (originalHeight - newHeight) ~/ 2;
-    image = img.copyCrop(image,
-        x: 0, y: offsetY, width: newWidth, height: newHeight);
+    image = img.copyCrop(image, x: 0, y: 0, width: newWidth, height: newHeight);
   }
 
   Uint8List croppedImageBytes = img.encodeJpg(image);
