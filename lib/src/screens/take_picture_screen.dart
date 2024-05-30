@@ -161,14 +161,15 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
       ]);
 
       _controller!.takePicture().then((image) {
-        setState(() {
-          capturedPhotoPaths.add(image.path);
-        });
-
         AudioPlayer().play(AssetSource('sounds/camera_shoot.mp3'));
 
+        cropPhoto(image.path).then((_) {
+          setState(() {
+            capturedPhotoPaths.add(image.path);
+          });
+        });
+
         Future.wait([
-          cropPhoto(image.path),
           _controller!.setFocusMode(FocusMode.auto),
           _controller!.setExposureMode(ExposureMode.auto),
         ]);
