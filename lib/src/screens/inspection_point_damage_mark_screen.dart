@@ -32,6 +32,7 @@ class InspectionPointDamageMarkScreenState
   int _imageWidth = 0;
   int _imageHeight = 0;
   String _inspectionPointName = '';
+  Future<void>? _pendingSubmission;
 
   final GlobalKey _imageKey = GlobalKey();
 
@@ -41,33 +42,20 @@ class InspectionPointDamageMarkScreenState
     _nameController = TextEditingController();
   }
 
-  @override
-  Widget build(BuildContext context) {
+  void createInspecitonPoint() {
     final currentBridge = ref.watch(currentBridgeProvider);
-    final imageWidget = Image.network(widget.arguments.diagram.photo!.photoLink,
-        key: _imageKey);
-
-    imageWidget.image
-        .resolve(const ImageConfiguration())
-        .addListener(ImageStreamListener((info, synchronousCall) {
-      setState(() {
-        _imageHeight = info.image.height;
-        _imageWidth = info.image.width;
-      });
-    }));
-
     final inspectionPointsNotiffier =
         ref.read(inspectionPointsProvider(currentBridge!.id).notifier);
 
-    void createInspecitonPoint() {
-      final markCoordinateX =
-          ((_left + 10) / _imageKey.currentContext!.size!.width * _imageWidth)
-              .round();
-      final markCoordinateY =
-          ((_top + 10) / _imageKey.currentContext!.size!.height * _imageHeight)
-              .round();
+    final markCoordinateX =
+        ((_left + 10) / _imageKey.currentContext!.size!.width * _imageWidth)
+            .round();
+    final markCoordinateY =
+        ((_top + 10) / _imageKey.currentContext!.size!.height * _imageHeight)
+            .round();
 
-      inspectionPointsNotiffier
+    setState(() {
+      _pendingSubmission = inspectionPointsNotiffier
           .createInspectionPoint(InspectionPoint(
               name: _inspectionPointName,
               type: InspectionPointType.damage,
@@ -82,7 +70,22 @@ class InspectionPointDamageMarkScreenState
                   TakePictureScreenArguments(inspectionPoint: createdPoint));
         },
       );
-    }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final imageWidget = Image.network(widget.arguments.diagram.photo!.photoLink,
+        key: _imageKey);
+
+    imageWidget.image
+        .resolve(const ImageConfiguration())
+        .addListener(ImageStreamListener((info, synchronousCall) {
+      setState(() {
+        _imageHeight = info.image.height;
+        _imageWidth = info.image.width;
+      });
+    }));
 
     return Scaffold(
         appBar: AppBar(
@@ -92,11 +95,24 @@ class InspectionPointDamageMarkScreenState
         ),
         floatingActionButton: _inspectionPointName.isEmpty
             ? null
-            : FloatingActionButton.extended(
-                onPressed: createInspecitonPoint,
-                label: Text(AppLocalizations.of(context)!.inspectionPoint),
-                icon: const Icon(Icons.add),
-              ),
+            : FutureBuilder(
+                future: _pendingSubmission,
+                builder: (context, snapshot) {
+                  final isLoading =
+                      snapshot.connectionState == ConnectionState.waiting;
+
+                  return FloatingActionButton(
+                      onPressed: isLoading ? null : createInspecitonPoint,
+                      child: isLoading
+                          ? Container(
+                              width: 24,
+                              height: 24,
+                              padding: const EdgeInsets.all(2.0),
+                              child: const CircularProgressIndicator(
+                                strokeWidth: 3,
+                              ))
+                          : const Icon(Icons.arrow_forward));
+                }),
         body: Padding(
           padding: const EdgeInsets.all(16),
           child: ListView(

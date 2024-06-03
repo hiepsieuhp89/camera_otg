@@ -430,14 +430,18 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
               }
 
               if (index == 1) {
+                final showMarking = widget
+                            .arguments.inspectionPoint.diagramMarkingX !=
+                        null &&
+                    widget.arguments.inspectionPoint.diagramMarkingY != null &&
+                    widget.arguments.inspectionPoint.diagramMarkedPhotoLink ==
+                        null;
+
                 viewImage(context,
                     imageUrl: widget
                             .arguments.inspectionPoint.diagramMarkedPhotoLink ??
                         widget.arguments.inspectionPoint.diagramUrl!,
-                    marking: widget.arguments.inspectionPoint.diagramMarkingX !=
-                                null &&
-                            widget.arguments.inspectionPoint.diagramMarkingY !=
-                                null
+                    marking: showMarking
                         ? Marking(
                             x: widget
                                 .arguments.inspectionPoint.diagramMarkingX!,
