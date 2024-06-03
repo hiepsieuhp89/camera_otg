@@ -25,6 +25,9 @@ class InspectionPoint with _$InspectionPoint {
       @JsonKey(name: 'diagram_marking_x') int? diagramMarkingX,
       @JsonKey(name: 'diagram_marking_y') int? diagramMarkingY,
       @JsonKey(name: 'photo_ref_number') int? photoRefNumber,
+      @JsonKey(name: 'span_name') String? spanName,
+      @JsonKey(name: 'span_number') String? spanNumber,
+      @JsonKey(name: 'element_number') String? elementNumber,
       @JsonKey(name: 'diagram_marked_photo_link')
       String? diagramMarkedPhotoLink,
       @JsonKey(name: 'last_inspection_date')

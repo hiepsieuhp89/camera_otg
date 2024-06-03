@@ -35,10 +35,17 @@ class InpsectionPointListItem extends ConsumerWidget {
     final isInspectionInProgress =
         ref.watch(isInspectionInProgressProvider(point.bridgeId!));
 
-    String photoRefNumber = point.photoRefNumber != null
-        ? '${AppLocalizations.of(context)!.photoRefNumber(point.photoRefNumber.toString())}：'
-        : '';
-    String labelText = '$photoRefNumber${point.name ?? ''}';
+    String labelText;
+
+    if (point.type == InspectionPointType.damage) {
+      labelText =
+          '${point.spanNumber ?? ''} - ${point.photoRefNumber ?? ''} : ${point.spanName ?? ''} / ${point.elementNumber ?? ''}';
+    } else {
+      String photoRefNumberWithLabel = point.photoRefNumber != null
+          ? '${AppLocalizations.of(context)!.photoRefNumber(point.photoRefNumber.toString())}：'
+          : '';
+      labelText = '$photoRefNumberWithLabel${point.name ?? ''}';
+    }
 
     return Card(
       child: Container(

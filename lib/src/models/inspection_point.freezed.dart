@@ -36,6 +36,12 @@ mixin _$InspectionPoint {
   int? get diagramMarkingY => throw _privateConstructorUsedError;
   @JsonKey(name: 'photo_ref_number')
   int? get photoRefNumber => throw _privateConstructorUsedError;
+  @JsonKey(name: 'span_name')
+  String? get spanName => throw _privateConstructorUsedError;
+  @JsonKey(name: 'span_number')
+  String? get spanNumber => throw _privateConstructorUsedError;
+  @JsonKey(name: 'element_number')
+  String? get elementNumber => throw _privateConstructorUsedError;
   @JsonKey(name: 'diagram_marked_photo_link')
   String? get diagramMarkedPhotoLink => throw _privateConstructorUsedError;
   @JsonKey(name: 'last_inspection_date')
@@ -64,6 +70,9 @@ abstract class $InspectionPointCopyWith<$Res> {
       @JsonKey(name: 'diagram_marking_x') int? diagramMarkingX,
       @JsonKey(name: 'diagram_marking_y') int? diagramMarkingY,
       @JsonKey(name: 'photo_ref_number') int? photoRefNumber,
+      @JsonKey(name: 'span_name') String? spanName,
+      @JsonKey(name: 'span_number') String? spanNumber,
+      @JsonKey(name: 'element_number') String? elementNumber,
       @JsonKey(name: 'diagram_marked_photo_link')
       String? diagramMarkedPhotoLink,
       @JsonKey(name: 'last_inspection_date') DateTime? lastInspectionDate});
@@ -94,6 +103,9 @@ class _$InspectionPointCopyWithImpl<$Res, $Val extends InspectionPoint>
     Object? diagramMarkingX = freezed,
     Object? diagramMarkingY = freezed,
     Object? photoRefNumber = freezed,
+    Object? spanName = freezed,
+    Object? spanNumber = freezed,
+    Object? elementNumber = freezed,
     Object? diagramMarkedPhotoLink = freezed,
     Object? lastInspectionDate = freezed,
   }) {
@@ -138,6 +150,18 @@ class _$InspectionPointCopyWithImpl<$Res, $Val extends InspectionPoint>
           ? _value.photoRefNumber
           : photoRefNumber // ignore: cast_nullable_to_non_nullable
               as int?,
+      spanName: freezed == spanName
+          ? _value.spanName
+          : spanName // ignore: cast_nullable_to_non_nullable
+              as String?,
+      spanNumber: freezed == spanNumber
+          ? _value.spanNumber
+          : spanNumber // ignore: cast_nullable_to_non_nullable
+              as String?,
+      elementNumber: freezed == elementNumber
+          ? _value.elementNumber
+          : elementNumber // ignore: cast_nullable_to_non_nullable
+              as String?,
       diagramMarkedPhotoLink: freezed == diagramMarkedPhotoLink
           ? _value.diagramMarkedPhotoLink
           : diagramMarkedPhotoLink // ignore: cast_nullable_to_non_nullable
@@ -181,6 +205,9 @@ abstract class _$$InpsectionPointImplCopyWith<$Res>
       @JsonKey(name: 'diagram_marking_x') int? diagramMarkingX,
       @JsonKey(name: 'diagram_marking_y') int? diagramMarkingY,
       @JsonKey(name: 'photo_ref_number') int? photoRefNumber,
+      @JsonKey(name: 'span_name') String? spanName,
+      @JsonKey(name: 'span_number') String? spanNumber,
+      @JsonKey(name: 'element_number') String? elementNumber,
       @JsonKey(name: 'diagram_marked_photo_link')
       String? diagramMarkedPhotoLink,
       @JsonKey(name: 'last_inspection_date') DateTime? lastInspectionDate});
@@ -210,6 +237,9 @@ class __$$InpsectionPointImplCopyWithImpl<$Res>
     Object? diagramMarkingX = freezed,
     Object? diagramMarkingY = freezed,
     Object? photoRefNumber = freezed,
+    Object? spanName = freezed,
+    Object? spanNumber = freezed,
+    Object? elementNumber = freezed,
     Object? diagramMarkedPhotoLink = freezed,
     Object? lastInspectionDate = freezed,
   }) {
@@ -254,6 +284,18 @@ class __$$InpsectionPointImplCopyWithImpl<$Res>
           ? _value.photoRefNumber
           : photoRefNumber // ignore: cast_nullable_to_non_nullable
               as int?,
+      spanName: freezed == spanName
+          ? _value.spanName
+          : spanName // ignore: cast_nullable_to_non_nullable
+              as String?,
+      spanNumber: freezed == spanNumber
+          ? _value.spanNumber
+          : spanNumber // ignore: cast_nullable_to_non_nullable
+              as String?,
+      elementNumber: freezed == elementNumber
+          ? _value.elementNumber
+          : elementNumber // ignore: cast_nullable_to_non_nullable
+              as String?,
       diagramMarkedPhotoLink: freezed == diagramMarkedPhotoLink
           ? _value.diagramMarkedPhotoLink
           : diagramMarkedPhotoLink // ignore: cast_nullable_to_non_nullable
@@ -280,6 +322,9 @@ class _$InpsectionPointImpl implements _InpsectionPoint {
       @JsonKey(name: 'diagram_marking_x') this.diagramMarkingX,
       @JsonKey(name: 'diagram_marking_y') this.diagramMarkingY,
       @JsonKey(name: 'photo_ref_number') this.photoRefNumber,
+      @JsonKey(name: 'span_name') this.spanName,
+      @JsonKey(name: 'span_number') this.spanNumber,
+      @JsonKey(name: 'element_number') this.elementNumber,
       @JsonKey(name: 'diagram_marked_photo_link') this.diagramMarkedPhotoLink,
       @JsonKey(name: 'last_inspection_date') this.lastInspectionDate});
 
@@ -313,6 +358,15 @@ class _$InpsectionPointImpl implements _InpsectionPoint {
   @JsonKey(name: 'photo_ref_number')
   final int? photoRefNumber;
   @override
+  @JsonKey(name: 'span_name')
+  final String? spanName;
+  @override
+  @JsonKey(name: 'span_number')
+  final String? spanNumber;
+  @override
+  @JsonKey(name: 'element_number')
+  final String? elementNumber;
+  @override
   @JsonKey(name: 'diagram_marked_photo_link')
   final String? diagramMarkedPhotoLink;
   @override
@@ -321,7 +375,7 @@ class _$InpsectionPointImpl implements _InpsectionPoint {
 
   @override
   String toString() {
-    return 'InspectionPoint(id: $id, type: $type, name: $name, diagram: $diagram, bridgeId: $bridgeId, diagramUrl: $diagramUrl, diagramId: $diagramId, diagramMarkingX: $diagramMarkingX, diagramMarkingY: $diagramMarkingY, photoRefNumber: $photoRefNumber, diagramMarkedPhotoLink: $diagramMarkedPhotoLink, lastInspectionDate: $lastInspectionDate)';
+    return 'InspectionPoint(id: $id, type: $type, name: $name, diagram: $diagram, bridgeId: $bridgeId, diagramUrl: $diagramUrl, diagramId: $diagramId, diagramMarkingX: $diagramMarkingX, diagramMarkingY: $diagramMarkingY, photoRefNumber: $photoRefNumber, spanName: $spanName, spanNumber: $spanNumber, elementNumber: $elementNumber, diagramMarkedPhotoLink: $diagramMarkedPhotoLink, lastInspectionDate: $lastInspectionDate)';
   }
 
   @override
@@ -345,6 +399,12 @@ class _$InpsectionPointImpl implements _InpsectionPoint {
                 other.diagramMarkingY == diagramMarkingY) &&
             (identical(other.photoRefNumber, photoRefNumber) ||
                 other.photoRefNumber == photoRefNumber) &&
+            (identical(other.spanName, spanName) ||
+                other.spanName == spanName) &&
+            (identical(other.spanNumber, spanNumber) ||
+                other.spanNumber == spanNumber) &&
+            (identical(other.elementNumber, elementNumber) ||
+                other.elementNumber == elementNumber) &&
             (identical(other.diagramMarkedPhotoLink, diagramMarkedPhotoLink) ||
                 other.diagramMarkedPhotoLink == diagramMarkedPhotoLink) &&
             (identical(other.lastInspectionDate, lastInspectionDate) ||
@@ -365,6 +425,9 @@ class _$InpsectionPointImpl implements _InpsectionPoint {
       diagramMarkingX,
       diagramMarkingY,
       photoRefNumber,
+      spanName,
+      spanNumber,
+      elementNumber,
       diagramMarkedPhotoLink,
       lastInspectionDate);
 
@@ -395,6 +458,9 @@ abstract class _InpsectionPoint implements InspectionPoint {
       @JsonKey(name: 'diagram_marking_x') final int? diagramMarkingX,
       @JsonKey(name: 'diagram_marking_y') final int? diagramMarkingY,
       @JsonKey(name: 'photo_ref_number') final int? photoRefNumber,
+      @JsonKey(name: 'span_name') final String? spanName,
+      @JsonKey(name: 'span_number') final String? spanNumber,
+      @JsonKey(name: 'element_number') final String? elementNumber,
       @JsonKey(name: 'diagram_marked_photo_link')
       final String? diagramMarkedPhotoLink,
       @JsonKey(name: 'last_inspection_date')
@@ -429,6 +495,15 @@ abstract class _InpsectionPoint implements InspectionPoint {
   @override
   @JsonKey(name: 'photo_ref_number')
   int? get photoRefNumber;
+  @override
+  @JsonKey(name: 'span_name')
+  String? get spanName;
+  @override
+  @JsonKey(name: 'span_number')
+  String? get spanNumber;
+  @override
+  @JsonKey(name: 'element_number')
+  String? get elementNumber;
   @override
   @JsonKey(name: 'diagram_marked_photo_link')
   String? get diagramMarkedPhotoLink;
