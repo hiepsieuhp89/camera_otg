@@ -4,8 +4,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:kyoryo/src/models/damage_type.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/models/inspection_point_report.dart';
@@ -196,10 +196,16 @@ class BridgeInspectionEvaluationScreenState
                           label: Text(AppLocalizations.of(context)!.damageType),
                           expandedInsets: const EdgeInsets.all(0),
                           onSelected: (category) {
-                            setState(() {
-                              _selectedCategory = category;
-                              _selectedDamageType = null;
-                            });
+                            category == 'NON'
+                                ? setState(() {
+                                    _selectedCategory = category;
+                                    _selectedDamageType = 'NON';
+                                    _selectedHealthLevel = 'a';
+                                  })
+                                : setState(() {
+                                    _selectedCategory = category;
+                                    _selectedDamageType = null;
+                                  });
                           },
                           dropdownMenuEntries: damageTypes.hasValue
                               ? damageTypes.value!
