@@ -22,7 +22,7 @@ class Contractors extends _$Contractors {
   }
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 class DamageTypes extends _$DamageTypes {
   @override
   Future<List<DamageType>> build() {

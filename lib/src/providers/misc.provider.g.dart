@@ -37,12 +37,12 @@ final contractorsProvider =
 );
 
 typedef _$Contractors = AutoDisposeAsyncNotifier<List<Contractor>>;
-String _$damageTypesHash() => r'29eff37a3646568c8c19faa3a0b9fb824e6e8dcb';
+String _$damageTypesHash() => r'350c6e315c8387494757306307ccba7a21f6b0b9';
 
 /// See also [DamageTypes].
 @ProviderFor(DamageTypes)
 final damageTypesProvider =
-    AutoDisposeAsyncNotifierProvider<DamageTypes, List<DamageType>>.internal(
+    AsyncNotifierProvider<DamageTypes, List<DamageType>>.internal(
   DamageTypes.new,
   name: r'damageTypesProvider',
   debugGetCreateSourceHash:
@@ -51,6 +51,6 @@ final damageTypesProvider =
   allTransitiveDependencies: null,
 );
 
-typedef _$DamageTypes = AutoDisposeAsyncNotifier<List<DamageType>>;
+typedef _$DamageTypes = AsyncNotifier<List<DamageType>>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
