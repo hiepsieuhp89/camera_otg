@@ -65,8 +65,7 @@ class BridgeInspectionEvaluationScreenState
 
   Future<void> _compressCapturedPhotos(List<String> photoPaths) async {
     await Future.wait(photoPaths.map((photoPath) async {
-      return await compressAndRotateImage(photoPath,
-          currentOrientation: MediaQuery.of(context).orientation);
+      return await compressImage(photoPath);
     }));
   }
 
