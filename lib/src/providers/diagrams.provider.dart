@@ -16,8 +16,7 @@ class Diagrams extends _$Diagrams {
 
   Future<Diagram> createDiagram(
       int bridgeId, String diagramPath, Orientation? orientation) async {
-    await compressAndRotateImage(diagramPath,
-        currentOrientation: orientation, quality: 70);
+    await compressImage(diagramPath, quality: 70);
     final diagramPhoto =
         await ref.watch(photoServiceProvider).uploadPhoto(diagramPath);
 
