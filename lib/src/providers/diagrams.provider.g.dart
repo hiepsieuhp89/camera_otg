@@ -6,7 +6,7 @@ part of 'diagrams.provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$diagramsHash() => r'b865d3a7ad00557e00a3ddd2616efd26ab1353de';
+String _$diagramsHash() => r'94d5e50cd41d2ea10c5047579de87fdd8cafcf0c';
 
 /// Copied from Dart SDK
 class _SystemHash {

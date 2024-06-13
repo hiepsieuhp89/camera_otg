@@ -170,6 +170,7 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
         });
 
         Future.wait([
+          _controller!.setFocusPoint(null),
           _controller!.setFocusMode(FocusMode.auto),
           _controller!.setExposureMode(ExposureMode.auto),
         ]);
@@ -324,6 +325,20 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
     super.dispose();
   }
 
+  void onViewFinderTap(TapDownDetails details, BoxConstraints constraints) {
+    if (_controller == null) {
+      return;
+    }
+
+    final Offset offset = Offset(
+      details.localPosition.dx / constraints.maxWidth,
+      details.localPosition.dy / constraints.maxHeight,
+    );
+
+    _controller!.setExposurePoint(offset);
+    _controller!.setFocusPoint(offset);
+  }
+
   Widget _buildCameraPreview() {
     final double screenHeight = MediaQuery.of(context).size.height;
 
@@ -344,7 +359,15 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
                       return SizedBox(
                         width: screenHeight * _controller!.value.aspectRatio,
                         height: screenHeight,
-                        child: CameraPreview(_controller!),
+                        child: CameraPreview(_controller!, child: LayoutBuilder(
+                            builder: (BuildContext context,
+                                BoxConstraints constraints) {
+                          return GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTapDown: (TapDownDetails details) =>
+                                onViewFinderTap(details, constraints),
+                          );
+                        })),
                       );
                     } else {
                       return Container(
