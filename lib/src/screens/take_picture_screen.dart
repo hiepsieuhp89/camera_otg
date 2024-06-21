@@ -49,6 +49,9 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
   double _currentZoomLevel = 1.0;
   double _maxZoomLevel = 1.0;
   double _minZoomLevel = 1.0;
+  double _currentExposureOffset = 0.0;
+  double _maxExposureOffset = 0.0;
+  double _minExposureOffset = 0.0;
 
   @override
   void initState() {
@@ -92,10 +95,14 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
       _initializeControllerFuture = _controller?.initialize().then((_) async {
         final maxZoomLevel = await _controller!.getMaxZoomLevel();
         final minZoomLevel = await _controller!.getMinZoomLevel();
+        final maxExposureLevel = await _controller!.getMaxExposureOffset();
+        final minExposureLevel = await _controller!.getMinExposureOffset();
 
         setState(() {
           _maxZoomLevel = maxZoomLevel;
           _minZoomLevel = minZoomLevel;
+          _maxExposureOffset = maxExposureLevel;
+          _minExposureOffset = minExposureLevel;
         });
       });
     });
@@ -146,6 +153,19 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
       setState(() {
         _currentZoomLevel = zoomLevel;
       });
+    } catch (e) {
+      debugPrint(e.toString());
+    }
+  }
+
+  void _setExposureOffset(double offset) async {
+    setState(() {
+      _currentExposureOffset = offset;
+    });
+
+    try {
+      await _initializeControllerFuture;
+      await _controller!.setExposureOffset(offset);
     } catch (e) {
       debugPrint(e.toString());
     }
@@ -325,7 +345,7 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
     super.dispose();
   }
 
-  void onViewFinderTap(TapDownDetails details, BoxConstraints constraints) {
+  void _onViewFinderTap(TapDownDetails details, BoxConstraints constraints) {
     if (_controller == null) {
       return;
     }
@@ -365,7 +385,7 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
                           return GestureDetector(
                             behavior: HitTestBehavior.opaque,
                             onTapDown: (TapDownDetails details) =>
-                                onViewFinderTap(details, constraints),
+                                _onViewFinderTap(details, constraints),
                           );
                         })),
                       );
@@ -416,6 +436,30 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
                 ),
               ),
             )),
+      Positioned(
+        bottom: 0,
+        left: 0,
+        right: 0,
+        child: Row(
+          children: [
+            const SizedBox(width: 24),
+            const Icon(Icons.exposure, color: Colors.white),
+            Expanded(
+              child: Slider(
+                  activeColor: Colors.grey.shade100,
+                  inactiveColor: Colors.grey.shade100,
+                  thumbColor: Colors.purple.shade100,
+                  value: _currentExposureOffset,
+                  min: _minExposureOffset,
+                  max: _maxExposureOffset,
+                  onChanged: _minExposureOffset == _maxExposureOffset
+                      ? null
+                      : _setExposureOffset),
+            ),
+            const SizedBox(width: 48),
+          ],
+        ),
+      ),
     ]);
   }
 
