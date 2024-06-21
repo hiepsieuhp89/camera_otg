@@ -60,6 +60,7 @@ class InspectionPointDamageMarkScreenState
               name: _inspectionPointName,
               type: InspectionPointType.damage,
               bridgeId: currentBridge.id,
+              spanNumber: "1",
               diagramMarkingX: markCoordinateX,
               diagramMarkingY: markCoordinateY,
               diagramId: widget.arguments.diagram.id))
