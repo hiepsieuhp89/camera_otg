@@ -175,11 +175,6 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
     try {
       await _initializeControllerFuture;
 
-      await Future.wait([
-        _controller!.setFocusMode(FocusMode.locked),
-        _controller!.setExposureMode(ExposureMode.locked)
-      ]);
-
       _controller!.takePicture().then((image) {
         AudioPlayer().play(AssetSource('sounds/camera_shoot.mp3'));
 
@@ -189,11 +184,9 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
           });
         });
 
-        Future.wait([
-          _controller!.setFocusPoint(null),
-          _controller!.setFocusMode(FocusMode.auto),
-          _controller!.setExposureMode(ExposureMode.auto),
-        ]);
+        // set the exposure and focus point back to the center
+        _controller!.setFocusPoint(const Offset(0.5, 0.5));
+        _controller!.setExposurePoint(const Offset(0.5, 0.5));
       });
     } catch (e) {
       debugPrint(e.toString());
