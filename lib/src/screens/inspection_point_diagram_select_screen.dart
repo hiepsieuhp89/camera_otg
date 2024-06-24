@@ -53,7 +53,7 @@ class InpsectionPointDiagramSelectScreenState
     }
   }
 
-  void _goToDamageMarkScreen(Diagram selected) {
+  void _goToDamageMarkScreen(Diagram? selected) {
     Navigator.of(context).pushNamed(InspectionPointDamageMarkScreen.routeName,
         arguments: InspectionPointDamageMarkScreenArguments(diagram: selected));
   }
@@ -73,35 +73,30 @@ class InpsectionPointDiagramSelectScreenState
       return;
     }
 
-    if (_selectedDiagram != null) {
-      _goToDamageMarkScreen(_selectedDiagram!);
-    }
+    _goToDamageMarkScreen(_selectedDiagram);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: (_selectedDiagramPath == null &&
-              _selectedDiagram == null)
-          ? null
-          : FutureBuilder(
-              future: _diagramFuture,
-              builder: (context, snapshot) {
-                final isLoading =
-                    snapshot.connectionState == ConnectionState.waiting;
+      floatingActionButton: FutureBuilder(
+          future: _diagramFuture,
+          builder: (context, snapshot) {
+            final isLoading =
+                snapshot.connectionState == ConnectionState.waiting;
 
-                return FloatingActionButton(
-                    onPressed: isLoading ? null : _proceedWithSelectedDiagram,
-                    child: isLoading
-                        ? Container(
-                            width: 24,
-                            height: 24,
-                            padding: const EdgeInsets.all(2.0),
-                            child: const CircularProgressIndicator(
-                              strokeWidth: 3,
-                            ))
-                        : const Icon(Icons.arrow_forward));
-              }),
+            return FloatingActionButton(
+                onPressed: isLoading ? null : _proceedWithSelectedDiagram,
+                child: isLoading
+                    ? Container(
+                        width: 24,
+                        height: 24,
+                        padding: const EdgeInsets.all(2.0),
+                        child: const CircularProgressIndicator(
+                          strokeWidth: 3,
+                        ))
+                    : const Icon(Icons.arrow_forward));
+          }),
       appBar: AppBar(
           title: Text(AppLocalizations.of(context)!.diagramSelection),
           actions: MediaQuery.of(context).orientation == Orientation.landscape

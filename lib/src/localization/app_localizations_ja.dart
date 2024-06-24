@@ -143,7 +143,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get newDamage => '新規損傷';
 
   @override
-  String get name => '名前';
+  String get name => '部材名';
 
   @override
   String get createThenEvalutatePoints => '点検ポイントを作成してください';
