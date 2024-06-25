@@ -8,9 +8,9 @@ import 'package:kyoryo/src/providers/inspection_points.provider.dart';
 import 'package:kyoryo/src/screens/take_picture_screen.dart';
 
 class InspectionPointDamageMarkScreenArguments {
-  final Diagram diagram;
+  final Diagram? diagram;
 
-  InspectionPointDamageMarkScreenArguments({required this.diagram});
+  InspectionPointDamageMarkScreenArguments({this.diagram});
 }
 
 class InspectionPointDamageMarkScreen extends ConsumerStatefulWidget {
@@ -47,12 +47,17 @@ class InspectionPointDamageMarkScreenState
     final inspectionPointsNotiffier =
         ref.read(inspectionPointsProvider(currentBridge!.id).notifier);
 
-    final markCoordinateX =
-        ((_left + 10) / _imageKey.currentContext!.size!.width * _imageWidth)
-            .round();
-    final markCoordinateY =
-        ((_top + 10) / _imageKey.currentContext!.size!.height * _imageHeight)
-            .round();
+    int? markCoordinateX;
+    int? markCoordinateY;
+
+    if (widget.arguments.diagram != null) {
+      markCoordinateX =
+          ((_left + 10) / _imageKey.currentContext!.size!.width * _imageWidth)
+              .round();
+      markCoordinateY =
+          ((_top + 10) / _imageKey.currentContext!.size!.height * _imageHeight)
+              .round();
+    }
 
     setState(() {
       _pendingSubmission = inspectionPointsNotiffier
@@ -63,7 +68,7 @@ class InspectionPointDamageMarkScreenState
               spanNumber: "1",
               diagramMarkingX: markCoordinateX,
               diagramMarkingY: markCoordinateY,
-              diagramId: widget.arguments.diagram.id))
+              diagramId: widget.arguments.diagram?.id))
           .then(
         (createdPoint) {
           Navigator.pushNamed(context, TakePictureScreen.routeName,
@@ -76,17 +81,21 @@ class InspectionPointDamageMarkScreenState
 
   @override
   Widget build(BuildContext context) {
-    final imageWidget = Image.network(widget.arguments.diagram.photo!.photoLink,
-        key: _imageKey);
+    Image? imageWidget;
 
-    imageWidget.image
-        .resolve(const ImageConfiguration())
-        .addListener(ImageStreamListener((info, synchronousCall) {
-      setState(() {
-        _imageHeight = info.image.height;
-        _imageWidth = info.image.width;
-      });
-    }));
+    if (widget.arguments.diagram != null) {
+      imageWidget = Image.network(widget.arguments.diagram!.photo!.photoLink,
+          key: _imageKey);
+
+      imageWidget.image
+          .resolve(const ImageConfiguration())
+          .addListener(ImageStreamListener((info, synchronousCall) {
+        setState(() {
+          _imageHeight = info.image.height;
+          _imageWidth = info.image.width;
+        });
+      }));
+    }
 
     return Scaffold(
         appBar: AppBar(
@@ -94,26 +103,24 @@ class InspectionPointDamageMarkScreenState
             AppLocalizations.of(context)!.createInspectionPoints,
           ),
         ),
-        floatingActionButton: _inspectionPointName.isEmpty
-            ? null
-            : FutureBuilder(
-                future: _pendingSubmission,
-                builder: (context, snapshot) {
-                  final isLoading =
-                      snapshot.connectionState == ConnectionState.waiting;
+        floatingActionButton: FutureBuilder(
+            future: _pendingSubmission,
+            builder: (context, snapshot) {
+              final isLoading =
+                  snapshot.connectionState == ConnectionState.waiting;
 
-                  return FloatingActionButton(
-                      onPressed: isLoading ? null : createInspecitonPoint,
-                      child: isLoading
-                          ? Container(
-                              width: 24,
-                              height: 24,
-                              padding: const EdgeInsets.all(2.0),
-                              child: const CircularProgressIndicator(
-                                strokeWidth: 3,
-                              ))
-                          : const Icon(Icons.arrow_forward));
-                }),
+              return FloatingActionButton(
+                  onPressed: isLoading ? null : createInspecitonPoint,
+                  child: isLoading
+                      ? Container(
+                          width: 24,
+                          height: 24,
+                          padding: const EdgeInsets.all(2.0),
+                          child: const CircularProgressIndicator(
+                            strokeWidth: 3,
+                          ))
+                      : const Icon(Icons.arrow_forward));
+            }),
         body: Padding(
           padding: const EdgeInsets.all(16),
           child: ListView(
@@ -129,41 +136,43 @@ class InspectionPointDamageMarkScreenState
                     label: Text(AppLocalizations.of(context)!.name),
                     border: const OutlineInputBorder(),
                   )),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Text(
-                    AppLocalizations.of(context)!.damageMarking,
-                  )
-                ],
-              ),
-              GestureDetector(
-                onTapDown: (details) {
-                  _top = details.localPosition.dy - 10;
-                  _left = details.localPosition.dx - 10;
+              if (imageWidget != null) ...[
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Text(
+                      AppLocalizations.of(context)!.damageMarking,
+                    )
+                  ],
+                ),
+                GestureDetector(
+                  onTapDown: (details) {
+                    _top = details.localPosition.dy - 10;
+                    _left = details.localPosition.dx - 10;
 
-                  setState(() {});
-                },
-                child: Stack(children: [
-                  imageWidget,
-                  Positioned(
-                      top: _top,
-                      left: _left,
-                      child: const Icon(
-                        Icons.circle,
-                        color: Colors.red,
-                        size: 20,
-                      ))
-                ]),
-              ),
-              SizedBox(
-                  height: 50,
-                  child: Center(
-                    child: Text(
-                        AppLocalizations.of(context)!
-                            .pleaseTapOnWhereTheDamageLocates,
-                        style: Theme.of(context).textTheme.bodySmall),
-                  )),
+                    setState(() {});
+                  },
+                  child: Stack(children: [
+                    imageWidget,
+                    Positioned(
+                        top: _top,
+                        left: _left,
+                        child: const Icon(
+                          Icons.circle,
+                          color: Colors.red,
+                          size: 20,
+                        ))
+                  ]),
+                ),
+                SizedBox(
+                    height: 50,
+                    child: Center(
+                      child: Text(
+                          AppLocalizations.of(context)!
+                              .pleaseTapOnWhereTheDamageLocates,
+                          style: Theme.of(context).textTheme.bodySmall),
+                    )),
+              ]
             ],
           ),
         ));

@@ -358,7 +358,7 @@ abstract class AppLocalizations {
   /// No description provided for @name.
   ///
   /// In ja, this message translates to:
-  /// **'名前'**
+  /// **'部材名'**
   String get name;
 
   /// No description provided for @createThenEvalutatePoints.
