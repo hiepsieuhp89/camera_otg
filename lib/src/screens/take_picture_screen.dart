@@ -175,6 +175,10 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
     try {
       await _initializeControllerFuture;
 
+      if (_controller!.value.isTakingPicture) {
+        return;
+      }
+
       _controller!.takePicture().then((image) {
         AudioPlayer().play(AssetSource('sounds/camera_shoot.mp3'));
 
