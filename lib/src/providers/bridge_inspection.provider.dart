@@ -74,20 +74,17 @@ class BridgeInspection extends _$BridgeInspection {
       throw Exception('No active inspection found');
     }
 
+    List<Photo> uploadedPhotos = [];
     int? preferredPhotoId;
 
-    List<Future<Photo>> photoFutures = capturedPhotoPaths
-        .mapIndexed((index, path) =>
-            ref.read(photoServiceProvider).uploadPhoto(path).then((photo) {
-              if (capturedPhotoPaths[index] == preferredPhotoPath) {
-                preferredPhotoId = photo.id;
-              }
-
-              return photo;
-            }))
-        .toList();
-
-    final uploadedPhotos = await Future.wait(photoFutures);
+    for (int i = 0; i < capturedPhotoPaths.length; i++) {
+      String path = capturedPhotoPaths[i];
+      Photo photo = await ref.read(photoServiceProvider).uploadPhoto(path);
+      if (path == preferredPhotoPath) {
+        preferredPhotoId = photo.id;
+      }
+      uploadedPhotos.add(photo);
+    }
 
     final report = await ref
         .read(inspectionServiceProvider)
@@ -124,17 +121,16 @@ class BridgeInspection extends _$BridgeInspection {
     }
 
     int? preferredPhotoId;
+    List<Photo> newPhotos = [];
 
-    List<Photo> newPhotos = await Future.wait(capturedPhotoPaths
-        .mapIndexed((index, path) =>
-            ref.read(photoServiceProvider).uploadPhoto(path).then((photo) {
-              if (capturedPhotoPaths[index] == preferredPhotoPath) {
-                preferredPhotoId = photo.id;
-              }
-
-              return photo;
-            }))
-        .toList());
+    for (int i = 0; i < capturedPhotoPaths.length; i++) {
+      String path = capturedPhotoPaths[i];
+      Photo photo = await ref.read(photoServiceProvider).uploadPhoto(path);
+      if (path == preferredPhotoPath) {
+        preferredPhotoId = photo.id;
+      }
+      newPhotos.add(photo);
+    }
 
     for (Photo photo in uploadedPhotos) {
       if (photo.photoLink == preferredPhotoPath) {
@@ -146,7 +142,7 @@ class BridgeInspection extends _$BridgeInspection {
     final updatedReport = await ref
         .read(inspectionPointReportServiceProvider)
         .updateReport(report.copyWith(
-            photos: [...newPhotos, ...uploadedPhotos],
+            photos: [...uploadedPhotos, ...newPhotos],
             preferredPhotoId: preferredPhotoId));
 
     final currentActiveInspection = currentState[1]!.copyWith(
