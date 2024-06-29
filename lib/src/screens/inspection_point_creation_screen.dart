@@ -7,25 +7,27 @@ import 'package:kyoryo/src/providers/current_bridge.provider.dart';
 import 'package:kyoryo/src/providers/inspection_points.provider.dart';
 import 'package:kyoryo/src/screens/take_picture_screen.dart';
 
-class InspectionPointDamageMarkScreenArguments {
+class InspectionPointCreationScreenArguments {
   final Diagram? diagram;
+  final InspectionPointType pointType;
 
-  InspectionPointDamageMarkScreenArguments({this.diagram});
+  InspectionPointCreationScreenArguments(
+      {this.diagram, required this.pointType});
 }
 
-class InspectionPointDamageMarkScreen extends ConsumerStatefulWidget {
+class InspectionPointCreationScreen extends ConsumerStatefulWidget {
   static const String routeName = '/inspection-point-damage-mark';
-  final InspectionPointDamageMarkScreenArguments arguments;
+  final InspectionPointCreationScreenArguments arguments;
 
-  const InspectionPointDamageMarkScreen({super.key, required this.arguments});
+  const InspectionPointCreationScreen({super.key, required this.arguments});
 
   @override
-  ConsumerState<InspectionPointDamageMarkScreen> createState() =>
-      InspectionPointDamageMarkScreenState();
+  ConsumerState<InspectionPointCreationScreen> createState() =>
+      InspectionPointCreationScreenState();
 }
 
-class InspectionPointDamageMarkScreenState
-    extends ConsumerState<InspectionPointDamageMarkScreen> {
+class InspectionPointCreationScreenState
+    extends ConsumerState<InspectionPointCreationScreen> {
   late TextEditingController _nameController;
   double _top = 0;
   double _left = 0;
@@ -63,7 +65,7 @@ class InspectionPointDamageMarkScreenState
       _pendingSubmission = inspectionPointsNotiffier
           .createInspectionPoint(InspectionPoint(
               name: _inspectionPointName,
-              type: InspectionPointType.damage,
+              type: widget.arguments.pointType,
               bridgeId: currentBridge.id,
               spanNumber: "1",
               diagramMarkingX: markCoordinateX,

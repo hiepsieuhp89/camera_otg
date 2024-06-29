@@ -373,6 +373,18 @@ abstract class AppLocalizations {
   /// **'点検ポイント作成'**
   String get createInspectionPoints;
 
+  /// No description provided for @createDamageInspectionPoint.
+  ///
+  /// In ja, this message translates to:
+  /// **'損傷箇所作成'**
+  String get createDamageInspectionPoint;
+
+  /// No description provided for @createPresentConditionInspectionPoint.
+  ///
+  /// In ja, this message translates to:
+  /// **'現況箇所作成'**
+  String get createPresentConditionInspectionPoint;
+
   /// No description provided for @inspectionPoint.
   ///
   /// In ja, this message translates to:

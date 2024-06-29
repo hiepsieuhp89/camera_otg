@@ -9,6 +9,7 @@ import 'package:kyoryo/src/models/inspection_point_report.dart';
 import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
 import 'package:kyoryo/src/providers/current_bridge.provider.dart';
 import 'package:kyoryo/src/providers/inspection_points.provider.dart';
+import 'package:kyoryo/src/screens/inspection_point_creation_screen.dart';
 import 'package:kyoryo/src/screens/inspection_point_diagram_select_screen.dart';
 import 'package:kyoryo/src/screens/take_picture_screen.dart';
 import 'package:kyoryo/src/ui/inspection_point_list_item.dart';
@@ -38,10 +39,15 @@ class _BridgeInspectionScreenState
             inspectionPoint: point, createdReport: createdReport));
   }
 
-  void _createNewInspectionPoint() {
-    Navigator.of(context).pushNamed(
-      InpsectionPointDiagramSelectScreen.routeName,
-    );
+  void _createNewInspectionPoint(InspectionPointType type) {
+    if (type == InspectionPointType.presentCondition) {
+      Navigator.of(context).pushNamed(InspectionPointCreationScreen.routeName,
+          arguments: InspectionPointCreationScreenArguments(pointType: type));
+    } else {
+      Navigator.of(context).pushNamed(
+        InpsectionPointDiagramSelectScreen.routeName,
+      );
+    }
   }
 
   void _confirmFinishInspection() {
@@ -185,11 +191,6 @@ class _BridgeInspectionScreenState
                         }),
                       ],
                       onDestinationSelected: (index) {
-                        // if (index == filters.length) {
-                        //   _createNewInspectionPoint();
-                        //   return;
-                        // }
-
                         setState(() {
                           selectedTypeIndex = index;
                         });
@@ -348,17 +349,19 @@ class _BridgeInspectionScreenState
         },
         menuChildren: [
           MenuItemButton(
+              onPressed: () =>
+                  _createNewInspectionPoint(presentConditionPointUI.type!),
               child: Row(
-            children: [
-              Icon(presentConditionPointUI.icon),
-              const SizedBox(
-                width: 4,
-              ),
-              Text(presentConditionPointUI.label)
-            ],
-          )),
+                children: [
+                  Icon(presentConditionPointUI.icon),
+                  const SizedBox(
+                    width: 4,
+                  ),
+                  Text(presentConditionPointUI.label)
+                ],
+              )),
           MenuItemButton(
-              onPressed: _createNewInspectionPoint,
+              onPressed: () => _createNewInspectionPoint(damagePointUI.type!),
               child: Row(
                 children: [
                   Icon(damagePointUI.icon),
@@ -454,6 +457,38 @@ class _BridgeInspectionScreenState
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: Column(
                     children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: FilledButton(
+                              style: ButtonStyle(
+                                  padding: WidgetStateProperty.all(
+                                      const EdgeInsets.symmetric(
+                                          vertical: 12, horizontal: 12))),
+                              onPressed: isInspecting
+                                  ? _confirmFinishInspection
+                                  : _confirmForReinspection,
+                              child: Row(
+                                children: [
+                                  isInspecting
+                                      ? const Icon(Icons.check)
+                                      : const Icon(Icons.replay_outlined),
+                                  Expanded(
+                                    child: Text(
+                                      isInspecting
+                                          ? AppLocalizations.of(context)!
+                                              .finishInspection
+                                          : AppLocalizations.of(context)!
+                                              .backToInspecting,
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 24),
+                                ],
+                              )),
+                        ),
+                      ),
                       Visibility(
                         visible: isInspecting,
                         child: Padding(
@@ -465,15 +500,49 @@ class _BridgeInspectionScreenState
                                     padding: WidgetStateProperty.all(
                                         const EdgeInsets.symmetric(
                                             vertical: 12, horizontal: 12))),
-                                onPressed: _createNewInspectionPoint,
+                                onPressed: () => _createNewInspectionPoint(
+                                    presentConditionPointUI.type!),
                                 child: Row(
                                   children: [
-                                    const Icon(Icons.add_circle_outlined),
+                                    Icon(presentConditionPointUI.icon),
                                     Expanded(
                                       child: Text(
                                         AppLocalizations.of(context)!
-                                            .createInspectionPoints,
+                                            .createPresentConditionInspectionPoint,
                                         textAlign: TextAlign.center,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 24),
+                                  ],
+                                )),
+                          ),
+                        ),
+                      ),
+                      Visibility(
+                        visible: isInspecting,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton(
+                                style: ButtonStyle(
+                                    padding: WidgetStateProperty.all(
+                                        const EdgeInsets.symmetric(
+                                            vertical: 12, horizontal: 12))),
+                                onPressed: () => _createNewInspectionPoint(
+                                    damagePointUI.type!),
+                                child: Row(
+                                  children: [
+                                    Icon(damagePointUI.icon),
+                                    Expanded(
+                                      child: Text(
+                                        AppLocalizations.of(context)!
+                                            .createDamageInspectionPoint,
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold),
                                       ),
                                     ),
                                     const SizedBox(width: 24),
