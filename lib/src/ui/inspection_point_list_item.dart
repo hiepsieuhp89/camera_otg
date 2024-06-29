@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -174,7 +175,15 @@ class InpsectionPointListItem extends ConsumerWidget {
         : [previousPhoto?.photoLink ?? ''];
 
     if (activeReport != null) {
-      imagePaths.addAll(activeReport.photos.map((photo) => photo.photoLink));
+      imagePaths.addAll(activeReport.photos.sorted((a, b) {
+        if (a.id == activeReport.preferredPhotoId) {
+          return -1;
+        } else if (b.id == activeReport.preferredPhotoId) {
+          return 1;
+        } else {
+          return 0;
+        }
+      }).map((photo) => photo.photoLink));
     }
 
     return SizedBox(
