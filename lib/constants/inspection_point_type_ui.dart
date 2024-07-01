@@ -13,7 +13,7 @@ class InspectionPointTypeUI {
 
 const presentConditionPointUI = InspectionPointTypeUI(
     InspectionPointType.presentCondition,
-    label: '損傷点検',
+    label: '現況点検',
     icon: Icons.image_search_outlined,
     selectedIcon: Icons.image_search);
 
