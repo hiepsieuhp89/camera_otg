@@ -7,9 +7,10 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:kyoryo/src/models/diagram.dart';
+import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/providers/current_bridge.provider.dart';
 import 'package:kyoryo/src/providers/diagrams.provider.dart';
-import 'package:kyoryo/src/screens/inspection_point_damage_mark_screen.dart';
+import 'package:kyoryo/src/screens/inspection_point_creation_screen.dart';
 import 'package:kyoryo/src/utilities/image_utils.dart';
 
 class InpsectionPointDiagramSelectScreen extends ConsumerStatefulWidget {
@@ -53,9 +54,10 @@ class InpsectionPointDiagramSelectScreenState
     }
   }
 
-  void _goToDamageMarkScreen(Diagram? selected) {
-    Navigator.of(context).pushNamed(InspectionPointDamageMarkScreen.routeName,
-        arguments: InspectionPointDamageMarkScreenArguments(diagram: selected));
+  void _createDamageInspectionPoint(Diagram? selected) {
+    Navigator.of(context).pushNamed(InspectionPointCreationScreen.routeName,
+        arguments: InspectionPointCreationScreenArguments(
+            diagram: selected, pointType: InspectionPointType.damage));
   }
 
   void _proceedWithSelectedDiagram() {
@@ -67,13 +69,13 @@ class InpsectionPointDiagramSelectScreenState
           .createDiagram(bridgeId, _selectedDiagramPath!,
               MediaQuery.of(context).orientation)
           .then((value) {
-        _goToDamageMarkScreen(value);
+        _createDamageInspectionPoint(value);
       });
       setState(() {});
       return;
     }
 
-    _goToDamageMarkScreen(_selectedDiagram);
+    _createDamageInspectionPoint(_selectedDiagram);
   }
 
   @override

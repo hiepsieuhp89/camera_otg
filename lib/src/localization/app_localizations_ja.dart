@@ -152,6 +152,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get createInspectionPoints => '点検ポイント作成';
 
   @override
+  String get createDamageInspectionPoint => '損傷箇所作成';
+
+  @override
+  String get createPresentConditionInspectionPoint => '現況箇所作成';
+
+  @override
   String get inspectionPoint => '点検ポイント';
 
   @override
