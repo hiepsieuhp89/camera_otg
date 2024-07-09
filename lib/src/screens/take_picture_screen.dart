@@ -253,7 +253,7 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
                           pointId: widget.arguments.inspectionPoint.id!,
                           capturedPhotoPaths: [],
                           metadata: {'remark': '点検をスキップした。'},
-                          isSkipped: true);
+                          status: InspectionPointReportStatus.skipped);
                 }
 
                 Navigator.popUntil(context,

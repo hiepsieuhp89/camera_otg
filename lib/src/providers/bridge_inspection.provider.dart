@@ -67,7 +67,8 @@ class BridgeInspection extends _$BridgeInspection {
       required List<String> capturedPhotoPaths,
       Map<String, dynamic>? metadata,
       String? preferredPhotoPath,
-      bool isSkipped = false}) async {
+      InspectionPointReportStatus status =
+          InspectionPointReportStatus.finished}) async {
     final currentState = await future;
 
     if (currentState[1] == null) {
@@ -89,12 +90,13 @@ class BridgeInspection extends _$BridgeInspection {
     final report = await ref
         .read(inspectionServiceProvider)
         .createReport(
-            currentState[1]!.id!,
-            pointId,
-            uploadedPhotos.map((photo) => photo.id!).toList(),
-            preferredPhotoId,
-            metadata,
-            isSkipped)
+            report: InspectionPointReport(
+                inspectionPointId: pointId,
+                inspectionId: currentState[1]!.id!,
+                preferredPhotoId: preferredPhotoId,
+                metadata: metadata,
+                status: status),
+            photoIds: uploadedPhotos.map((photo) => photo.id!).toList())
         .then((report) => report.copyWith(photos: uploadedPhotos));
 
     final currentActiveInspection = currentState[1]!.copyWith(reports: [

@@ -22,14 +22,13 @@ InspectionPointReport _$InspectionPointReportFromJson(
 /// @nodoc
 mixin _$InspectionPointReport {
   int? get id => throw _privateConstructorUsedError;
+  InspectionPointReportStatus get status => throw _privateConstructorUsedError;
   @JsonKey(name: 'inspection_point_id')
   int get inspectionPointId => throw _privateConstructorUsedError;
   @JsonKey(name: 'inspection_id')
   int get inspectionId => throw _privateConstructorUsedError;
   @JsonKey(name: 'preferred_photo_id')
   int? get preferredPhotoId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'is_skipped')
-  bool? get isSkipped => throw _privateConstructorUsedError;
   @JsonKey(name: 'meta_data')
   dynamic get metadata => throw _privateConstructorUsedError;
   DateTime? get date => throw _privateConstructorUsedError;
@@ -49,10 +48,10 @@ abstract class $InspectionPointReportCopyWith<$Res> {
   @useResult
   $Res call(
       {int? id,
+      InspectionPointReportStatus status,
       @JsonKey(name: 'inspection_point_id') int inspectionPointId,
       @JsonKey(name: 'inspection_id') int inspectionId,
       @JsonKey(name: 'preferred_photo_id') int? preferredPhotoId,
-      @JsonKey(name: 'is_skipped') bool? isSkipped,
       @JsonKey(name: 'meta_data') dynamic metadata,
       DateTime? date,
       List<Photo> photos});
@@ -73,10 +72,10 @@ class _$InspectionPointReportCopyWithImpl<$Res,
   @override
   $Res call({
     Object? id = freezed,
+    Object? status = null,
     Object? inspectionPointId = null,
     Object? inspectionId = null,
     Object? preferredPhotoId = freezed,
-    Object? isSkipped = freezed,
     Object? metadata = freezed,
     Object? date = freezed,
     Object? photos = null,
@@ -86,6 +85,10 @@ class _$InspectionPointReportCopyWithImpl<$Res,
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
               as int?,
+      status: null == status
+          ? _value.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as InspectionPointReportStatus,
       inspectionPointId: null == inspectionPointId
           ? _value.inspectionPointId
           : inspectionPointId // ignore: cast_nullable_to_non_nullable
@@ -98,10 +101,6 @@ class _$InspectionPointReportCopyWithImpl<$Res,
           ? _value.preferredPhotoId
           : preferredPhotoId // ignore: cast_nullable_to_non_nullable
               as int?,
-      isSkipped: freezed == isSkipped
-          ? _value.isSkipped
-          : isSkipped // ignore: cast_nullable_to_non_nullable
-              as bool?,
       metadata: freezed == metadata
           ? _value.metadata
           : metadata // ignore: cast_nullable_to_non_nullable
@@ -129,10 +128,10 @@ abstract class _$$InspectionPointReportImplCopyWith<$Res>
   @useResult
   $Res call(
       {int? id,
+      InspectionPointReportStatus status,
       @JsonKey(name: 'inspection_point_id') int inspectionPointId,
       @JsonKey(name: 'inspection_id') int inspectionId,
       @JsonKey(name: 'preferred_photo_id') int? preferredPhotoId,
-      @JsonKey(name: 'is_skipped') bool? isSkipped,
       @JsonKey(name: 'meta_data') dynamic metadata,
       DateTime? date,
       List<Photo> photos});
@@ -151,10 +150,10 @@ class __$$InspectionPointReportImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? id = freezed,
+    Object? status = null,
     Object? inspectionPointId = null,
     Object? inspectionId = null,
     Object? preferredPhotoId = freezed,
-    Object? isSkipped = freezed,
     Object? metadata = freezed,
     Object? date = freezed,
     Object? photos = null,
@@ -164,6 +163,10 @@ class __$$InspectionPointReportImplCopyWithImpl<$Res>
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
               as int?,
+      status: null == status
+          ? _value.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as InspectionPointReportStatus,
       inspectionPointId: null == inspectionPointId
           ? _value.inspectionPointId
           : inspectionPointId // ignore: cast_nullable_to_non_nullable
@@ -176,10 +179,6 @@ class __$$InspectionPointReportImplCopyWithImpl<$Res>
           ? _value.preferredPhotoId
           : preferredPhotoId // ignore: cast_nullable_to_non_nullable
               as int?,
-      isSkipped: freezed == isSkipped
-          ? _value.isSkipped
-          : isSkipped // ignore: cast_nullable_to_non_nullable
-              as bool?,
       metadata: freezed == metadata
           ? _value.metadata
           : metadata // ignore: cast_nullable_to_non_nullable
@@ -201,10 +200,10 @@ class __$$InspectionPointReportImplCopyWithImpl<$Res>
 class _$InspectionPointReportImpl implements _InspectionPointReport {
   _$InspectionPointReportImpl(
       {this.id,
+      this.status = InspectionPointReportStatus.finished,
       @JsonKey(name: 'inspection_point_id') required this.inspectionPointId,
       @JsonKey(name: 'inspection_id') required this.inspectionId,
       @JsonKey(name: 'preferred_photo_id') this.preferredPhotoId,
-      @JsonKey(name: 'is_skipped') this.isSkipped,
       @JsonKey(name: 'meta_data') this.metadata,
       this.date,
       final List<Photo> photos = const []})
@@ -216,6 +215,9 @@ class _$InspectionPointReportImpl implements _InspectionPointReport {
   @override
   final int? id;
   @override
+  @JsonKey()
+  final InspectionPointReportStatus status;
+  @override
   @JsonKey(name: 'inspection_point_id')
   final int inspectionPointId;
   @override
@@ -224,9 +226,6 @@ class _$InspectionPointReportImpl implements _InspectionPointReport {
   @override
   @JsonKey(name: 'preferred_photo_id')
   final int? preferredPhotoId;
-  @override
-  @JsonKey(name: 'is_skipped')
-  final bool? isSkipped;
   @override
   @JsonKey(name: 'meta_data')
   final dynamic metadata;
@@ -243,7 +242,7 @@ class _$InspectionPointReportImpl implements _InspectionPointReport {
 
   @override
   String toString() {
-    return 'InspectionPointReport(id: $id, inspectionPointId: $inspectionPointId, inspectionId: $inspectionId, preferredPhotoId: $preferredPhotoId, isSkipped: $isSkipped, metadata: $metadata, date: $date, photos: $photos)';
+    return 'InspectionPointReport(id: $id, status: $status, inspectionPointId: $inspectionPointId, inspectionId: $inspectionId, preferredPhotoId: $preferredPhotoId, metadata: $metadata, date: $date, photos: $photos)';
   }
 
   @override
@@ -252,14 +251,13 @@ class _$InspectionPointReportImpl implements _InspectionPointReport {
         (other.runtimeType == runtimeType &&
             other is _$InspectionPointReportImpl &&
             (identical(other.id, id) || other.id == id) &&
+            (identical(other.status, status) || other.status == status) &&
             (identical(other.inspectionPointId, inspectionPointId) ||
                 other.inspectionPointId == inspectionPointId) &&
             (identical(other.inspectionId, inspectionId) ||
                 other.inspectionId == inspectionId) &&
             (identical(other.preferredPhotoId, preferredPhotoId) ||
                 other.preferredPhotoId == preferredPhotoId) &&
-            (identical(other.isSkipped, isSkipped) ||
-                other.isSkipped == isSkipped) &&
             const DeepCollectionEquality().equals(other.metadata, metadata) &&
             (identical(other.date, date) || other.date == date) &&
             const DeepCollectionEquality().equals(other._photos, _photos));
@@ -270,10 +268,10 @@ class _$InspectionPointReportImpl implements _InspectionPointReport {
   int get hashCode => Object.hash(
       runtimeType,
       id,
+      status,
       inspectionPointId,
       inspectionId,
       preferredPhotoId,
-      isSkipped,
       const DeepCollectionEquality().hash(metadata),
       date,
       const DeepCollectionEquality().hash(_photos));
@@ -296,11 +294,11 @@ class _$InspectionPointReportImpl implements _InspectionPointReport {
 abstract class _InspectionPointReport implements InspectionPointReport {
   factory _InspectionPointReport(
       {final int? id,
+      final InspectionPointReportStatus status,
       @JsonKey(name: 'inspection_point_id')
       required final int inspectionPointId,
       @JsonKey(name: 'inspection_id') required final int inspectionId,
       @JsonKey(name: 'preferred_photo_id') final int? preferredPhotoId,
-      @JsonKey(name: 'is_skipped') final bool? isSkipped,
       @JsonKey(name: 'meta_data') final dynamic metadata,
       final DateTime? date,
       final List<Photo> photos}) = _$InspectionPointReportImpl;
@@ -311,6 +309,8 @@ abstract class _InspectionPointReport implements InspectionPointReport {
   @override
   int? get id;
   @override
+  InspectionPointReportStatus get status;
+  @override
   @JsonKey(name: 'inspection_point_id')
   int get inspectionPointId;
   @override
@@ -319,9 +319,6 @@ abstract class _InspectionPointReport implements InspectionPointReport {
   @override
   @JsonKey(name: 'preferred_photo_id')
   int? get preferredPhotoId;
-  @override
-  @JsonKey(name: 'is_skipped')
-  bool? get isSkipped;
   @override
   @JsonKey(name: 'meta_data')
   dynamic get metadata;

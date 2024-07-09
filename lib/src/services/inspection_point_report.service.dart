@@ -30,7 +30,7 @@ class InspectionPointReportService extends BaseApiService {
       'meta_data': report.metadata,
       'preferred_photo_id': report.preferredPhotoId,
       'inspection_point_id': report.inspectionPointId,
-      'is_skipped': report.isSkipped
+      'status': report.toJson()['status']
     });
 
     return InspectionPointReport.fromJson(jsonResponse);

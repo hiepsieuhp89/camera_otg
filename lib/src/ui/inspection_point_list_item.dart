@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:kyoryo/src/models/inspection.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/models/inspection_point_report.dart';
 import 'package:kyoryo/src/models/marking.dart';
@@ -46,6 +47,50 @@ class InpsectionPointListItem extends ConsumerWidget {
           ? '${AppLocalizations.of(context)!.photoRefNumber(point.photoRefNumber.toString())}：'
           : '';
       labelText = '$photoRefNumberWithLabel${point.name ?? ''}';
+    }
+
+    Widget buildActionButton() {
+      if (activeReport == null) {
+        return IconButton.filled(
+            onPressed: isInspectionInProgress
+                ? () {
+                    startInspect(point);
+                  }
+                : null,
+            icon: const Icon(Icons.manage_search_rounded));
+      }
+
+      switch (activeReport.status) {
+        case InspectionPointReportStatus.skipped:
+          return FilledButton.icon(
+              label: Text(AppLocalizations.of(context)!.skip),
+              onPressed: isInspectionInProgress
+                  ? () => confirmForReinspection(context, activeReport)
+                  : null,
+              icon: const Icon(Icons.do_not_disturb));
+
+        case InspectionPointReportStatus.finished:
+          return FilledButton.icon(
+              onPressed: isInspectionInProgress
+                  ? () {
+                      startInspect(point, createdReport: activeReport);
+                    }
+                  : null,
+              icon: const Icon(Icons.edit),
+              label: Text(AppLocalizations.of(context)!.finished));
+
+        case InspectionPointReportStatus.pending:
+          return FilledButton.icon(
+            onPressed: isInspectionInProgress
+                ? () {
+                    startInspect(point, createdReport: activeReport);
+                  }
+                : null,
+            icon: const Icon(Icons.timer),
+            label: Text(AppLocalizations.of(context)!.holdButton),
+            style: FilledButton.styleFrom(backgroundColor: Colors.orange),
+          );
+      }
     }
 
     return Card(
@@ -98,34 +143,7 @@ class InpsectionPointListItem extends ConsumerWidget {
                 Expanded(
                     child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    activeReport != null
-                        ? activeReport.isSkipped ?? false
-                            ? FilledButton.icon(
-                                label: Text(AppLocalizations.of(context)!.skip),
-                                onPressed: isInspectionInProgress
-                                    ? () => confirmForReinspection(
-                                        context, activeReport)
-                                    : null,
-                                icon: const Icon(Icons.do_not_disturb))
-                            : FilledButton.icon(
-                                onPressed: isInspectionInProgress
-                                    ? () {
-                                        startInspect(point,
-                                            createdReport: activeReport);
-                                      }
-                                    : null,
-                                icon: const Icon(Icons.edit),
-                                label: Text(
-                                    AppLocalizations.of(context)!.finished))
-                        : IconButton.filled(
-                            onPressed: isInspectionInProgress
-                                ? () {
-                                    startInspect(point);
-                                  }
-                                : null,
-                            icon: const Icon(Icons.manage_search_rounded)),
-                  ],
+                  children: [buildActionButton()],
                 ))
               ],
             )
