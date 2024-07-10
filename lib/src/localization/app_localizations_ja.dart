@@ -202,4 +202,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get backToInspecting => '点検中に戻る';
+
+  @override
+  String get holdButton => '保留';
 }

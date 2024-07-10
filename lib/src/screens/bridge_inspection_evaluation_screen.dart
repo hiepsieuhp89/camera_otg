@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:kyoryo/src/models/damage_type.dart';
+import 'package:kyoryo/src/models/inspection.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/models/inspection_point_report.dart';
 import 'package:kyoryo/src/models/photo.dart';
@@ -43,22 +44,25 @@ class BridgeInspectionEvaluationScreen extends ConsumerStatefulWidget {
 class BridgeInspectionEvaluationScreenState
     extends ConsumerState<BridgeInspectionEvaluationScreen> {
   Future<void>? _pendingSubmission;
+  InspectionPointReportStatus? _submissionType;
   String? _selectedCategory;
   String? _selectedHealthLevel;
   String? _selectedDamageType;
   String? _preferredPhotoPath;
+
   late TextEditingController _textEditingController;
 
-  Future<void> submitInspection() async {
+  Future<void> submitInspection(InspectionPointReportStatus status) async {
     final reportSubmission = (widget.arguments.createdReport != null
-            ? _updateReport()
-            : _createReport())
+            ? _updateReport(status)
+            : _createReport(status))
         .then((_) {
       Navigator.popUntil(
           context, ModalRoute.withName(BridgeInspectionScreen.routeName));
     });
 
     setState(() {
+      _submissionType = status;
       _pendingSubmission = reportSubmission;
     });
   }
@@ -69,7 +73,7 @@ class BridgeInspectionEvaluationScreenState
     }));
   }
 
-  Future<void> _updateReport() async {
+  Future<void> _updateReport(InspectionPointReportStatus status) async {
     if (widget.arguments.createdReport == null) {
       throw Exception('Report is not created yet');
     }
@@ -79,7 +83,7 @@ class BridgeInspectionEvaluationScreenState
             bridgeInspectionProvider(widget.arguments.point.bridgeId!).notifier)
         .updateReport(
             report: widget.arguments.createdReport!
-                .copyWith(isSkipped: false, metadata: {
+                .copyWith(status: status, metadata: {
               'damage_category': _selectedCategory ?? '',
               'damage_type': _selectedDamageType ?? '',
               'damage_level': _selectedHealthLevel ?? '',
@@ -90,7 +94,7 @@ class BridgeInspectionEvaluationScreenState
             uploadedPhotos: widget.arguments.uploadedPhotos);
   }
 
-  Future<void> _createReport() async {
+  Future<void> _createReport(InspectionPointReportStatus status) async {
     await _compressCapturedPhotos(widget.arguments.capturedPhotos);
     await ref
         .read(
@@ -98,8 +102,8 @@ class BridgeInspectionEvaluationScreenState
         .createReport(
             pointId: widget.arguments.point.id!,
             capturedPhotoPaths: widget.arguments.capturedPhotos,
-            isSkipped: false,
             preferredPhotoPath: _preferredPhotoPath,
+            status: status,
             metadata: {
           'damage_category': _selectedCategory ?? '',
           'damage_type': _selectedDamageType ?? '',
@@ -282,40 +286,92 @@ class BridgeInspectionEvaluationScreenState
                 ),
               ),
               const SizedBox(height: 16),
-              FutureBuilder(
-                  future: _pendingSubmission,
-                  builder: ((context, snapshot) {
-                    final isLoading =
-                        snapshot.connectionState == ConnectionState.waiting;
+              Row(
+                children: [
+                  Expanded(
+                      child: FutureBuilder(
+                          future: _pendingSubmission,
+                          builder: ((context, snapshot) {
+                            final isLoading = snapshot.connectionState ==
+                                ConnectionState.waiting;
 
-                    return FilledButton.icon(
-                      icon: isLoading
-                          ? Container(
-                              width: 24,
-                              height: 24,
-                              padding: const EdgeInsets.all(2.0),
-                              child: const CircularProgressIndicator(
-                                strokeWidth: 3,
-                              ),
-                            )
-                          : const Icon(Icons.check),
-                      label:
-                          Text(AppLocalizations.of(context)!.finishEvaluation),
-                      onPressed: isLoading
-                          ? null
-                          : () {
-                              submitInspection().catchError((_) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                        content: Text(AppLocalizations.of(
-                                                context)!
-                                            .failedToCreateInspectionReport)));
-                              });
-                            },
-                      style: FilledButton.styleFrom(
-                          minimumSize: const Size.fromHeight(55)),
-                    );
-                  }))
+                            return FilledButton.icon(
+                              icon: isLoading &&
+                                      _submissionType ==
+                                          InspectionPointReportStatus.pending
+                                  ? Container(
+                                      width: 24,
+                                      height: 24,
+                                      padding: const EdgeInsets.all(2.0),
+                                      child: const CircularProgressIndicator(
+                                        strokeWidth: 3,
+                                      ),
+                                    )
+                                  : const Icon(Icons.timer),
+                              label: Text(
+                                  AppLocalizations.of(context)!.holdButton),
+                              onPressed: isLoading
+                                  ? null
+                                  : () {
+                                      submitInspection(
+                                              InspectionPointReportStatus
+                                                  .pending)
+                                          .catchError((_) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(SnackBar(
+                                                content: Text(AppLocalizations
+                                                        .of(context)!
+                                                    .failedToCreateInspectionReport)));
+                                      });
+                                    },
+                              style: FilledButton.styleFrom(
+                                  minimumSize: const Size.fromHeight(55),
+                                  backgroundColor: Colors.orange),
+                            );
+                          }))),
+                  const SizedBox(width: 16),
+                  Expanded(
+                      child: FutureBuilder(
+                          future: _pendingSubmission,
+                          builder: ((context, snapshot) {
+                            final isLoading = snapshot.connectionState ==
+                                ConnectionState.waiting;
+
+                            return FilledButton.icon(
+                              icon: isLoading &&
+                                      _submissionType ==
+                                          InspectionPointReportStatus.finished
+                                  ? Container(
+                                      width: 24,
+                                      height: 24,
+                                      padding: const EdgeInsets.all(2.0),
+                                      child: const CircularProgressIndicator(
+                                        strokeWidth: 3,
+                                      ),
+                                    )
+                                  : const Icon(Icons.check),
+                              label: Text(AppLocalizations.of(context)!
+                                  .finishEvaluation),
+                              onPressed: isLoading
+                                  ? null
+                                  : () {
+                                      submitInspection(
+                                              InspectionPointReportStatus
+                                                  .finished)
+                                          .catchError((_) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(SnackBar(
+                                                content: Text(AppLocalizations
+                                                        .of(context)!
+                                                    .failedToCreateInspectionReport)));
+                                      });
+                                    },
+                              style: FilledButton.styleFrom(
+                                  minimumSize: const Size.fromHeight(55)),
+                            );
+                          })))
+                ],
+              )
             ],
           ),
         ));

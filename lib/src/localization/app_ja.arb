@@ -96,5 +96,6 @@
   },
   "finishInspectionConfirm": "まだ点検されない項目があります。点検を終了してもよろしいですか？",
   "backToInspectingConfirm": "点検中に戻してよろしいですか？",
-  "backToInspecting": "点検中に戻る"
+  "backToInspecting": "点検中に戻る",
+  "holdButton": "保留"
 }

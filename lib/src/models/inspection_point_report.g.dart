@@ -10,10 +10,12 @@ _$InspectionPointReportImpl _$$InspectionPointReportImplFromJson(
         Map<String, dynamic> json) =>
     _$InspectionPointReportImpl(
       id: (json['id'] as num?)?.toInt(),
+      status: $enumDecodeNullable(
+              _$InspectionPointReportStatusEnumMap, json['status']) ??
+          InspectionPointReportStatus.finished,
       inspectionPointId: (json['inspection_point_id'] as num).toInt(),
       inspectionId: (json['inspection_id'] as num).toInt(),
       preferredPhotoId: (json['preferred_photo_id'] as num?)?.toInt(),
-      isSkipped: json['is_skipped'] as bool?,
       metadata: json['meta_data'],
       date:
           json['date'] == null ? null : DateTime.parse(json['date'] as String),
@@ -27,11 +29,17 @@ Map<String, dynamic> _$$InspectionPointReportImplToJson(
         _$InspectionPointReportImpl instance) =>
     <String, dynamic>{
       'id': instance.id,
+      'status': _$InspectionPointReportStatusEnumMap[instance.status]!,
       'inspection_point_id': instance.inspectionPointId,
       'inspection_id': instance.inspectionId,
       'preferred_photo_id': instance.preferredPhotoId,
-      'is_skipped': instance.isSkipped,
       'meta_data': instance.metadata,
       'date': instance.date?.toIso8601String(),
       'photos': instance.photos,
     };
+
+const _$InspectionPointReportStatusEnumMap = {
+  InspectionPointReportStatus.finished: 'FINISHED',
+  InspectionPointReportStatus.skipped: 'SKIPPED',
+  InspectionPointReportStatus.pending: 'PENDING',
+};

@@ -468,6 +468,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'点検中に戻る'**
   String get backToInspecting;
+
+  /// No description provided for @holdButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'保留'**
+  String get holdButton;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
