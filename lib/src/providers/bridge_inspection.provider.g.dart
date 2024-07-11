@@ -7,7 +7,7 @@ part of 'bridge_inspection.provider.dart';
 // **************************************************************************
 
 String _$numberOfCreatedReportsHash() =>
-    r'16bc224d7ce3b4f88e5dc7024d9aec6d8eb12bb4';
+    r'960ccb849aaa5eb76720b3dbc4a86af7d15db263';
 
 /// Copied from Dart SDK
 class _SystemHash {

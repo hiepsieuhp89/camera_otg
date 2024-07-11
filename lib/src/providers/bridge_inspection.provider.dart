@@ -192,7 +192,11 @@ int numberOfCreatedReports(NumberOfCreatedReportsRef ref, int bridgeId) {
   final activeInspection =
       ref.watch(bridgeInspectionProvider(bridgeId)).value?[1];
 
-  return activeInspection?.reports.length ?? 0;
+  return activeInspection?.reports
+          .where(
+              (report) => report.status == InspectionPointReportStatus.finished)
+          .length ??
+      0;
 }
 
 @riverpod
