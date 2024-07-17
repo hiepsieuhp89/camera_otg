@@ -205,4 +205,22 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get holdButton => '保留';
+
+  @override
+  String get inspectionPointFilters => '点検ポイントフィルタ';
+
+  @override
+  String get inspectionStatus => '点検状況';
+
+  @override
+  String get statusNotInspected => '未点検';
+
+  @override
+  String get statusFinished => '完了';
+
+  @override
+  String get statusOnHold => '保留';
+
+  @override
+  String get statusSkipped => 'スキップ';
 }

@@ -8,11 +8,13 @@ import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/models/inspection_point_report.dart';
 import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
 import 'package:kyoryo/src/providers/current_bridge.provider.dart';
+import 'package:kyoryo/src/providers/inspection_point_filters.provider.dart';
 import 'package:kyoryo/src/providers/inspection_points.provider.dart';
 import 'package:kyoryo/src/screens/inspection_point_creation_screen.dart';
 import 'package:kyoryo/src/screens/inspection_point_diagram_select_screen.dart';
 import 'package:kyoryo/src/screens/take_picture_screen.dart';
 import 'package:kyoryo/src/ui/inspection_point_list_item.dart';
+import 'package:kyoryo/src/ui/side_sheet.dart';
 import 'package:kyoryo/src/utilities/async_value_extensions.dart';
 
 class BridgeInspectionScreen extends ConsumerStatefulWidget {
@@ -30,6 +32,7 @@ class BridgeInspectionScreen extends ConsumerStatefulWidget {
 class _BridgeInspectionScreenState
     extends ConsumerState<BridgeInspectionScreen> {
   int selectedTypeIndex = 0;
+  bool includeNoReport = true;
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
   void _startInspectingPoint(InspectionPoint point,
@@ -148,8 +151,8 @@ class _BridgeInspectionScreenState
         key: scaffoldKey,
         resizeToAvoidBottomInset: false,
         drawer: buildNavigationDrawer(
-            inspectionPointTypeUIs, isInspectionInProgress),
-        appBar: buildAppBar(currentBridge),
+            currentBridge, inspectionPointTypeUIs, isInspectionInProgress),
+        appBar: buildTopAppBar(currentBridge),
         body: OrientationBuilder(
           builder: (context, orientation) {
             return Row(
@@ -158,62 +161,8 @@ class _BridgeInspectionScreenState
                   visible: orientation == Orientation.landscape,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 5),
-                    child: NavigationRail(
-                      minWidth: 50,
-                      leading: Column(children: [
-                        IconButton(
-                          icon: const Icon(Icons.menu),
-                          onPressed: () {
-                            scaffoldKey.currentState!.openDrawer();
-                          },
-                        ),
-                        isInspectionInProgress
-                            ? FloatingActionButton(
-                                elevation: 0,
-                                onPressed: _confirmFinishInspection,
-                                child: const Icon(Icons.check))
-                            : FloatingActionButton(
-                                elevation: 0,
-                                onPressed: _confirmForReinspection,
-                                child: const Icon(Icons.replay_outlined),
-                              ),
-                      ]),
-                      selectedIndex: selectedTypeIndex,
-                      labelType: isInspectionInProgress
-                          ? NavigationRailLabelType.selected
-                          : NavigationRailLabelType.all,
-                      destinations: [
-                        ...inspectionPointTypeUIs.map((filter) {
-                          return NavigationRailDestination(
-                              icon: Icon(filter.icon),
-                              label: Text(filter.label),
-                              selectedIcon: Icon(filter.selectedIcon));
-                        }),
-                      ],
-                      onDestinationSelected: (index) {
-                        setState(() {
-                          selectedTypeIndex = index;
-                        });
-
-                        ref
-                            .watch(currentInspectionPointTypeProvider.notifier)
-                            .set(
-                                inspectionPointTypeUIs[selectedTypeIndex].type);
-                      },
-                      trailing: Expanded(
-                        child: Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              if (isInspectionInProgress)
-                                buildNewPointMenuButton(),
-                              IconButton(
-                                  icon: const Icon(Icons.arrow_back),
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  }),
-                            ]),
-                      ),
-                    ),
+                    child: buildNavigationRail(
+                        context, currentBridge, isInspectionInProgress),
                   ),
                 ),
                 const VerticalDivider(thickness: 1, width: 1),
@@ -228,9 +177,10 @@ class _BridgeInspectionScreenState
                             onSelectionChanged:
                                 (Set<InspectionPointType?> value) {
                               ref
-                                  .watch(currentInspectionPointTypeProvider
+                                  .read(bridgeInspectionPointFiltersProvider(
+                                          currentBridge.id)
                                       .notifier)
-                                  .set(value.first);
+                                  .setTypeFilter(value.first);
 
                               selectedTypeIndex =
                                   inspectionPointTypeUIs.indexWhere(
@@ -251,6 +201,52 @@ class _BridgeInspectionScreenState
                           ),
                         ),
                       ),
+                      Visibility(
+                        visible: orientation == Orientation.landscape,
+                        child: AppBar(
+                          automaticallyImplyLeading: false,
+                          toolbarHeight: 48,
+                          title: Row(
+                            children: <Widget>[
+                              Text(
+                                currentBridge.nameKanji,
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                              IconButton(
+                                  onPressed: () {},
+                                  icon: const Icon(Icons.info_outline_rounded)),
+                            ],
+                          ),
+                          actions: [
+                            if (isInspectionInProgress) ...[
+                              buildNewPointMenuButton(),
+                              const SizedBox(width: 8)
+                            ],
+                            IconButton(
+                                onPressed: () {
+                                  showSideSheet(context,
+                                      headerText: AppLocalizations.of(context)!
+                                          .inspectionPointFilters,
+                                      body: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 24.0),
+                                        child: buildFiltersSelectionContent(
+                                            currentBridge),
+                                      ));
+                                },
+                                icon: Icon(
+                                  Icons.filter_list,
+                                  color: ref
+                                          .watch(
+                                              bridgeInspectionPointFiltersProvider(
+                                                  currentBridge.id))
+                                          .hasActiveFilters
+                                      ? Colors.orange
+                                      : null,
+                                )),
+                          ],
+                        ),
+                      ),
                       Expanded(
                         child: requiredData.when(
                           data: (data) {
@@ -264,7 +260,8 @@ class _BridgeInspectionScreenState
                                         .future),
                               ]),
                               child: Padding(
-                                padding: const EdgeInsets.all(8.0),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8.0),
                                 child: GridView.builder(
                                   gridDelegate:
                                       SliverGridDelegateWithFixedCrossAxisCount(
@@ -276,6 +273,8 @@ class _BridgeInspectionScreenState
                                     mainAxisSpacing: 8.0,
                                     crossAxisSpacing: 8.0,
                                   ),
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 8.0, horizontal: 8.0),
                                   itemCount: data.$1.length,
                                   itemBuilder:
                                       (BuildContext context, int index) {
@@ -328,8 +327,231 @@ class _BridgeInspectionScreenState
             );
           },
         ),
-        bottomNavigationBar: buildBottomAppBar(
-            inspectionPoints, numberOfCreatedReports, isInspectionInProgress));
+        bottomNavigationBar: buildBottomAppBar(currentBridge, inspectionPoints,
+            numberOfCreatedReports, isInspectionInProgress));
+  }
+
+  Consumer buildFiltersSelectionContent(Bridge currentBridge) {
+    return Consumer(builder: (context, ref, _) {
+      return Column(
+        children: [
+          Row(
+            children: [
+              Icon(Icons.assessment, color: Theme.of(context).primaryColor),
+              const SizedBox(
+                width: 4.0,
+              ),
+              Text(AppLocalizations.of(context)!.inspectionStatus,
+                  textAlign: TextAlign.start,
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
+            ],
+          ),
+          const SizedBox(
+            height: 8.0,
+          ),
+          Wrap(
+            spacing: 8.0,
+            runAlignment: WrapAlignment.start,
+            children: [
+              FilterChip(
+                label: Text(AppLocalizations.of(context)!.statusNotInspected),
+                selected: includeNoReport,
+                onSelected: (bool selected) {
+                  ref
+                      .read(
+                          bridgeInspectionPointFiltersProvider(currentBridge.id)
+                              .notifier)
+                      .setIncludeNoReport(selected);
+
+                  setState(() {
+                    includeNoReport = selected;
+                  });
+                },
+              ),
+              FilterChip(
+                label: Text(AppLocalizations.of(context)!.statusSkipped),
+                selected: ref
+                            .watch(bridgeInspectionPointFiltersProvider(
+                                currentBridge.id))
+                            .reportStatusFilters[
+                        InspectionPointReportStatus.skipped] ??
+                    false,
+                onSelected: (bool selected) {
+                  ref
+                      .read(
+                          bridgeInspectionPointFiltersProvider(currentBridge.id)
+                              .notifier)
+                      .setStatusFilter(
+                          InspectionPointReportStatus.skipped, selected);
+                },
+              ),
+              FilterChip(
+                label: Text(AppLocalizations.of(context)!.statusOnHold),
+                selected: ref
+                            .watch(bridgeInspectionPointFiltersProvider(
+                                currentBridge.id))
+                            .reportStatusFilters[
+                        InspectionPointReportStatus.pending] ??
+                    false,
+                onSelected: (bool selected) {
+                  ref
+                      .read(
+                          bridgeInspectionPointFiltersProvider(currentBridge.id)
+                              .notifier)
+                      .setStatusFilter(
+                          InspectionPointReportStatus.pending, selected);
+                },
+              ),
+              FilterChip(
+                label: Text(AppLocalizations.of(context)!.statusFinished),
+                selected: ref
+                            .watch(bridgeInspectionPointFiltersProvider(
+                                currentBridge.id))
+                            .reportStatusFilters[
+                        InspectionPointReportStatus.finished] ??
+                    false,
+                onSelected: (bool selected) {
+                  ref
+                      .read(
+                          bridgeInspectionPointFiltersProvider(currentBridge.id)
+                              .notifier)
+                      .setStatusFilter(
+                          InspectionPointReportStatus.finished, selected);
+                },
+              ),
+            ],
+          ),
+          const SizedBox(
+            height: 8.0,
+          ),
+          Row(
+            children: [
+              Icon(Icons.place, color: Theme.of(context).primaryColor),
+              const SizedBox(
+                width: 4.0,
+              ),
+              Text(AppLocalizations.of(context)!.name,
+                  textAlign: TextAlign.start,
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
+            ],
+          ),
+          const SizedBox(
+            height: 8.0,
+          ),
+          Expanded(
+            child: ref
+                .watch(inspectionPointsProvider(currentBridge.id))
+                .maybeWhen<Widget>(
+                  orElse: () => const SizedBox(height: 0),
+                  data: (inspectionPoints) {
+                    final pointNames = inspectionPoints
+                        .map((e) => e.name ?? '')
+                        .toSet()
+                        .toList();
+
+                    return ListView.builder(
+                      itemCount: pointNames.length + 1,
+                      itemBuilder: (context, index) {
+                        if (index == 0) {
+                          return CheckboxListTile(
+                              title: const Text('ALL'),
+                              controlAffinity: ListTileControlAffinity.leading,
+                              value: ref
+                                  .watch(bridgeInspectionPointFiltersProvider(
+                                      currentBridge.id))
+                                  .nameFilters
+                                  .isEmpty,
+                              onChanged: (bool? checked) {
+                                if (checked == true) {
+                                  ref
+                                      .read(
+                                          bridgeInspectionPointFiltersProvider(
+                                                  currentBridge.id)
+                                              .notifier)
+                                      .clearNameFilters();
+                                }
+                              });
+                        }
+                        return CheckboxListTile(
+                            title: Text(pointNames[index - 1]),
+                            controlAffinity: ListTileControlAffinity.leading,
+                            value: ref
+                                .watch(bridgeInspectionPointFiltersProvider(
+                                    currentBridge.id))
+                                .nameFilters
+                                .contains(pointNames[index - 1]),
+                            onChanged: (bool? checked) {
+                              ref
+                                  .read(bridgeInspectionPointFiltersProvider(
+                                          currentBridge.id)
+                                      .notifier)
+                                  .setNameFilter(
+                                      pointNames[index - 1], checked ?? false);
+                            });
+                      },
+                    );
+                  },
+                ),
+          )
+        ],
+      );
+    });
+  }
+
+// ref.watch(bridgeInspectionPointFiltersProvider(currentBridge.id)).hasActiveFilters ? Colors.orange : null
+  NavigationRail buildNavigationRail(
+      BuildContext context, Bridge currentBridge, bool isInspectionInProgress) {
+    return NavigationRail(
+      minWidth: 50,
+      leading: Column(children: [
+        IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: () {
+            scaffoldKey.currentState!.openDrawer();
+          },
+        ),
+        isInspectionInProgress
+            ? FloatingActionButton(
+                elevation: 0,
+                onPressed: _confirmFinishInspection,
+                child: const Icon(Icons.check))
+            : FloatingActionButton(
+                elevation: 0,
+                onPressed: _confirmForReinspection,
+                child: const Icon(Icons.replay_outlined),
+              ),
+      ]),
+      selectedIndex: selectedTypeIndex,
+      labelType: NavigationRailLabelType.all,
+      destinations: [
+        ...inspectionPointTypeUIs.map((filter) {
+          return NavigationRailDestination(
+              icon: Icon(filter.icon),
+              label: Text(filter.label),
+              selectedIcon: Icon(filter.selectedIcon));
+        }),
+      ],
+      onDestinationSelected: (index) {
+        setState(() {
+          selectedTypeIndex = index;
+        });
+
+        ref
+            .watch(
+                bridgeInspectionPointFiltersProvider(currentBridge.id).notifier)
+            .setTypeFilter(inspectionPointTypeUIs[index].type);
+      },
+      trailing: Expanded(
+        child: Column(mainAxisAlignment: MainAxisAlignment.end, children: [
+          // if (isInspectionInProgress) buildNewPointMenuButton(),
+          IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () {
+                Navigator.of(context).pop();
+              }),
+        ]),
+      ),
+    );
   }
 
   Widget buildNewPointMenuButton() {
@@ -375,6 +597,7 @@ class _BridgeInspectionScreenState
   }
 
   BottomAppBar? buildBottomAppBar(
+      Bridge currentBridge,
       AsyncValue<List<InspectionPoint>> inspectionPoints,
       int numberOfCreatedReports,
       bool isInspecting) {
@@ -391,7 +614,29 @@ class _BridgeInspectionScreenState
                   numberOfCreatedReports, inspectionPoints.value!.length)
               : ''),
           Row(children: [
-            if (isInspecting) buildNewPointMenuButton(),
+            if (isInspecting) ...[
+              buildNewPointMenuButton(),
+            ],
+            IconButton(
+                icon: Icon(
+                  Icons.filter_list,
+                  color: ref
+                          .watch(bridgeInspectionPointFiltersProvider(
+                              currentBridge.id))
+                          .hasActiveFilters
+                      ? Colors.orange
+                      : null,
+                ),
+                onPressed: () {
+                  showModalBottomSheet(
+                      context: context,
+                      builder: (context) {
+                        return Padding(
+                            padding: const EdgeInsets.all(24.0),
+                            child: buildFiltersSelectionContent(currentBridge));
+                      });
+                }),
+            const SizedBox(width: 8),
             if (isInspecting)
               FilledButton.icon(
                 onPressed: _confirmFinishInspection,
@@ -410,7 +655,7 @@ class _BridgeInspectionScreenState
     );
   }
 
-  AppBar? buildAppBar(Bridge currentBridge) {
+  AppBar? buildTopAppBar(Bridge currentBridge) {
     return MediaQuery.of(context).orientation == Orientation.portrait
         ? AppBar(
             title: Row(
@@ -424,7 +669,7 @@ class _BridgeInspectionScreenState
         : null;
   }
 
-  Widget? buildNavigationDrawer(
+  Widget? buildNavigationDrawer(Bridge currentBridge,
       List<InspectionPointTypeUI> pointTypeUIs, bool isInspecting) {
     final filteredInspectionPoints = ref.watch(
         filteredInspectionPointsProvider(ref.watch(currentBridgeProvider)!.id));
@@ -438,8 +683,9 @@ class _BridgeInspectionScreenState
               });
 
               ref
-                  .watch(currentInspectionPointTypeProvider.notifier)
-                  .set(pointTypeUIs[selectedTypeIndex].type);
+                  .read(bridgeInspectionPointFiltersProvider(currentBridge.id)
+                      .notifier)
+                  .setTypeFilter(inspectionPointTypeUIs[index].type);
             },
             children: <Widget>[
                 Padding(
