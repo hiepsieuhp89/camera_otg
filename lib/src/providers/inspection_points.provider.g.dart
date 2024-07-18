@@ -7,7 +7,7 @@ part of 'inspection_points.provider.dart';
 // **************************************************************************
 
 String _$filteredInspectionPointsHash() =>
-    r'66fcd37d84391df7ab02ac1cacbd208a4e93ef05';
+    r'd43d8ae8a2a1b85c14337a1593c48fabcd801654';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -307,24 +307,5 @@ class _InspectionPointsProviderElement
   @override
   int get bridgeId => (origin as InspectionPointsProvider).bridgeId;
 }
-
-String _$currentInspectionPointTypeHash() =>
-    r'dc37f88dbfab518b9e8cb02d69ff24572ac7f54f';
-
-/// See also [CurrentInspectionPointType].
-@ProviderFor(CurrentInspectionPointType)
-final currentInspectionPointTypeProvider = AutoDisposeNotifierProvider<
-    CurrentInspectionPointType, InspectionPointType?>.internal(
-  CurrentInspectionPointType.new,
-  name: r'currentInspectionPointTypeProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$currentInspectionPointTypeHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
-
-typedef _$CurrentInspectionPointType
-    = AutoDisposeNotifier<InspectionPointType?>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

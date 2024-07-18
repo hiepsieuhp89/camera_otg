@@ -1,6 +1,10 @@
 import 'package:kyoryo/src/models/inspection_point.dart';
+import 'package:kyoryo/src/models/inspection_point_report.dart';
+import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
+import 'package:kyoryo/src/providers/inspection_point_filters.provider.dart';
 import 'package:kyoryo/src/services/bridge.service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:collection/collection.dart';
 
 part 'inspection_points.provider.g.dart';
 
@@ -24,25 +28,40 @@ class InspectionPoints extends _$InspectionPoints {
 }
 
 @riverpod
-class CurrentInspectionPointType extends _$CurrentInspectionPointType {
-  @override
-  InspectionPointType? build() {
-    return null;
-  }
-
-  void set(InspectionPointType? type) {
-    state = type;
-  }
-}
-
-@riverpod
 Future<List<InspectionPoint>> filteredInspectionPoints(
-    FilteredInspectionPointsRef ref, int bridgeId) {
-  final selectedType = ref.watch(currentInspectionPointTypeProvider);
-  final data = ref.watch(inspectionPointsProvider(bridgeId).selectAsync(
-      (points) => points
-          .where((point) => selectedType == null || selectedType == point.type)
-          .toList()));
+    FilteredInspectionPointsRef ref, int bridgeId) async {
+  InspectionPointFilters filters =
+      ref.watch(bridgeInspectionPointFiltersProvider(bridgeId));
+  final activeInspection =
+      (await ref.watch(bridgeInspectionProvider(bridgeId).future))[1];
+
+  final data = ref.watch(inspectionPointsProvider(bridgeId)
+      .selectAsync((points) => points.where((point) {
+            if (filters.typeFilter != null &&
+                point.type != filters.typeFilter) {
+              return false;
+            }
+
+            if (filters.nameFilters.isNotEmpty &&
+                !filters.nameFilters.contains(point.name ?? '')) {
+              return false;
+            }
+
+            InspectionPointReport? report = activeInspection?.reports
+                .firstWhereOrNull(
+                    (report) => report.inspectionPointId == point.id);
+
+            if (report == null && !filters.includeNoReport) {
+              return false;
+            }
+
+            if (report != null &&
+                !(filters.reportStatusFilters[report.status] ?? false)) {
+              return false;
+            }
+
+            return true;
+          }).toList()));
 
   return data;
 }

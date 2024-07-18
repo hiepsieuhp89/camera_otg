@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 
-Future<void> showSideSheet(
-  BuildContext context, {
-  required Widget body,
-  required String header,
-}) async {
+Future<void> showSideSheet(BuildContext context,
+    {required Widget body, required String headerText}) async {
   await showGeneralDialog(
     context: context,
     barrierDismissible: true,
@@ -24,7 +21,7 @@ Future<void> showSideSheet(
       return Align(
         alignment: Alignment.centerRight,
         child: SideSheetContent(
-          header: header,
+          headerText: headerText,
           body: body,
         ),
       );
@@ -35,12 +32,12 @@ Future<void> showSideSheet(
 }
 
 class SideSheetContent extends StatelessWidget {
-  final String header;
+  final String headerText;
   final Widget body;
 
   const SideSheetContent({
     super.key,
-    required this.header,
+    required this.headerText,
     required this.body,
   });
 
@@ -69,14 +66,14 @@ class SideSheetContent extends StatelessWidget {
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(24, 0, 16, 16),
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
                 child: Row(
                   children: [
                     Text(
-                      header,
+                      headerText,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: textTheme.titleSmall,
+                      style: textTheme.titleMedium,
                     ),
                     const Flexible(
                       fit: FlexFit.tight,

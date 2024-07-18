@@ -474,6 +474,42 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'保留'**
   String get holdButton;
+
+  /// No description provided for @inspectionPointFilters.
+  ///
+  /// In ja, this message translates to:
+  /// **'点検ポイントフィルタ'**
+  String get inspectionPointFilters;
+
+  /// No description provided for @inspectionStatus.
+  ///
+  /// In ja, this message translates to:
+  /// **'点検状況'**
+  String get inspectionStatus;
+
+  /// No description provided for @statusNotInspected.
+  ///
+  /// In ja, this message translates to:
+  /// **'未点検'**
+  String get statusNotInspected;
+
+  /// No description provided for @statusFinished.
+  ///
+  /// In ja, this message translates to:
+  /// **'完了'**
+  String get statusFinished;
+
+  /// No description provided for @statusOnHold.
+  ///
+  /// In ja, this message translates to:
+  /// **'保留'**
+  String get statusOnHold;
+
+  /// No description provided for @statusSkipped.
+  ///
+  /// In ja, this message translates to:
+  /// **'スキップ'**
+  String get statusSkipped;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
