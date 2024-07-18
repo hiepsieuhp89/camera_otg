@@ -1,8 +1,8 @@
 import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/models/inspection_point_report.dart';
+import 'package:kyoryo/src/providers/api.provider.dart';
 import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
 import 'package:kyoryo/src/providers/inspection_point_filters.provider.dart';
-import 'package:kyoryo/src/services/bridge.service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:collection/collection.dart';
 
@@ -12,12 +12,12 @@ part 'inspection_points.provider.g.dart';
 class InspectionPoints extends _$InspectionPoints {
   @override
   Future<List<InspectionPoint>> build(int bridgeId) async {
-    return ref.watch(bridgeServiceProvider).fetchInspectionPoints(bridgeId);
+    return ref.watch(apiServiceProvider).fetchInspectionPoints(bridgeId);
   }
 
   Future<InspectionPoint> createInspectionPoint(InspectionPoint point) async {
     final inspectionPoint =
-        await ref.watch(bridgeServiceProvider).createInspectionPoint(point);
+        await ref.watch(apiServiceProvider).createInspectionPoint(point);
 
     final previousState = await future;
 

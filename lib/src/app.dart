@@ -21,18 +21,22 @@ class KyoryoApp extends ConsumerWidget {
     final appStartupState = ref.watch(appStartupProvider);
 
     return appStartupState.when(
-      loading: () => const LoadingApp(),
-      error: (error, stackTrace) => ErrorApp(
-        message: error.toString(),
-        onRetry: () => ref.invalidate(appStartupProvider),
-      ),
+      loading: () => const Loading(),
+      error: (error, stackTrace) {
+        debugPrint('appStartup error: $error - stack: $stackTrace');
+
+        return Error(
+          message: error.toString(),
+          onRetry: () => ref.invalidate(appStartupProvider),
+        );
+      },
       data: (_) => const MainApp(),
     );
   }
 }
 
-class LoadingApp extends StatelessWidget {
-  const LoadingApp({super.key});
+class Loading extends StatelessWidget {
+  const Loading({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -46,8 +50,8 @@ class LoadingApp extends StatelessWidget {
   }
 }
 
-class ErrorApp extends StatelessWidget {
-  const ErrorApp({super.key, required this.message, required this.onRetry});
+class Error extends StatelessWidget {
+  const Error({super.key, required this.message, required this.onRetry});
 
   final String message;
   final Function() onRetry;

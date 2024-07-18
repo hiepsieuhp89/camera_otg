@@ -41,7 +41,7 @@ class BridgeListScreen extends ConsumerWidget {
                   child: CircularProgressIndicator(),
                 ),
             error: (error, stackTrace) {
-              debugPrint('Error: $error');
+              debugPrint('Error: $error, stack: $stackTrace');
 
               return Center(
                 child: Column(

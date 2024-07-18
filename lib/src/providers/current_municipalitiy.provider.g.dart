@@ -7,7 +7,7 @@ part of 'current_municipalitiy.provider.dart';
 // **************************************************************************
 
 String _$currentMunicipalityHash() =>
-    r'15f36dc6c0e084cddbb9f09451725f3ca06587ca';
+    r'bd8e3d1e3c85052704e439e584c72db364b91f3f';
 
 /// See also [CurrentMunicipality].
 @ProviderFor(CurrentMunicipality)

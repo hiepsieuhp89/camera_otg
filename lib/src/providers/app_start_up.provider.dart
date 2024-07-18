@@ -10,6 +10,7 @@ part 'app_start_up.provider.g.dart';
 Future<void> appStartup(AppStartupRef ref) async {
   ref.onDispose(() {
     ref.invalidate(sharedPreferencesProvider);
+    ref.invalidate(damageTypesProvider);
     ref.invalidate(currentMunicipalityProvider);
   });
   await ref.watch(sharedPreferencesProvider.future);
