@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:collection/collection.dart';
@@ -11,24 +12,17 @@ import 'package:kyoryo/src/models/photo.dart';
 import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
 import 'package:kyoryo/src/services/inspection_point_report.service.dart';
 
-class BridgeInspectionPhotoSelectionScreenArguments {
+@RoutePage()
+class BridgeInspectionPhotoSelectionScreen extends ConsumerStatefulWidget {
   final List<String> capturedPhotoPaths;
   final List<Photo> uploadedPhotos;
   final InspectionPoint point;
 
-  BridgeInspectionPhotoSelectionScreenArguments(
-      {required this.capturedPhotoPaths,
+  const BridgeInspectionPhotoSelectionScreen(
+      {super.key,
+      required this.capturedPhotoPaths,
       required this.point,
       required this.uploadedPhotos});
-}
-
-class BridgeInspectionPhotoSelectionScreen extends ConsumerStatefulWidget {
-  final BridgeInspectionPhotoSelectionScreenArguments arguments;
-
-  static const routeName = '/bridge-inspection-photo-selection';
-
-  const BridgeInspectionPhotoSelectionScreen(
-      {super.key, required this.arguments});
 
   @override
   ConsumerState<BridgeInspectionPhotoSelectionScreen> createState() =>
@@ -43,17 +37,16 @@ class _BridgeInspectionPhotoSelectionScreenState
   @override
   void initState() {
     super.initState();
-    currentlyShowingPhoto = widget.arguments.uploadedPhotos.isNotEmpty
-        ? widget.arguments.uploadedPhotos.first
-        : widget.arguments.capturedPhotoPaths.first;
+    currentlyShowingPhoto = widget.uploadedPhotos.isNotEmpty
+        ? widget.uploadedPhotos.first
+        : widget.capturedPhotoPaths.first;
   }
 
   @override
   Widget build(BuildContext context) {
     final previousReport = ref
-        .read(
-            bridgeInspectionProvider(widget.arguments.point.bridgeId!).notifier)
-        .findPreviousReportFromPoint(widget.arguments.point.id!);
+        .read(bridgeInspectionProvider(widget.point.bridgeId!).notifier)
+        .findPreviousReportFromPoint(widget.point.id!);
 
     final previousPhoto = ref
         .read(inspectionPointReportServiceProvider)
@@ -135,8 +128,8 @@ class _BridgeInspectionPhotoSelectionScreenState
 
   Expanded buildPhotosCarousel(BuildContext context, Orientation orientation) {
     List<dynamic> combinedList = [
-      ...widget.arguments.uploadedPhotos,
-      ...widget.arguments.capturedPhotoPaths,
+      ...widget.uploadedPhotos,
+      ...widget.capturedPhotoPaths,
     ];
 
     return Expanded(

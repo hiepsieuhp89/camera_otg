@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,11 +7,11 @@ import 'package:kyoryo/src/models/municipality.dart';
 import 'package:kyoryo/src/providers/current_contractor.provider.dart';
 import 'package:kyoryo/src/providers/current_municipalitiy.provider.dart';
 import 'package:kyoryo/src/providers/misc.provider.dart';
+import 'package:kyoryo/src/routing/router.dart';
 
+@RoutePage()
 class BridgeFiltersScreen extends ConsumerWidget {
   const BridgeFiltersScreen({super.key});
-
-  static const routeName = '/filters';
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -114,7 +115,8 @@ class BridgeFiltersScreen extends ConsumerWidget {
             contractorAutocomplete(),
             const SizedBox(height: 24),
             FilledButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () =>
+                  context.router.popUntilRouteWithName(BridgeListRoute.name),
               style: FilledButton.styleFrom(
                   minimumSize: const Size.fromHeight(55)),
               child: Text(AppLocalizations.of(context)!.showBridgeList),

@@ -1,12 +1,13 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:kyoryo/src/providers/current_bridge.provider.dart';
+import 'package:kyoryo/src/routing/router.dart';
 import 'package:kyoryo/src/utilities/image_utils.dart';
 
 import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:kyoryo/src/models/bridge.dart';
-import 'package:kyoryo/src/screens/bridge_inspection_screen.dart';
 
 class BridgeListItem extends ConsumerWidget {
   final Bridge bridge;
@@ -83,8 +84,7 @@ class BridgeListItem extends ConsumerWidget {
                       onPressed: () {
                         ref.watch(currentBridgeProvider.notifier).set(bridge);
 
-                        Navigator.pushNamed(
-                            context, BridgeInspectionScreen.routeName);
+                        context.pushRoute(const BridgeInspectionRoute());
                       })
                 ])
           ],

@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,21 +6,15 @@ import 'package:kyoryo/src/models/diagram.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/providers/current_bridge.provider.dart';
 import 'package:kyoryo/src/providers/inspection_points.provider.dart';
-import 'package:kyoryo/src/screens/take_picture_screen.dart';
+import 'package:kyoryo/src/routing/router.dart';
 
-class InspectionPointCreationScreenArguments {
+@RoutePage()
+class InspectionPointCreationScreen extends ConsumerStatefulWidget {
   final Diagram? diagram;
   final InspectionPointType pointType;
 
-  InspectionPointCreationScreenArguments(
-      {this.diagram, required this.pointType});
-}
-
-class InspectionPointCreationScreen extends ConsumerStatefulWidget {
-  static const String routeName = '/inspection-point-damage-mark';
-  final InspectionPointCreationScreenArguments arguments;
-
-  const InspectionPointCreationScreen({super.key, required this.arguments});
+  const InspectionPointCreationScreen(
+      {super.key, this.diagram, required this.pointType});
 
   @override
   ConsumerState<InspectionPointCreationScreen> createState() =>
@@ -52,7 +47,7 @@ class InspectionPointCreationScreenState
     int? markCoordinateX;
     int? markCoordinateY;
 
-    if (widget.arguments.diagram != null) {
+    if (widget.diagram != null) {
       markCoordinateX =
           ((_left + 10) / _imageKey.currentContext!.size!.width * _imageWidth)
               .round();
@@ -65,17 +60,15 @@ class InspectionPointCreationScreenState
       _pendingSubmission = inspectionPointsNotiffier
           .createInspectionPoint(InspectionPoint(
               name: _inspectionPointName,
-              type: widget.arguments.pointType,
+              type: widget.pointType,
               bridgeId: currentBridge.id,
               spanNumber: "1",
               diagramMarkingX: markCoordinateX,
               diagramMarkingY: markCoordinateY,
-              diagramId: widget.arguments.diagram?.id))
+              diagramId: widget.diagram?.id))
           .then(
         (createdPoint) {
-          Navigator.pushNamed(context, TakePictureScreen.routeName,
-              arguments:
-                  TakePictureScreenArguments(inspectionPoint: createdPoint));
+          context.pushRoute(TakePictureRoute(inspectionPoint: createdPoint));
         },
       );
     });
@@ -85,9 +78,9 @@ class InspectionPointCreationScreenState
   Widget build(BuildContext context) {
     Image? imageWidget;
 
-    if (widget.arguments.diagram != null) {
-      imageWidget = Image.network(widget.arguments.diagram!.photo!.photoLink,
-          key: _imageKey);
+    if (widget.diagram != null) {
+      imageWidget =
+          Image.network(widget.diagram!.photo!.photoLink, key: _imageKey);
 
       imageWidget.image
           .resolve(const ImageConfiguration())

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:collection/collection.dart';
@@ -12,28 +13,22 @@ import 'package:kyoryo/src/models/inspection_point_report.dart';
 import 'package:kyoryo/src/models/photo.dart';
 import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
 import 'package:kyoryo/src/providers/misc.provider.dart';
-import 'package:kyoryo/src/screens/bridge_inspection_photo_selection_screen.dart';
-import 'package:kyoryo/src/screens/bridge_inspection_screen.dart';
+import 'package:kyoryo/src/routing/router.dart';
 import 'package:kyoryo/src/utilities/image_utils.dart';
 
-class BridgeInspectionEvaluationScreenArguments {
+@RoutePage()
+class BridgeInspectionEvaluationScreen extends ConsumerStatefulWidget {
   final InspectionPoint point;
   final List<String> capturedPhotos;
   final List<Photo> uploadedPhotos;
   final InspectionPointReport? createdReport;
 
-  BridgeInspectionEvaluationScreenArguments(
-      {required this.point,
+  const BridgeInspectionEvaluationScreen(
+      {super.key,
+      required this.point,
       required this.capturedPhotos,
       required this.uploadedPhotos,
       this.createdReport});
-}
-
-class BridgeInspectionEvaluationScreen extends ConsumerStatefulWidget {
-  static const routeName = '/bridge-inspection-evaluation';
-  final BridgeInspectionEvaluationScreenArguments arguments;
-
-  const BridgeInspectionEvaluationScreen({super.key, required this.arguments});
 
   @override
   ConsumerState<BridgeInspectionEvaluationScreen> createState() =>
@@ -52,12 +47,11 @@ class BridgeInspectionEvaluationScreenState
   late TextEditingController _textEditingController;
 
   Future<void> submitInspection(InspectionPointReportStatus status) async {
-    final reportSubmission = (widget.arguments.createdReport != null
+    final reportSubmission = (widget.createdReport != null
             ? _updateReport(status)
             : _createReport(status))
         .then((_) {
-      Navigator.popUntil(
-          context, ModalRoute.withName(BridgeInspectionScreen.routeName));
+      context.router.popUntilRouteWithName(BridgeInspectionRoute.name);
     });
 
     setState(() {
@@ -73,34 +67,31 @@ class BridgeInspectionEvaluationScreenState
   }
 
   Future<void> _updateReport(InspectionPointReportStatus status) async {
-    if (widget.arguments.createdReport == null) {
+    if (widget.createdReport == null) {
       throw Exception('Report is not created yet');
     }
-    await _compressCapturedPhotos(widget.arguments.capturedPhotos);
+    await _compressCapturedPhotos(widget.capturedPhotos);
     await ref
-        .read(
-            bridgeInspectionProvider(widget.arguments.point.bridgeId!).notifier)
+        .read(bridgeInspectionProvider(widget.point.bridgeId!).notifier)
         .updateReport(
-            report: widget.arguments.createdReport!
-                .copyWith(status: status, metadata: {
+            report: widget.createdReport!.copyWith(status: status, metadata: {
               'damage_category': _selectedCategory ?? '',
               'damage_type': _selectedDamageType ?? '',
               'damage_level': _selectedHealthLevel ?? '',
               'remark': _textEditingController.text,
             }),
-            capturedPhotoPaths: widget.arguments.capturedPhotos,
+            capturedPhotoPaths: widget.capturedPhotos,
             preferredPhotoPath: _preferredPhotoPath,
-            uploadedPhotos: widget.arguments.uploadedPhotos);
+            uploadedPhotos: widget.uploadedPhotos);
   }
 
   Future<void> _createReport(InspectionPointReportStatus status) async {
-    await _compressCapturedPhotos(widget.arguments.capturedPhotos);
+    await _compressCapturedPhotos(widget.capturedPhotos);
     await ref
-        .read(
-            bridgeInspectionProvider(widget.arguments.point.bridgeId!).notifier)
+        .read(bridgeInspectionProvider(widget.point.bridgeId!).notifier)
         .createReport(
-            pointId: widget.arguments.point.id!,
-            capturedPhotoPaths: widget.arguments.capturedPhotos,
+            pointId: widget.point.id!,
+            capturedPhotoPaths: widget.capturedPhotos,
             preferredPhotoPath: _preferredPhotoPath,
             status: status,
             metadata: {
@@ -117,13 +108,10 @@ class BridgeInspectionEvaluationScreenState
     _textEditingController = TextEditingController();
 
     _textEditingController.text =
-        widget.arguments.createdReport?.metadata['remark'] ?? '';
-    _selectedCategory =
-        widget.arguments.createdReport?.metadata['damage_category'];
-    _selectedDamageType =
-        widget.arguments.createdReport?.metadata['damage_type'];
-    _selectedHealthLevel =
-        widget.arguments.createdReport?.metadata['damage_level'];
+        widget.createdReport?.metadata['remark'] ?? '';
+    _selectedCategory = widget.createdReport?.metadata['damage_category'];
+    _selectedDamageType = widget.createdReport?.metadata['damage_type'];
+    _selectedHealthLevel = widget.createdReport?.metadata['damage_level'];
   }
 
   @override
@@ -132,7 +120,7 @@ class BridgeInspectionEvaluationScreenState
 
     return Scaffold(
         appBar: AppBar(
-            title: Text(widget.arguments.point.name!),
+            title: Text(widget.point.name!),
             actions: MediaQuery.of(context).orientation == Orientation.landscape
                 ? [
                     buildGoToPhotoSelectionButton(context),
@@ -162,12 +150,11 @@ class BridgeInspectionEvaluationScreenState
   OutlinedButton buildGoToPhotoSelectionButton(BuildContext context) {
     return OutlinedButton.icon(
       onPressed: () {
-        Navigator.of(context)
-            .pushNamed(BridgeInspectionPhotoSelectionScreen.routeName,
-                arguments: BridgeInspectionPhotoSelectionScreenArguments(
-                    point: widget.arguments.point,
-                    capturedPhotoPaths: widget.arguments.capturedPhotos,
-                    uploadedPhotos: widget.arguments.uploadedPhotos))
+        context
+            .pushRoute(BridgeInspectionPhotoSelectionRoute(
+                capturedPhotoPaths: widget.capturedPhotos,
+                point: widget.point,
+                uploadedPhotos: widget.uploadedPhotos))
             .then((selectedPhotoPath) {
           setState(() {
             _preferredPhotoPath = selectedPhotoPath as String?;
@@ -386,8 +373,8 @@ class BridgeInspectionEvaluationScreenState
 
   Expanded buildPhotosCarousel(BuildContext context, Orientation orientation) {
     List<dynamic> combinedList = [
-      ...widget.arguments.uploadedPhotos,
-      ...widget.arguments.capturedPhotos,
+      ...widget.uploadedPhotos,
+      ...widget.capturedPhotos,
     ];
 
     return Expanded(

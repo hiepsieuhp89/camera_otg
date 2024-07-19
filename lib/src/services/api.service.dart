@@ -7,10 +7,13 @@ import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/models/inspection_point_report.dart';
 import 'package:kyoryo/src/models/municipality.dart';
 import 'package:kyoryo/src/models/photo.dart';
+import 'package:kyoryo/src/models/user.dart';
 import 'package:kyoryo/src/services/api_client.service.dart';
+import 'package:logging/logging.dart';
 
 class ApiService {
   final ApiClient apiClient = ApiClient();
+  final log = Logger('ApiService');
   String? _accessToken;
 
   setAccessToken(String accessToken) {
@@ -19,6 +22,21 @@ class ApiService {
 
   Map<String, String> getAuthorizationHeader() {
     return {'Authorization': 'Bearer $_accessToken'};
+  }
+
+  Future<User?> validateAccessToken() async {
+    try {
+      final jsonResponse = await apiClient.get('users/me',
+          headerParams: getAuthorizationHeader());
+
+      return jsonResponse['user'] != null
+          ? User.fromJson(jsonResponse['user'])
+          : null;
+    } catch (error, stackTrace) {
+      log.warning('Error validating access token', error, stackTrace);
+
+      return null;
+    }
   }
 
   Future<List<Bridge>> fetchBridges() async {
@@ -31,8 +49,9 @@ class ApiService {
   }
 
   Future<List<InspectionPoint>> fetchInspectionPoints(int brdigeId) async {
-    final jsonResponse =
-        await apiClient.get('api/mobile/bridges/$brdigeId/inspection_points');
+    final jsonResponse = await apiClient.get(
+        'api/mobile/bridges/$brdigeId/inspection_points',
+        headerParams: getAuthorizationHeader());
 
     return (jsonResponse as List)
         .map((inspectionPoint) => InspectionPoint.fromJson(inspectionPoint))
@@ -42,14 +61,15 @@ class ApiService {
   Future<InspectionPoint> createInspectionPoint(
       InspectionPoint inspectionPoint) async {
     final jsonResponse = await apiClient.post('api/mobile/inspection_points',
-        body: inspectionPoint.toJson());
+        body: inspectionPoint.toJson(), headerParams: getAuthorizationHeader());
 
     return InspectionPoint.fromJson(jsonResponse);
   }
 
   Future<List<Diagram>> fetchDiagrams(int bridgeId) async {
-    final jsonResponse =
-        await apiClient.get('api/mobile/bridges/$bridgeId/diagrams');
+    final jsonResponse = await apiClient.get(
+        'api/mobile/bridges/$bridgeId/diagrams',
+        headerParams: getAuthorizationHeader());
 
     return (jsonResponse as List)
         .map((diagram) => Diagram.fromJson(diagram))
@@ -59,14 +79,16 @@ class ApiService {
   Future<Diagram> createDiagram(Diagram diagram) async {
     final jsonResponse = await apiClient.post(
         'api/mobile/bridges/${diagram.bridgeId}/diagrams?photo_id=${diagram.photoId}',
-        body: diagram.toJson());
+        body: diagram.toJson(),
+        headerParams: getAuthorizationHeader());
 
     return Diagram.fromJson(jsonResponse);
   }
 
   Future<List<Inspection>> fetchInspections(int bridgeId) async {
-    final jsonResponse =
-        await apiClient.get('api/mobile/bridges/$bridgeId/inspections');
+    final jsonResponse = await apiClient.get(
+        'api/mobile/bridges/$bridgeId/inspections',
+        headerParams: getAuthorizationHeader());
 
     return (jsonResponse as List)
         .map((inspection) => Inspection.fromJson(inspection))
@@ -75,20 +97,23 @@ class ApiService {
 
   Future<InspectionPointReport> updateReport(
       InspectionPointReport report) async {
-    final jsonResponse =
-        await apiClient.put('api/mobile/reports/${report.id}', body: {
-      'photos': report.photos.map((photo) => photo.id).toList(),
-      'meta_data': report.metadata,
-      'preferred_photo_id': report.preferredPhotoId,
-      'inspection_point_id': report.inspectionPointId,
-      'status': report.toJson()['status']
-    });
+    final jsonResponse = await apiClient.put('api/mobile/reports/${report.id}',
+        body: {
+          'photos': report.photos.map((photo) => photo.id).toList(),
+          'meta_data': report.metadata,
+          'preferred_photo_id': report.preferredPhotoId,
+          'inspection_point_id': report.inspectionPointId,
+          'status': report.toJson()['status']
+        },
+        headerParams: getAuthorizationHeader());
 
     return InspectionPointReport.fromJson(jsonResponse);
   }
 
   Future<Inspection> fetchInspection(int inspectionId) async {
-    final jsonResponse = await apiClient.get('inspections/$inspectionId');
+    final jsonResponse = await apiClient.get(
+        'api/mobile/inspections/$inspectionId',
+        headerParams: getAuthorizationHeader());
 
     return Inspection.fromJson(jsonResponse);
   }
@@ -96,14 +121,16 @@ class ApiService {
   Future<InspectionPointReport> createReport(
       {required InspectionPointReport report,
       List<int> photoIds = const []}) async {
-    final jsonResponse = await apiClient
-        .post('api/mobile/inspections/${report.inspectionId}/reports', body: {
-      'photos_ids': photoIds,
-      'meta_data': report.metadata,
-      'preferred_photo_id': report.preferredPhotoId,
-      'inspection_point_id': report.inspectionPointId,
-      'status': report.toJson()['status']
-    });
+    final jsonResponse = await apiClient.post(
+        'api/mobile/inspections/${report.inspectionId}/reports',
+        body: {
+          'photos_ids': photoIds,
+          'meta_data': report.metadata,
+          'preferred_photo_id': report.preferredPhotoId,
+          'inspection_point_id': report.inspectionPointId,
+          'status': report.toJson()['status']
+        },
+        headerParams: getAuthorizationHeader());
 
     return InspectionPointReport.fromJson(jsonResponse);
   }
@@ -111,14 +138,15 @@ class ApiService {
   Future<Inspection> finishInspection(int inspectionId, bool isFinished) async {
     final jsonResponse = await apiClient.put(
         'api/mobile/inspections/$inspectionId',
-        body: {'is_finished': isFinished});
+        body: {'is_finished': isFinished},
+        headerParams: getAuthorizationHeader());
 
     return Inspection.fromJson(jsonResponse);
   }
 
   Future<Municipality?> getMunicipalityByCode(String code) async {
-    final jsonResponse = await apiClient
-        .get('api/mobile/municipalities', queryParams: {'code': code});
+    final jsonResponse = await apiClient.get('api/mobile/municipalities',
+        queryParams: {'code': code}, headerParams: getAuthorizationHeader());
 
     if ((jsonResponse as List).isEmpty) {
       return null;
@@ -128,7 +156,8 @@ class ApiService {
   }
 
   Future<List<Municipality>> fetchMunicipalities() async {
-    final jsonResponse = await apiClient.get('api/mobile/municipalities');
+    final jsonResponse = await apiClient.get('api/mobile/municipalities',
+        headerParams: getAuthorizationHeader());
 
     return (jsonResponse as List)
         .map((municipality) => Municipality.fromJson(municipality))
@@ -136,7 +165,8 @@ class ApiService {
   }
 
   Future<List<Contractor>> fetchContractors() async {
-    final jsonResponse = await apiClient.get('api/mobile/contractors');
+    final jsonResponse = await apiClient.get('api/mobile/contractors',
+        headerParams: getAuthorizationHeader());
 
     return (jsonResponse as List)
         .map((contractor) => Contractor.fromJson(contractor))
@@ -144,7 +174,8 @@ class ApiService {
   }
 
   Future<List<DamageType>> fetchDamageTypes() async {
-    final jsonResponse = await apiClient.get('api/mobile/get_damage_types');
+    final jsonResponse = await apiClient.get('api/mobile/get_damage_types',
+        headerParams: getAuthorizationHeader());
 
     return (jsonResponse as List)
         .map((damageType) => DamageType.fromJson(damageType))
@@ -152,8 +183,9 @@ class ApiService {
   }
 
   Future<Photo> uploadPhoto(String filePath) async {
-    final jsonResponse =
-        await apiClient.postSingleFile('api/mobile/photo', filePath);
+    final jsonResponse = await apiClient.postSingleFile(
+        'api/mobile/photo', filePath,
+        headerParams: getAuthorizationHeader());
 
     return Photo.fromJson(jsonResponse);
   }

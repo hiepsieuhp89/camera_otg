@@ -510,6 +510,18 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'スキップ'**
   String get statusSkipped;
+
+  /// No description provided for @loginButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'ログイン'**
+  String get loginButton;
+
+  /// No description provided for @logoutButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'ログアウト'**
+  String get logoutButton;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

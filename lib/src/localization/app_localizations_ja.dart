@@ -223,4 +223,10 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get statusSkipped => 'スキップ';
+
+  @override
+  String get loginButton => 'ログイン';
+
+  @override
+  String get logoutButton => 'ログアウト';
 }

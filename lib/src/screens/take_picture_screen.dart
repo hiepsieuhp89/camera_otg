@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
@@ -11,27 +12,20 @@ import 'package:kyoryo/src/models/inspection_point_report.dart';
 import 'package:kyoryo/src/models/marking.dart';
 import 'package:kyoryo/src/models/photo.dart';
 import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
-import 'package:kyoryo/src/screens/bridge_inspection_evaluation_screen.dart';
-import 'package:kyoryo/src/screens/bridge_inspection_screen.dart';
+import 'package:kyoryo/src/routing/router.dart';
 import 'package:kyoryo/src/screens/preview_pictures_screen.dart';
 import 'package:kyoryo/src/services/inspection_point_report.service.dart';
 import 'package:kyoryo/src/ui/collapsible_panel.dart';
 import 'package:kyoryo/src/utilities/image_utils.dart';
 import 'package:audioplayers/audioplayers.dart';
 
-class TakePictureScreenArguments {
+@RoutePage()
+class TakePictureScreen extends ConsumerStatefulWidget {
   final InspectionPoint inspectionPoint;
   final InspectionPointReport? createdReport;
 
-  TakePictureScreenArguments(
-      {required this.inspectionPoint, this.createdReport});
-}
-
-class TakePictureScreen extends ConsumerStatefulWidget {
-  const TakePictureScreen({super.key, required this.arguments});
-
-  final TakePictureScreenArguments arguments;
-  static const routeName = '/take-picture';
+  const TakePictureScreen(
+      {super.key, required this.inspectionPoint, this.createdReport});
 
   @override
   ConsumerState<TakePictureScreen> createState() => _TakePictureScreenState();
@@ -111,16 +105,15 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
   void _initPhotos() {
     final previousReport = ref
         .read(
-            bridgeInspectionProvider(widget.arguments.inspectionPoint.bridgeId!)
-                .notifier)
-        .findPreviousReportFromPoint(widget.arguments.inspectionPoint.id!);
+            bridgeInspectionProvider(widget.inspectionPoint.bridgeId!).notifier)
+        .findPreviousReportFromPoint(widget.inspectionPoint.id!);
 
     final preferredPhotoFromPreviousReport = ref
         .read(inspectionPointReportServiceProvider)
         .getPreferredPhotoFromReport(previousReport);
 
     setState(() {
-      uploadedPhotos = widget.arguments.createdReport?.photos ?? [];
+      uploadedPhotos = widget.createdReport?.photos ?? [];
       previousPhoto = preferredPhotoFromPreviousReport;
       showPreviousPhoto = preferredPhotoFromPreviousReport != null;
     });
@@ -198,13 +191,10 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
   }
 
   void _navigateToPreview() {
-    Navigator.push<PreviewPicturesScreenResult>(
-        context,
-        MaterialPageRoute(
-            builder: (context) => PreviewPicturesScreen(
-                arguments: PreviewPicturesScreenArguments(
-                    imagePaths: capturedPhotoPaths,
-                    photos: uploadedPhotos)))).then((result) {
+    context.router
+        .push<PreviewPicturesScreenResult>(PreviewPicturesRoute(
+            imagePaths: capturedPhotoPaths, photos: uploadedPhotos))
+        .then((result) {
       if (result != null) {
         setState(() {
           capturedPhotoPaths = result.updatedImagePaths;
@@ -217,12 +207,12 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
   void _navigateToReportScreen() {
     _resetOrientation();
     _exitFullScreen();
-    Navigator.pushNamed(context, BridgeInspectionEvaluationScreen.routeName,
-            arguments: BridgeInspectionEvaluationScreenArguments(
-                point: widget.arguments.inspectionPoint,
-                capturedPhotos: capturedPhotoPaths,
-                uploadedPhotos: uploadedPhotos,
-                createdReport: widget.arguments.createdReport))
+    context
+        .pushRoute(BridgeInspectionEvaluationRoute(
+            point: widget.inspectionPoint,
+            capturedPhotos: capturedPhotoPaths,
+            uploadedPhotos: uploadedPhotos,
+            createdReport: widget.createdReport))
         .then((_) {
       _setLandscapeOrientation();
     });
@@ -244,20 +234,20 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
             TextButton(
               child: Text(AppLocalizations.of(context)!.yesOption),
               onPressed: () {
-                if (widget.arguments.createdReport == null) {
+                if (widget.createdReport == null) {
                   ref
                       .read(bridgeInspectionProvider(
-                              widget.arguments.inspectionPoint.bridgeId!)
+                              widget.inspectionPoint.bridgeId!)
                           .notifier)
                       .createReport(
-                          pointId: widget.arguments.inspectionPoint.id!,
+                          pointId: widget.inspectionPoint.id!,
                           capturedPhotoPaths: [],
                           metadata: {'remark': '点検をスキップした。'},
                           status: InspectionPointReportStatus.skipped);
                 }
 
-                Navigator.popUntil(context,
-                    ModalRoute.withName(BridgeInspectionScreen.routeName));
+                context.router
+                    .popUntilRouteWithName(BridgeInspectionRoute.name);
               },
             ),
           ],
@@ -494,23 +484,18 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
               }
 
               if (index == 1) {
-                final showMarking = widget
-                            .arguments.inspectionPoint.diagramMarkingX !=
-                        null &&
-                    widget.arguments.inspectionPoint.diagramMarkingY != null &&
-                    widget.arguments.inspectionPoint.diagramMarkedPhotoLink ==
-                        null;
+                final showMarking =
+                    widget.inspectionPoint.diagramMarkingX != null &&
+                        widget.inspectionPoint.diagramMarkingY != null &&
+                        widget.inspectionPoint.diagramMarkedPhotoLink == null;
 
                 viewImage(context,
-                    imageUrl: widget
-                            .arguments.inspectionPoint.diagramMarkedPhotoLink ??
-                        widget.arguments.inspectionPoint.diagramUrl!,
+                    imageUrl: widget.inspectionPoint.diagramMarkedPhotoLink ??
+                        widget.inspectionPoint.diagramUrl!,
                     marking: showMarking
                         ? Marking(
-                            x: widget
-                                .arguments.inspectionPoint.diagramMarkingX!,
-                            y: widget
-                                .arguments.inspectionPoint.diagramMarkingY!)
+                            x: widget.inspectionPoint.diagramMarkingX!,
+                            y: widget.inspectionPoint.diagramMarkingY!)
                         : null);
               }
             },
@@ -523,9 +508,8 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
               ),
               NavigationRailDestination(
                   disabled:
-                      widget.arguments.inspectionPoint.diagramMarkedPhotoLink ==
-                              null &&
-                          widget.arguments.inspectionPoint.diagramUrl == null,
+                      widget.inspectionPoint.diagramMarkedPhotoLink == null &&
+                          widget.inspectionPoint.diagramUrl == null,
                   icon: const Icon(Icons.schema_outlined),
                   selectedIcon: const Icon(Icons.schema),
                   label: Text(AppLocalizations.of(context)!.diagramPicture)),

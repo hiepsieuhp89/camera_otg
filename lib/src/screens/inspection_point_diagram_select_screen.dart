@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -10,21 +11,20 @@ import 'package:kyoryo/src/models/diagram.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/providers/current_bridge.provider.dart';
 import 'package:kyoryo/src/providers/diagrams.provider.dart';
-import 'package:kyoryo/src/screens/inspection_point_creation_screen.dart';
+import 'package:kyoryo/src/routing/router.dart';
 import 'package:kyoryo/src/utilities/image_utils.dart';
 
-class InpsectionPointDiagramSelectScreen extends ConsumerStatefulWidget {
-  const InpsectionPointDiagramSelectScreen({super.key});
-
-  static const routeName = '/new-inspection-point-diagram-selection';
+@RoutePage()
+class InspectionPointDiagramSelectScreen extends ConsumerStatefulWidget {
+  const InspectionPointDiagramSelectScreen({super.key});
 
   @override
-  ConsumerState<InpsectionPointDiagramSelectScreen> createState() =>
-      InpsectionPointDiagramSelectScreenState();
+  ConsumerState<InspectionPointDiagramSelectScreen> createState() =>
+      InspectionPointDiagramSelectScreenState();
 }
 
-class InpsectionPointDiagramSelectScreenState
-    extends ConsumerState<InpsectionPointDiagramSelectScreen> {
+class InspectionPointDiagramSelectScreenState
+    extends ConsumerState<InspectionPointDiagramSelectScreen> {
   String? _selectedDiagramPath;
   Diagram? _selectedDiagram;
   Future<void>? _diagramFuture;
@@ -55,9 +55,8 @@ class InpsectionPointDiagramSelectScreenState
   }
 
   void _createDamageInspectionPoint(Diagram? selected) {
-    Navigator.of(context).pushNamed(InspectionPointCreationScreen.routeName,
-        arguments: InspectionPointCreationScreenArguments(
-            diagram: selected, pointType: InspectionPointType.damage));
+    context.pushRoute(InspectionPointCreationRoute(
+        diagram: selected, pointType: InspectionPointType.damage));
   }
 
   void _proceedWithSelectedDiagram() {

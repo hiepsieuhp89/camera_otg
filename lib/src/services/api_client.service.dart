@@ -106,9 +106,19 @@ class ApiClient {
         return json.decode(utf8.decode(response.bodyBytes));
       case 204:
         return null;
+      // NOTE: Backend should throw 401, but whatever
+      case 403:
+        throw UnauthorizedApiException();
       default:
         throw Exception(
             'Error: ${response.statusCode}, Body: ${response.body}');
     }
+  }
+}
+
+class UnauthorizedApiException implements Exception {
+  @override
+  String toString() {
+    return 'UnauthorizedApiException';
   }
 }
