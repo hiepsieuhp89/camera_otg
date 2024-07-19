@@ -4,6 +4,8 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kyoryo/src/providers/authentication.provider.dart';
+import 'package:kyoryo/src/providers/current_municipalitiy.provider.dart';
+import 'package:kyoryo/src/providers/misc.provider.dart';
 import 'package:kyoryo/src/routing/router.dart';
 
 @RoutePage()
@@ -19,20 +21,26 @@ class _SplashScreenPageState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance
-        .addPostFrameCallback((_) => performAuthenticationcheck());
+    WidgetsBinding.instance.addPostFrameCallback((_) => performHydration());
   }
 
-  Future<void> performAuthenticationcheck() async {
+  Future<void> performHydration() async {
     await ref
         .read(authenticationProvider.notifier)
         .checkAuthenticated()
         .then((isAuthenticated) {
-      if (isAuthenticated) {
-        context.replaceRoute(const BridgeListRoute());
-      } else {
+      if (!isAuthenticated) {
         context.replaceRoute(const LoginRoute());
+
+        return;
       }
+
+      Future.wait([
+        ref.watch(damageTypesProvider.future),
+        ref.read(currentMunicipalityProvider.notifier).fetch()
+      ]).then((_) {
+        context.replaceRoute(const BridgeListRoute());
+      });
     });
   }
 
