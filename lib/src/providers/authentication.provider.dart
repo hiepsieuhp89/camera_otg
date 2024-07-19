@@ -61,8 +61,8 @@ class Authentication extends _$Authentication {
       isAuthenticated = false;
     } else {
       apiService.setAccessToken(accessToken);
-      authenticatedUser = await apiService.validateAccessToken();
-      isAuthenticated = authenticatedUser != null;
+      authenticatedUser = await apiService.fetchCurrentUser();
+      isAuthenticated = true;
     }
 
     state = state.copyWith(

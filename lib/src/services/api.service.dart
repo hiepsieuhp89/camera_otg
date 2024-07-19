@@ -24,18 +24,27 @@ class ApiService {
     return {'Authorization': 'Bearer $_accessToken'};
   }
 
-  Future<User?> validateAccessToken() async {
+  Future<bool> validateAccessToken() async {
     try {
-      final jsonResponse = await apiClient.get('users/me',
+      final jsonResponse = await apiClient.post('auth/token_validation',
           headerParams: getAuthorizationHeader());
 
-      return jsonResponse['user'] != null
-          ? User.fromJson(jsonResponse['user'])
-          : null;
+      return jsonResponse['auth'] != null;
     } catch (error, stackTrace) {
       log.warning('Error validating access token', error, stackTrace);
 
-      return null;
+      return false;
+    }
+  }
+
+  Future<User> fetchCurrentUser() async {
+    final jsonResponse =
+        await apiClient.get('users/me', headerParams: getAuthorizationHeader());
+
+    if (jsonResponse != null && jsonResponse.containsKey('user')) {
+      return User.fromJson(jsonResponse['user']);
+    } else {
+      throw Exception('Invalid response');
     }
   }
 

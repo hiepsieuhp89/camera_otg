@@ -24,9 +24,9 @@ class AuthGuard extends AutoRouteGuard {
     }
 
     _apiService.setAccessToken(accessToken);
-    User? authenticatedUser = await _apiService.validateAccessToken();
+    final isAuthenticated = await _apiService.validateAccessToken();
 
-    if (authenticatedUser != null) {
+    if (isAuthenticated) {
       _log.info("User is authenticated");
     } else {
       _log.info("User is not authenticated");
