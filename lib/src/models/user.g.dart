@@ -10,8 +10,8 @@ _$UserImpl _$$UserImplFromJson(Map<String, dynamic> json) => _$UserImpl(
       name: json['name'] as String,
       email: json['email'] as String,
       picture: json['picture'] as String,
-      givenName: json['given_name'] as String,
-      familyName: json['family_name'] as String,
+      givenName: json['given_name'] as String?,
+      familyName: json['family_name'] as String?,
       updatedAt: json['updated_at'] == null
           ? null
           : DateTime.parse(json['updated_at'] as String),

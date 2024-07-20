@@ -47,7 +47,7 @@ class BridgeListScreen extends ConsumerWidget {
                           ),
                         )
                       : Text(
-                          user!.name[0].toUpperCase(),
+                          (user?.name ?? 'S')[0].toUpperCase(),
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 12,

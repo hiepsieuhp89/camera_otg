@@ -1,5 +1,4 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:kyoryo/src/models/user.dart';
 import 'package:kyoryo/src/routing/router.dart';
 import 'package:kyoryo/src/services/api.service.dart';
 import 'package:logging/logging.dart';

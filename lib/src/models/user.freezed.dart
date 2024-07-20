@@ -24,9 +24,9 @@ mixin _$User {
   String get email => throw _privateConstructorUsedError;
   String get picture => throw _privateConstructorUsedError;
   @JsonKey(name: 'given_name')
-  String get givenName => throw _privateConstructorUsedError;
+  String? get givenName => throw _privateConstructorUsedError;
   @JsonKey(name: 'family_name')
-  String get familyName => throw _privateConstructorUsedError;
+  String? get familyName => throw _privateConstructorUsedError;
   @JsonKey(name: 'updated_at')
   DateTime? get updatedAt => throw _privateConstructorUsedError;
 
@@ -44,8 +44,8 @@ abstract class $UserCopyWith<$Res> {
       {String name,
       String email,
       String picture,
-      @JsonKey(name: 'given_name') String givenName,
-      @JsonKey(name: 'family_name') String familyName,
+      @JsonKey(name: 'given_name') String? givenName,
+      @JsonKey(name: 'family_name') String? familyName,
       @JsonKey(name: 'updated_at') DateTime? updatedAt});
 }
 
@@ -65,8 +65,8 @@ class _$UserCopyWithImpl<$Res, $Val extends User>
     Object? name = null,
     Object? email = null,
     Object? picture = null,
-    Object? givenName = null,
-    Object? familyName = null,
+    Object? givenName = freezed,
+    Object? familyName = freezed,
     Object? updatedAt = freezed,
   }) {
     return _then(_value.copyWith(
@@ -82,14 +82,14 @@ class _$UserCopyWithImpl<$Res, $Val extends User>
           ? _value.picture
           : picture // ignore: cast_nullable_to_non_nullable
               as String,
-      givenName: null == givenName
+      givenName: freezed == givenName
           ? _value.givenName
           : givenName // ignore: cast_nullable_to_non_nullable
-              as String,
-      familyName: null == familyName
+              as String?,
+      familyName: freezed == familyName
           ? _value.familyName
           : familyName // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String?,
       updatedAt: freezed == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
@@ -109,8 +109,8 @@ abstract class _$$UserImplCopyWith<$Res> implements $UserCopyWith<$Res> {
       {String name,
       String email,
       String picture,
-      @JsonKey(name: 'given_name') String givenName,
-      @JsonKey(name: 'family_name') String familyName,
+      @JsonKey(name: 'given_name') String? givenName,
+      @JsonKey(name: 'family_name') String? familyName,
       @JsonKey(name: 'updated_at') DateTime? updatedAt});
 }
 
@@ -127,8 +127,8 @@ class __$$UserImplCopyWithImpl<$Res>
     Object? name = null,
     Object? email = null,
     Object? picture = null,
-    Object? givenName = null,
-    Object? familyName = null,
+    Object? givenName = freezed,
+    Object? familyName = freezed,
     Object? updatedAt = freezed,
   }) {
     return _then(_$UserImpl(
@@ -144,14 +144,14 @@ class __$$UserImplCopyWithImpl<$Res>
           ? _value.picture
           : picture // ignore: cast_nullable_to_non_nullable
               as String,
-      givenName: null == givenName
+      givenName: freezed == givenName
           ? _value.givenName
           : givenName // ignore: cast_nullable_to_non_nullable
-              as String,
-      familyName: null == familyName
+              as String?,
+      familyName: freezed == familyName
           ? _value.familyName
           : familyName // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String?,
       updatedAt: freezed == updatedAt
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
@@ -167,8 +167,8 @@ class _$UserImpl implements _User {
       {required this.name,
       required this.email,
       required this.picture,
-      @JsonKey(name: 'given_name') required this.givenName,
-      @JsonKey(name: 'family_name') required this.familyName,
+      @JsonKey(name: 'given_name') this.givenName,
+      @JsonKey(name: 'family_name') this.familyName,
       @JsonKey(name: 'updated_at') this.updatedAt});
 
   factory _$UserImpl.fromJson(Map<String, dynamic> json) =>
@@ -182,10 +182,10 @@ class _$UserImpl implements _User {
   final String picture;
   @override
   @JsonKey(name: 'given_name')
-  final String givenName;
+  final String? givenName;
   @override
   @JsonKey(name: 'family_name')
-  final String familyName;
+  final String? familyName;
   @override
   @JsonKey(name: 'updated_at')
   final DateTime? updatedAt;
@@ -235,8 +235,8 @@ abstract class _User implements User {
       {required final String name,
       required final String email,
       required final String picture,
-      @JsonKey(name: 'given_name') required final String givenName,
-      @JsonKey(name: 'family_name') required final String familyName,
+      @JsonKey(name: 'given_name') final String? givenName,
+      @JsonKey(name: 'family_name') final String? familyName,
       @JsonKey(name: 'updated_at') final DateTime? updatedAt}) = _$UserImpl;
 
   factory _User.fromJson(Map<String, dynamic> json) = _$UserImpl.fromJson;
@@ -249,10 +249,10 @@ abstract class _User implements User {
   String get picture;
   @override
   @JsonKey(name: 'given_name')
-  String get givenName;
+  String? get givenName;
   @override
   @JsonKey(name: 'family_name')
-  String get familyName;
+  String? get familyName;
   @override
   @JsonKey(name: 'updated_at')
   DateTime? get updatedAt;
