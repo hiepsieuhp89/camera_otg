@@ -5,10 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:kyoryo/src/models/inspection.dart';
 import 'package:kyoryo/src/models/inspection_point_report.dart';
 import 'package:kyoryo/src/models/photo.dart';
-import 'package:kyoryo/src/services/bridge.service.dart';
-import 'package:kyoryo/src/services/inspection.service.dart';
-import 'package:kyoryo/src/services/inspection_point_report.service.dart';
-import 'package:kyoryo/src/services/photo.service.dart';
+import 'package:kyoryo/src/providers/api.provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'bridge_inspection.provider.g.dart';
@@ -18,7 +15,7 @@ class BridgeInspection extends _$BridgeInspection {
   @override
   Future<List<Inspection?>> build(int bridgeId) async {
     final inspections =
-        await ref.read(bridgeServiceProvider).fetchInspections(bridgeId);
+        await ref.read(apiServiceProvider).fetchInspections(bridgeId);
 
     Inspection? activeInspection;
     Inspection? importedInspection;
@@ -41,7 +38,7 @@ class BridgeInspection extends _$BridgeInspection {
 
     if (importedInspection != null) {
       final inspection = await ref
-          .read(inspectionServiceProvider)
+          .read(apiServiceProvider)
           .fetchInspection(importedInspection.id!);
 
       inspectionsToReturn.add(inspection);
@@ -51,7 +48,7 @@ class BridgeInspection extends _$BridgeInspection {
 
     if (activeInspection != null) {
       final inspection = await ref
-          .read(inspectionServiceProvider)
+          .read(apiServiceProvider)
           .fetchInspection(activeInspection.id!);
 
       inspectionsToReturn.add(inspection);
@@ -80,7 +77,7 @@ class BridgeInspection extends _$BridgeInspection {
 
     for (int i = 0; i < capturedPhotoPaths.length; i++) {
       String path = capturedPhotoPaths[i];
-      Photo photo = await ref.read(photoServiceProvider).uploadPhoto(path);
+      Photo photo = await ref.read(apiServiceProvider).uploadPhoto(path);
       if (path == preferredPhotoPath) {
         preferredPhotoId = photo.id;
       }
@@ -88,7 +85,7 @@ class BridgeInspection extends _$BridgeInspection {
     }
 
     final report = await ref
-        .read(inspectionServiceProvider)
+        .read(apiServiceProvider)
         .createReport(
             report: InspectionPointReport(
                 inspectionPointId: pointId,
@@ -127,7 +124,7 @@ class BridgeInspection extends _$BridgeInspection {
 
     for (int i = 0; i < capturedPhotoPaths.length; i++) {
       String path = capturedPhotoPaths[i];
-      Photo photo = await ref.read(photoServiceProvider).uploadPhoto(path);
+      Photo photo = await ref.read(apiServiceProvider).uploadPhoto(path);
       if (path == preferredPhotoPath) {
         preferredPhotoId = photo.id;
       }
@@ -141,9 +138,8 @@ class BridgeInspection extends _$BridgeInspection {
       }
     }
 
-    final updatedReport = await ref
-        .read(inspectionPointReportServiceProvider)
-        .updateReport(report.copyWith(
+    final updatedReport = await ref.read(apiServiceProvider).updateReport(report
+        .copyWith(
             photos: [...uploadedPhotos, ...newPhotos],
             preferredPhotoId: preferredPhotoId));
 
@@ -165,7 +161,7 @@ class BridgeInspection extends _$BridgeInspection {
     }
 
     await ref
-        .read(inspectionServiceProvider)
+        .read(apiServiceProvider)
         .finishInspection(currentState[1]!.id!, isFinished);
 
     state = AsyncData(

@@ -103,5 +103,7 @@
   "statusNotInspected": "未点検",
   "statusFinished": "完了",
   "statusOnHold": "保留",
-  "statusSkipped": "スキップ"
+  "statusSkipped": "スキップ",
+  "loginButton": "ログイン",
+  "logoutButton": "ログアウト"
 }

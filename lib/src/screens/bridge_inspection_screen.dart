@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kyoryo/constants/inspection_point_type_ui.dart';
@@ -10,19 +11,16 @@ import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
 import 'package:kyoryo/src/providers/current_bridge.provider.dart';
 import 'package:kyoryo/src/providers/inspection_point_filters.provider.dart';
 import 'package:kyoryo/src/providers/inspection_points.provider.dart';
-import 'package:kyoryo/src/screens/inspection_point_creation_screen.dart';
-import 'package:kyoryo/src/screens/inspection_point_diagram_select_screen.dart';
-import 'package:kyoryo/src/screens/take_picture_screen.dart';
+import 'package:kyoryo/src/routing/router.dart';
 import 'package:kyoryo/src/ui/inspection_point_list_item.dart';
 import 'package:kyoryo/src/ui/side_sheet.dart';
 import 'package:kyoryo/src/utilities/async_value_extensions.dart';
 
+@RoutePage()
 class BridgeInspectionScreen extends ConsumerStatefulWidget {
   const BridgeInspectionScreen({
     super.key,
   });
-
-  static const routeName = '/bridge-inspection';
 
   @override
   ConsumerState<BridgeInspectionScreen> createState() =>
@@ -37,19 +35,15 @@ class _BridgeInspectionScreenState
 
   void _startInspectingPoint(InspectionPoint point,
       {InspectionPointReport? createdReport}) {
-    Navigator.pushNamed(context, TakePictureScreen.routeName,
-        arguments: TakePictureScreenArguments(
-            inspectionPoint: point, createdReport: createdReport));
+    context.pushRoute(
+        TakePictureRoute(inspectionPoint: point, createdReport: createdReport));
   }
 
   void _createNewInspectionPoint(InspectionPointType type) {
     if (type == InspectionPointType.presentCondition) {
-      Navigator.of(context).pushNamed(InspectionPointCreationScreen.routeName,
-          arguments: InspectionPointCreationScreenArguments(pointType: type));
+      context.pushRoute(InspectionPointCreationRoute(pointType: type));
     } else {
-      Navigator.of(context).pushNamed(
-        InpsectionPointDiagramSelectScreen.routeName,
-      );
+      context.pushRoute(const InspectionPointDiagramSelectRoute());
     }
   }
 

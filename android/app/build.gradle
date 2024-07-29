@@ -41,7 +41,6 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.delqui.kyoryo"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
@@ -51,6 +50,7 @@ android {
         versionName flutterVersionName
 
         minSdkVersion 21
+        manifestPlaceholders += [auth0Domain: "smartbuddy.jp.auth0.com", auth0Scheme: "kyoryoapp"]
     }
 
     buildTypes {

@@ -6,7 +6,7 @@ part of 'misc.provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$municipalitiesHash() => r'e8a3af63c1d4ab545a445e3d7c0740fa0b9c2146';
+String _$municipalitiesHash() => r'70207af0ac80231ccc85b3ae63d333e966f659c3';
 
 /// See also [Municipalities].
 @ProviderFor(Municipalities)
@@ -22,7 +22,7 @@ final municipalitiesProvider = AutoDisposeAsyncNotifierProvider<Municipalities,
 );
 
 typedef _$Municipalities = AutoDisposeAsyncNotifier<List<Municipality>>;
-String _$contractorsHash() => r'be48a276b9090135f4b6792056fd63e6fcc30f90';
+String _$contractorsHash() => r'c24442d232963ae3038cb07652ccabf76cda8118';
 
 /// See also [Contractors].
 @ProviderFor(Contractors)
@@ -37,7 +37,7 @@ final contractorsProvider =
 );
 
 typedef _$Contractors = AutoDisposeAsyncNotifier<List<Contractor>>;
-String _$damageTypesHash() => r'350c6e315c8387494757306307ccba7a21f6b0b9';
+String _$damageTypesHash() => r'91d20b6d93355419523907c9ddd0b0705e32b714';
 
 /// See also [DamageTypes].
 @ProviderFor(DamageTypes)

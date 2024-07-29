@@ -1,18 +1,11 @@
 import 'dart:io'; // Import dart:io for using File class
 
+import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:kyoryo/src/models/photo.dart';
 import 'package:kyoryo/src/utilities/image_utils.dart';
-
-class PreviewPicturesScreenArguments {
-  final List<String> imagePaths;
-  final List<Photo> photos;
-
-  PreviewPicturesScreenArguments(
-      {required this.imagePaths, required this.photos});
-}
 
 class PreviewPicturesScreenResult {
   final List<String> updatedImagePaths;
@@ -22,12 +15,13 @@ class PreviewPicturesScreenResult {
       {required this.updatedImagePaths, required this.updatedUploadedPhotos});
 }
 
+@RoutePage<PreviewPicturesScreenResult>()
 class PreviewPicturesScreen extends StatefulWidget {
-  final PreviewPicturesScreenArguments arguments;
+  final List<String> imagePaths;
+  final List<Photo> photos;
 
-  static const routeName = '/preview-pictures';
-
-  const PreviewPicturesScreen({super.key, required this.arguments});
+  const PreviewPicturesScreen(
+      {super.key, required this.imagePaths, required this.photos});
 
   @override
   State<PreviewPicturesScreen> createState() => _PreviewPicturesScreenState();
@@ -40,8 +34,8 @@ class _PreviewPicturesScreenState extends State<PreviewPicturesScreen> {
   @override
   void initState() {
     super.initState();
-    imagePaths = widget.arguments.imagePaths;
-    photos = widget.arguments.photos;
+    imagePaths = widget.imagePaths;
+    photos = widget.photos;
   }
 
   void removeImage(String path) {
@@ -62,8 +56,7 @@ class _PreviewPicturesScreenState extends State<PreviewPicturesScreen> {
       canPop: false,
       onPopInvoked: (didPoke) {
         if (!didPoke) {
-          Navigator.pop(
-              context,
+          AutoRouter.of(context).maybePop<PreviewPicturesScreenResult>(
               PreviewPicturesScreenResult(
                   updatedImagePaths: imagePaths,
                   updatedUploadedPhotos: photos));

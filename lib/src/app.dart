@@ -2,16 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kyoryo/src/screens/bridge_filters_screen.dart';
-import 'package:kyoryo/src/screens/bridge_inspection_evaluation_screen.dart';
-import 'package:kyoryo/src/screens/bridge_inspection_photo_selection_screen.dart';
-import 'package:kyoryo/src/screens/bridge_inspection_screen.dart';
-import 'package:kyoryo/src/screens/bridge_list_screen.dart';
-import 'package:kyoryo/src/screens/inspection_point_creation_screen.dart';
-import 'package:kyoryo/src/screens/inspection_point_diagram_select_screen.dart';
-import 'package:kyoryo/src/screens/take_picture_screen.dart';
-
-import 'providers/app_start_up.provider.dart';
+import 'package:kyoryo/src/providers/app_start_up.provider.dart';
+import 'package:kyoryo/src/routing/router.dart';
 
 class KyoryoApp extends ConsumerWidget {
   const KyoryoApp({super.key});
@@ -21,18 +13,22 @@ class KyoryoApp extends ConsumerWidget {
     final appStartupState = ref.watch(appStartupProvider);
 
     return appStartupState.when(
-      loading: () => const LoadingApp(),
-      error: (error, stackTrace) => ErrorApp(
-        message: error.toString(),
-        onRetry: () => ref.invalidate(appStartupProvider),
-      ),
+      loading: () => const Loading(),
+      error: (error, stackTrace) {
+        debugPrint('appStartup error: $error - stack: $stackTrace');
+
+        return Error(
+          message: error.toString(),
+          onRetry: () => ref.invalidate(appStartupProvider),
+        );
+      },
       data: (_) => const MainApp(),
     );
   }
 }
 
-class LoadingApp extends StatelessWidget {
-  const LoadingApp({super.key});
+class Loading extends StatelessWidget {
+  const Loading({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -46,8 +42,8 @@ class LoadingApp extends StatelessWidget {
   }
 }
 
-class ErrorApp extends StatelessWidget {
-  const ErrorApp({super.key, required this.message, required this.onRetry});
+class Error extends StatelessWidget {
+  const Error({super.key, required this.message, required this.onRetry});
 
   final String message;
   final Function() onRetry;
@@ -68,14 +64,16 @@ class ErrorApp extends StatelessWidget {
   }
 }
 
-class MainApp extends StatelessWidget {
+class MainApp extends ConsumerWidget {
   const MainApp({
     super.key,
   });
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
+  Widget build(BuildContext context, WidgetRef ref) {
+    var router = ref.watch(appRouterProvider);
+
+    return MaterialApp.router(
       restorationScopeId: 'app',
       localizationsDelegates: const [
         AppLocalizations.delegate,
@@ -91,45 +89,7 @@ class MainApp extends StatelessWidget {
       theme: ThemeData(),
       darkTheme: ThemeData.dark(),
       themeMode: ThemeMode.light,
-      onGenerateRoute: (RouteSettings routeSettings) {
-        return MaterialPageRoute<void>(
-          settings: routeSettings,
-          builder: (BuildContext context) {
-            switch (routeSettings.name) {
-              case BridgeFiltersScreen.routeName:
-                return const BridgeFiltersScreen();
-              case BridgeInspectionScreen.routeName:
-                return const BridgeInspectionScreen();
-              case TakePictureScreen.routeName:
-                final arguments =
-                    routeSettings.arguments as TakePictureScreenArguments;
-
-                return TakePictureScreen(arguments: arguments);
-              case BridgeInspectionEvaluationScreen.routeName:
-                final arguments = routeSettings.arguments
-                    as BridgeInspectionEvaluationScreenArguments;
-
-                return BridgeInspectionEvaluationScreen(arguments: arguments);
-              case InpsectionPointDiagramSelectScreen.routeName:
-                return const InpsectionPointDiagramSelectScreen();
-              case InspectionPointCreationScreen.routeName:
-                final arguments = routeSettings.arguments
-                    as InspectionPointCreationScreenArguments;
-
-                return InspectionPointCreationScreen(arguments: arguments);
-              case BridgeInspectionPhotoSelectionScreen.routeName:
-                final arguments = routeSettings.arguments
-                    as BridgeInspectionPhotoSelectionScreenArguments;
-
-                return BridgeInspectionPhotoSelectionScreen(
-                    arguments: arguments);
-              case BridgeListScreen.routeName:
-              default:
-                return const BridgeListScreen();
-            }
-          },
-        );
-      },
+      routerConfig: router.config(),
     );
   }
 }
