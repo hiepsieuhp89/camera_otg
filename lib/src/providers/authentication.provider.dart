@@ -3,6 +3,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:kyoryo/src/models/user.dart';
 import 'package:kyoryo/src/providers/api.provider.dart';
 import 'package:kyoryo/src/providers/shared_preferences.provider.dart';
+import 'package:kyoryo/src/services/api_client.service.dart';
+import 'package:logging/logging.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'authentication.provider.g.dart';
@@ -14,6 +16,8 @@ Auth0 auth0(Auth0Ref ref) {
     dotenv.env['AUTH0_CLIENT_ID']!,
   );
 }
+
+final log = Logger('AuthenticationProvider');
 
 @Riverpod(keepAlive: true)
 class Authentication extends _$Authentication {
@@ -54,15 +58,23 @@ class Authentication extends _$Authentication {
         .getString('access_token');
     bool isAuthenticated;
 
-    final apiService = ref.watch(apiServiceProvider);
     User? authenticatedUser;
 
-    if (accessToken == null) {
+    try {
+      final apiService = ref.watch(apiServiceProvider);
+
+      if (accessToken == null) {
+        isAuthenticated = false;
+      } else {
+        apiService.setAccessToken(accessToken);
+        authenticatedUser = await apiService.fetchCurrentUser();
+        isAuthenticated = true;
+      }
+    } on UnauthorizedApiException catch (e, _) {
       isAuthenticated = false;
-    } else {
-      apiService.setAccessToken(accessToken);
-      authenticatedUser = await apiService.fetchCurrentUser();
-      isAuthenticated = true;
+    } catch (e, stackTrace) {
+      log.severe('Error checking authentication', e, stackTrace);
+      isAuthenticated = false;
     }
 
     state = state.copyWith(
