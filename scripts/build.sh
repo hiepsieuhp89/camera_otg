@@ -38,6 +38,9 @@ fi
 
 # Set API_URL to STG_API_URL
 echo "API_URL=$STG_API_URL" > "$ENV_FILE"
+echo "AUTH0_DOMAIN=$AUTH0_DOMAIN" >> "$ENV_FILE"
+echo "AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID" >> "$ENV_FILE"
+echo "AUTH0_AUDIENCE=$AUTH0_AUDIENCE" >> "$ENV_FILE"
 
 flutter build apk
 
