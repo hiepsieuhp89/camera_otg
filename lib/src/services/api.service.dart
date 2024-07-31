@@ -16,7 +16,7 @@ class ApiService {
   final log = Logger('ApiService');
   String? _accessToken;
 
-  setAccessToken(String accessToken) {
+  setAccessToken(String? accessToken) {
     _accessToken = accessToken;
   }
 

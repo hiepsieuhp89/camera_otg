@@ -43,12 +43,12 @@ class Authentication extends _$Authentication {
   }
 
   Future<void> logout() async {
+    ref.read(sharedPreferencesProvider).requireValue.remove('access_token');
+    ref.watch(apiServiceProvider).setAccessToken(null);
     await ref
         .watch(auth0Provider)
         .webAuthentication(scheme: 'kyoryoapp')
         .logout();
-
-    ref.read(sharedPreferencesProvider).requireValue.remove('access_token');
   }
 
   Future<bool> checkAuthenticated() async {
