@@ -22,7 +22,6 @@ InspectionPoint _$InspectionPointFromJson(Map<String, dynamic> json) {
 mixin _$InspectionPoint {
   int? get id => throw _privateConstructorUsedError;
   InspectionPointType get type => throw _privateConstructorUsedError;
-  String? get name => throw _privateConstructorUsedError;
   Diagram? get diagram => throw _privateConstructorUsedError;
   @JsonKey(name: 'bridge_id')
   int? get bridgeId => throw _privateConstructorUsedError;
@@ -62,7 +61,6 @@ abstract class $InspectionPointCopyWith<$Res> {
   $Res call(
       {int? id,
       InspectionPointType type,
-      String? name,
       Diagram? diagram,
       @JsonKey(name: 'bridge_id') int? bridgeId,
       @JsonKey(name: 'diagram_url') String? diagramUrl,
@@ -95,7 +93,6 @@ class _$InspectionPointCopyWithImpl<$Res, $Val extends InspectionPoint>
   $Res call({
     Object? id = freezed,
     Object? type = null,
-    Object? name = freezed,
     Object? diagram = freezed,
     Object? bridgeId = freezed,
     Object? diagramUrl = freezed,
@@ -118,10 +115,6 @@ class _$InspectionPointCopyWithImpl<$Res, $Val extends InspectionPoint>
           ? _value.type
           : type // ignore: cast_nullable_to_non_nullable
               as InspectionPointType,
-      name: freezed == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String?,
       diagram: freezed == diagram
           ? _value.diagram
           : diagram // ignore: cast_nullable_to_non_nullable
@@ -197,7 +190,6 @@ abstract class _$$InpsectionPointImplCopyWith<$Res>
   $Res call(
       {int? id,
       InspectionPointType type,
-      String? name,
       Diagram? diagram,
       @JsonKey(name: 'bridge_id') int? bridgeId,
       @JsonKey(name: 'diagram_url') String? diagramUrl,
@@ -229,7 +221,6 @@ class __$$InpsectionPointImplCopyWithImpl<$Res>
   $Res call({
     Object? id = freezed,
     Object? type = null,
-    Object? name = freezed,
     Object? diagram = freezed,
     Object? bridgeId = freezed,
     Object? diagramUrl = freezed,
@@ -252,10 +243,6 @@ class __$$InpsectionPointImplCopyWithImpl<$Res>
           ? _value.type
           : type // ignore: cast_nullable_to_non_nullable
               as InspectionPointType,
-      name: freezed == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String?,
       diagram: freezed == diagram
           ? _value.diagram
           : diagram // ignore: cast_nullable_to_non_nullable
@@ -314,7 +301,6 @@ class _$InpsectionPointImpl implements _InpsectionPoint {
   _$InpsectionPointImpl(
       {this.id,
       required this.type,
-      this.name,
       this.diagram,
       @JsonKey(name: 'bridge_id') this.bridgeId,
       @JsonKey(name: 'diagram_url') this.diagramUrl,
@@ -335,8 +321,6 @@ class _$InpsectionPointImpl implements _InpsectionPoint {
   final int? id;
   @override
   final InspectionPointType type;
-  @override
-  final String? name;
   @override
   final Diagram? diagram;
   @override
@@ -375,7 +359,7 @@ class _$InpsectionPointImpl implements _InpsectionPoint {
 
   @override
   String toString() {
-    return 'InspectionPoint(id: $id, type: $type, name: $name, diagram: $diagram, bridgeId: $bridgeId, diagramUrl: $diagramUrl, diagramId: $diagramId, diagramMarkingX: $diagramMarkingX, diagramMarkingY: $diagramMarkingY, photoRefNumber: $photoRefNumber, spanName: $spanName, spanNumber: $spanNumber, elementNumber: $elementNumber, diagramMarkedPhotoLink: $diagramMarkedPhotoLink, lastInspectionDate: $lastInspectionDate)';
+    return 'InspectionPoint(id: $id, type: $type, diagram: $diagram, bridgeId: $bridgeId, diagramUrl: $diagramUrl, diagramId: $diagramId, diagramMarkingX: $diagramMarkingX, diagramMarkingY: $diagramMarkingY, photoRefNumber: $photoRefNumber, spanName: $spanName, spanNumber: $spanNumber, elementNumber: $elementNumber, diagramMarkedPhotoLink: $diagramMarkedPhotoLink, lastInspectionDate: $lastInspectionDate)';
   }
 
   @override
@@ -385,7 +369,6 @@ class _$InpsectionPointImpl implements _InpsectionPoint {
             other is _$InpsectionPointImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.type, type) || other.type == type) &&
-            (identical(other.name, name) || other.name == name) &&
             (identical(other.diagram, diagram) || other.diagram == diagram) &&
             (identical(other.bridgeId, bridgeId) ||
                 other.bridgeId == bridgeId) &&
@@ -417,7 +400,6 @@ class _$InpsectionPointImpl implements _InpsectionPoint {
       runtimeType,
       id,
       type,
-      name,
       diagram,
       bridgeId,
       diagramUrl,
@@ -450,7 +432,6 @@ abstract class _InpsectionPoint implements InspectionPoint {
   factory _InpsectionPoint(
       {final int? id,
       required final InspectionPointType type,
-      final String? name,
       final Diagram? diagram,
       @JsonKey(name: 'bridge_id') final int? bridgeId,
       @JsonKey(name: 'diagram_url') final String? diagramUrl,
@@ -473,8 +454,6 @@ abstract class _InpsectionPoint implements InspectionPoint {
   int? get id;
   @override
   InspectionPointType get type;
-  @override
-  String? get name;
   @override
   Diagram? get diagram;
   @override

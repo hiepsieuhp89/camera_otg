@@ -17,7 +17,6 @@ class InspectionPoint with _$InspectionPoint {
   factory InspectionPoint(
       {int? id,
       required InspectionPointType type,
-      String? name,
       Diagram? diagram,
       @JsonKey(name: 'bridge_id') int? bridgeId,
       @JsonKey(name: 'diagram_url') String? diagramUrl,

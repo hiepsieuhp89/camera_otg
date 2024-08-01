@@ -28,7 +28,7 @@ class InspectionPointCreationScreenState
   double _left = 0;
   int _imageWidth = 0;
   int _imageHeight = 0;
-  String _inspectionPointName = '';
+  String _spanName = '';
   Future<void>? _pendingSubmission;
 
   final GlobalKey _imageKey = GlobalKey();
@@ -47,7 +47,7 @@ class InspectionPointCreationScreenState
     int? markCoordinateX;
     int? markCoordinateY;
 
-    if (widget.diagram != null) {
+    if (widget.diagram != null && _imageWidth != 0 && _imageHeight != 0) {
       markCoordinateX =
           ((_left + 10) / _imageKey.currentContext!.size!.width * _imageWidth)
               .round();
@@ -59,7 +59,7 @@ class InspectionPointCreationScreenState
     setState(() {
       _pendingSubmission = inspectionPointsNotiffier
           .createInspectionPoint(InspectionPoint(
-              name: _inspectionPointName,
+              spanName: _spanName,
               type: widget.pointType,
               bridgeId: currentBridge.id,
               spanNumber: "1",
@@ -124,7 +124,7 @@ class InspectionPointCreationScreenState
                   controller: _nameController,
                   onSubmitted: (value) {
                     setState(() {
-                      _inspectionPointName = value;
+                      _spanName = value;
                     });
                   },
                   decoration: InputDecoration(

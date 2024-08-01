@@ -45,7 +45,7 @@ class InpsectionPointListItem extends ConsumerWidget {
       String photoRefNumberWithLabel = point.photoRefNumber != null
           ? '${AppLocalizations.of(context)!.photoRefNumber(point.photoRefNumber.toString())}：'
           : '';
-      labelText = '$photoRefNumberWithLabel${point.name ?? ''}';
+      labelText = '$photoRefNumberWithLabel${point.spanName ?? ''}';
     }
 
     Widget buildActionButton() {
