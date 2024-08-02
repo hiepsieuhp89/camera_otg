@@ -43,7 +43,7 @@ Future<List<InspectionPoint>> filteredInspectionPoints(
             }
 
             if (filters.nameFilters.isNotEmpty &&
-                !filters.nameFilters.contains(point.name ?? '')) {
+                !filters.nameFilters.contains(point.spanName ?? '')) {
               return false;
             }
 

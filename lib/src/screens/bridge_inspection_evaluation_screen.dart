@@ -120,7 +120,7 @@ class BridgeInspectionEvaluationScreenState
 
     return Scaffold(
         appBar: AppBar(
-            title: Text(widget.point.name!),
+            title: Text(widget.point.spanName!),
             actions: MediaQuery.of(context).orientation == Orientation.landscape
                 ? [
                     buildGoToPhotoSelectionButton(context),

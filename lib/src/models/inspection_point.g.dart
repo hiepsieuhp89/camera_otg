@@ -11,7 +11,6 @@ _$InpsectionPointImpl _$$InpsectionPointImplFromJson(
     _$InpsectionPointImpl(
       id: (json['id'] as num?)?.toInt(),
       type: $enumDecode(_$InspectionPointTypeEnumMap, json['type']),
-      name: json['name'] as String?,
       diagram: json['diagram'] == null
           ? null
           : Diagram.fromJson(json['diagram'] as Map<String, dynamic>),
@@ -35,7 +34,6 @@ Map<String, dynamic> _$$InpsectionPointImplToJson(
     <String, dynamic>{
       'id': instance.id,
       'type': _$InspectionPointTypeEnumMap[instance.type]!,
-      'name': instance.name,
       'diagram': instance.diagram,
       'bridge_id': instance.bridgeId,
       'diagram_url': instance.diagramUrl,

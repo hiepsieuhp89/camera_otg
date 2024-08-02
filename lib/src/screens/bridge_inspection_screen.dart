@@ -438,13 +438,13 @@ class _BridgeInspectionScreenState
                 .maybeWhen<Widget>(
                   orElse: () => const SizedBox(height: 0),
                   data: (inspectionPoints) {
-                    final pointNames = inspectionPoints
-                        .map((e) => e.name ?? '')
+                    final spanNames = inspectionPoints
+                        .map((e) => e.spanName ?? '')
                         .toSet()
                         .toList();
 
                     return ListView.builder(
-                      itemCount: pointNames.length + 1,
+                      itemCount: spanNames.length + 1,
                       itemBuilder: (context, index) {
                         if (index == 0) {
                           return CheckboxListTile(
@@ -467,20 +467,20 @@ class _BridgeInspectionScreenState
                               });
                         }
                         return CheckboxListTile(
-                            title: Text(pointNames[index - 1]),
+                            title: Text(spanNames[index - 1]),
                             controlAffinity: ListTileControlAffinity.leading,
                             value: ref
                                 .watch(bridgeInspectionPointFiltersProvider(
                                     currentBridge.id))
                                 .nameFilters
-                                .contains(pointNames[index - 1]),
+                                .contains(spanNames[index - 1]),
                             onChanged: (bool? checked) {
                               ref
                                   .read(bridgeInspectionPointFiltersProvider(
                                           currentBridge.id)
                                       .notifier)
                                   .setNameFilter(
-                                      pointNames[index - 1], checked ?? false);
+                                      spanNames[index - 1], checked ?? false);
                             });
                       },
                     );

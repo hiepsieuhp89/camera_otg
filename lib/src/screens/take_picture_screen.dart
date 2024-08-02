@@ -244,6 +244,18 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
                           capturedPhotoPaths: [],
                           metadata: {'remark': '点検をスキップした。'},
                           status: InspectionPointReportStatus.skipped);
+                } else {
+                  ref
+                      .read(bridgeInspectionProvider(
+                              widget.inspectionPoint.bridgeId!)
+                          .notifier)
+                      .updateReport(
+                          report: widget.createdReport!.copyWith(
+                              photos: [],
+                              metadata: {'remark': '点検をスキップした。'},
+                              status: InspectionPointReportStatus.skipped),
+                          capturedPhotoPaths: [],
+                          uploadedPhotos: []);
                 }
 
                 context.router
