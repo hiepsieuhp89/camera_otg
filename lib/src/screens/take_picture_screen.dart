@@ -172,6 +172,7 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
         return;
       }
 
+      await _controller!.lockCaptureOrientation();
       _controller!.takePicture().then((image) {
         AudioPlayer().play(AssetSource('sounds/camera_shoot.mp3'));
 
@@ -181,6 +182,7 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
           });
         });
 
+        _controller!.unlockCaptureOrientation();
         // set the exposure and focus point back to the center
         _controller!.setFocusPoint(const Offset(0.5, 0.5));
         _controller!.setExposurePoint(const Offset(0.5, 0.5));
