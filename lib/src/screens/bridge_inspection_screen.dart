@@ -263,7 +263,7 @@ class _BridgeInspectionScreenState
                                         orientation == Orientation.portrait
                                             ? 1
                                             : 2,
-                                    mainAxisExtent: 232,
+                                    mainAxisExtent: 253,
                                     mainAxisSpacing: 8.0,
                                     crossAxisSpacing: 8.0,
                                   ),

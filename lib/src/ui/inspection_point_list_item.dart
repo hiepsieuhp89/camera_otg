@@ -139,12 +139,11 @@ class InpsectionPointListItem extends ConsumerWidget {
                             : DateFormat('yy年MM月dd日 HH:mm')
                                 .format(activeReport!.date!)),
                     style: Theme.of(context).textTheme.bodySmall),
-                Expanded(
-                    child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [buildActionButton()],
-                ))
               ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [buildActionButton()],
             )
           ],
         ),
