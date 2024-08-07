@@ -23,26 +23,24 @@ abstract class _$AppRouter extends RootStackRouter {
     },
     BridgeInspectionEvaluationRoute.name: (routeData) {
       final args = routeData.argsAs<BridgeInspectionEvaluationRouteArgs>();
-      return AutoRoutePage<dynamic>(
+      return AutoRoutePage<PhotoInspectionResult>(
         routeData: routeData,
         child: BridgeInspectionEvaluationScreen(
           key: args.key,
           point: args.point,
-          capturedPhotos: args.capturedPhotos,
-          uploadedPhotos: args.uploadedPhotos,
+          photoInspectionResult: args.photoInspectionResult,
           createdReport: args.createdReport,
         ),
       );
     },
     BridgeInspectionPhotoSelectionRoute.name: (routeData) {
       final args = routeData.argsAs<BridgeInspectionPhotoSelectionRouteArgs>();
-      return AutoRoutePage<dynamic>(
+      return AutoRoutePage<PhotoInspectionResult>(
         routeData: routeData,
         child: BridgeInspectionPhotoSelectionScreen(
           key: args.key,
-          capturedPhotoPaths: args.capturedPhotoPaths,
+          photoInspectionResult: args.photoInspectionResult,
           point: args.point,
-          uploadedPhotos: args.uploadedPhotos,
         ),
       );
     },
@@ -79,17 +77,6 @@ abstract class _$AppRouter extends RootStackRouter {
       return AutoRoutePage<dynamic>(
         routeData: routeData,
         child: const LoginScreen(),
-      );
-    },
-    PreviewPicturesRoute.name: (routeData) {
-      final args = routeData.argsAs<PreviewPicturesRouteArgs>();
-      return AutoRoutePage<PreviewPicturesScreenResult>(
-        routeData: routeData,
-        child: PreviewPicturesScreen(
-          key: args.key,
-          imagePaths: args.imagePaths,
-          photos: args.photos,
-        ),
       );
     },
     SplashRoute.name: (routeData) {
@@ -133,8 +120,7 @@ class BridgeInspectionEvaluationRoute
   BridgeInspectionEvaluationRoute({
     Key? key,
     required InspectionPoint point,
-    required List<String> capturedPhotos,
-    required List<Photo> uploadedPhotos,
+    required PhotoInspectionResult photoInspectionResult,
     InspectionPointReport? createdReport,
     List<PageRouteInfo>? children,
   }) : super(
@@ -142,8 +128,7 @@ class BridgeInspectionEvaluationRoute
           args: BridgeInspectionEvaluationRouteArgs(
             key: key,
             point: point,
-            capturedPhotos: capturedPhotos,
-            uploadedPhotos: uploadedPhotos,
+            photoInspectionResult: photoInspectionResult,
             createdReport: createdReport,
           ),
           initialChildren: children,
@@ -159,8 +144,7 @@ class BridgeInspectionEvaluationRouteArgs {
   const BridgeInspectionEvaluationRouteArgs({
     this.key,
     required this.point,
-    required this.capturedPhotos,
-    required this.uploadedPhotos,
+    required this.photoInspectionResult,
     this.createdReport,
   });
 
@@ -168,15 +152,13 @@ class BridgeInspectionEvaluationRouteArgs {
 
   final InspectionPoint point;
 
-  final List<String> capturedPhotos;
-
-  final List<Photo> uploadedPhotos;
+  final PhotoInspectionResult photoInspectionResult;
 
   final InspectionPointReport? createdReport;
 
   @override
   String toString() {
-    return 'BridgeInspectionEvaluationRouteArgs{key: $key, point: $point, capturedPhotos: $capturedPhotos, uploadedPhotos: $uploadedPhotos, createdReport: $createdReport}';
+    return 'BridgeInspectionEvaluationRouteArgs{key: $key, point: $point, photoInspectionResult: $photoInspectionResult, createdReport: $createdReport}';
   }
 }
 
@@ -186,17 +168,15 @@ class BridgeInspectionPhotoSelectionRoute
     extends PageRouteInfo<BridgeInspectionPhotoSelectionRouteArgs> {
   BridgeInspectionPhotoSelectionRoute({
     Key? key,
-    required List<String> capturedPhotoPaths,
+    required PhotoInspectionResult photoInspectionResult,
     required InspectionPoint point,
-    required List<Photo> uploadedPhotos,
     List<PageRouteInfo>? children,
   }) : super(
           BridgeInspectionPhotoSelectionRoute.name,
           args: BridgeInspectionPhotoSelectionRouteArgs(
             key: key,
-            capturedPhotoPaths: capturedPhotoPaths,
+            photoInspectionResult: photoInspectionResult,
             point: point,
-            uploadedPhotos: uploadedPhotos,
           ),
           initialChildren: children,
         );
@@ -210,22 +190,19 @@ class BridgeInspectionPhotoSelectionRoute
 class BridgeInspectionPhotoSelectionRouteArgs {
   const BridgeInspectionPhotoSelectionRouteArgs({
     this.key,
-    required this.capturedPhotoPaths,
+    required this.photoInspectionResult,
     required this.point,
-    required this.uploadedPhotos,
   });
 
   final Key? key;
 
-  final List<String> capturedPhotoPaths;
+  final PhotoInspectionResult photoInspectionResult;
 
   final InspectionPoint point;
 
-  final List<Photo> uploadedPhotos;
-
   @override
   String toString() {
-    return 'BridgeInspectionPhotoSelectionRouteArgs{key: $key, capturedPhotoPaths: $capturedPhotoPaths, point: $point, uploadedPhotos: $uploadedPhotos}';
+    return 'BridgeInspectionPhotoSelectionRouteArgs{key: $key, photoInspectionResult: $photoInspectionResult, point: $point}';
   }
 }
 
@@ -327,49 +304,6 @@ class LoginRoute extends PageRouteInfo<void> {
   static const String name = 'LoginRoute';
 
   static const PageInfo<void> page = PageInfo<void>(name);
-}
-
-/// generated route for
-/// [PreviewPicturesScreen]
-class PreviewPicturesRoute extends PageRouteInfo<PreviewPicturesRouteArgs> {
-  PreviewPicturesRoute({
-    Key? key,
-    required List<String> imagePaths,
-    required List<Photo> photos,
-    List<PageRouteInfo>? children,
-  }) : super(
-          PreviewPicturesRoute.name,
-          args: PreviewPicturesRouteArgs(
-            key: key,
-            imagePaths: imagePaths,
-            photos: photos,
-          ),
-          initialChildren: children,
-        );
-
-  static const String name = 'PreviewPicturesRoute';
-
-  static const PageInfo<PreviewPicturesRouteArgs> page =
-      PageInfo<PreviewPicturesRouteArgs>(name);
-}
-
-class PreviewPicturesRouteArgs {
-  const PreviewPicturesRouteArgs({
-    this.key,
-    required this.imagePaths,
-    required this.photos,
-  });
-
-  final Key? key;
-
-  final List<String> imagePaths;
-
-  final List<Photo> photos;
-
-  @override
-  String toString() {
-    return 'PreviewPicturesRouteArgs{key: $key, imagePaths: $imagePaths, photos: $photos}';
-  }
 }
 
 /// generated route for

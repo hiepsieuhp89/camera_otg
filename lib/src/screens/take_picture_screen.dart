@@ -7,13 +7,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kyoryo/src/models/photo_inspection_result.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/models/inspection_point_report.dart';
 import 'package:kyoryo/src/models/marking.dart';
 import 'package:kyoryo/src/models/photo.dart';
 import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
 import 'package:kyoryo/src/routing/router.dart';
-import 'package:kyoryo/src/screens/preview_pictures_screen.dart';
 import 'package:kyoryo/src/services/inspection_point_report.service.dart';
 import 'package:kyoryo/src/ui/collapsible_panel.dart';
 import 'package:kyoryo/src/utilities/image_utils.dart';
@@ -37,6 +37,7 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
   Future<void>? _initializeControllerFuture;
   Orientation? currentOrientation;
   Photo? previousPhoto;
+  String? selectedPhotoPath;
   List<String> capturedPhotoPaths = [];
   List<Photo> uploadedPhotos = [];
   bool showPreviousPhoto = false;
@@ -193,14 +194,24 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
   }
 
   void _navigateToPreview() {
+    _resetOrientation();
+    _exitFullScreen();
+
     context.router
-        .push<PreviewPicturesScreenResult>(PreviewPicturesRoute(
-            imagePaths: capturedPhotoPaths, photos: uploadedPhotos))
+        .push<PhotoInspectionResult>(BridgeInspectionPhotoSelectionRoute(
+            photoInspectionResult: PhotoInspectionResult(
+                uploadedPhotos: uploadedPhotos,
+                newPhotoLocalPaths: capturedPhotoPaths,
+                selectedPhotoPath: selectedPhotoPath ?? ''),
+            point: widget.inspectionPoint))
         .then((result) {
+      _setLandscapeOrientation();
+
       if (result != null) {
         setState(() {
-          capturedPhotoPaths = result.updatedImagePaths;
-          uploadedPhotos = result.updatedUploadedPhotos;
+          capturedPhotoPaths = result.newPhotoLocalPaths;
+          uploadedPhotos = result.uploadedPhotos;
+          selectedPhotoPath = result.selectedPhotoPath;
         });
       }
     });
@@ -209,14 +220,25 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
   void _navigateToReportScreen() {
     _resetOrientation();
     _exitFullScreen();
+
     context
-        .pushRoute(BridgeInspectionEvaluationRoute(
+        .pushRoute<PhotoInspectionResult>(BridgeInspectionEvaluationRoute(
+            photoInspectionResult: PhotoInspectionResult(
+                uploadedPhotos: uploadedPhotos,
+                newPhotoLocalPaths: capturedPhotoPaths,
+                selectedPhotoPath: selectedPhotoPath ?? ''),
             point: widget.inspectionPoint,
-            capturedPhotos: capturedPhotoPaths,
-            uploadedPhotos: uploadedPhotos,
             createdReport: widget.createdReport))
-        .then((_) {
+        .then((result) {
       _setLandscapeOrientation();
+
+      if (result != null) {
+        setState(() {
+          capturedPhotoPaths = result.newPhotoLocalPaths;
+          uploadedPhotos = result.uploadedPhotos;
+          selectedPhotoPath = result.selectedPhotoPath;
+        });
+      }
     });
   }
 

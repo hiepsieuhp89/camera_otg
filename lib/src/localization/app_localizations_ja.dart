@@ -175,9 +175,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get noPastPhotoFound => '過去の写真が見つかりません';
 
   @override
-  String get goToPhotoSelectionButton => '過年度写真表示';
-
-  @override
   String get confirmationForNoPhoto => '写真撮影が完了していませんが、よろしいですか？';
 
   @override

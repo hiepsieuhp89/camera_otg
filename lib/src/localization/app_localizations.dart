@@ -415,12 +415,6 @@ abstract class AppLocalizations {
   /// **'過去の写真が見つかりません'**
   String get noPastPhotoFound;
 
-  /// No description provided for @goToPhotoSelectionButton.
-  ///
-  /// In ja, this message translates to:
-  /// **'過年度写真表示'**
-  String get goToPhotoSelectionButton;
-
   /// No description provided for @confirmationForNoPhoto.
   ///
   /// In ja, this message translates to:

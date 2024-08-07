@@ -10,24 +10,23 @@ import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:kyoryo/src/models/damage_type.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/models/inspection_point_report.dart';
-import 'package:kyoryo/src/models/photo.dart';
+import 'package:kyoryo/src/models/photo_inspection_result.dart';
 import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
 import 'package:kyoryo/src/providers/misc.provider.dart';
 import 'package:kyoryo/src/routing/router.dart';
+import 'package:kyoryo/src/ui/selected_photo_check_mark.dart';
 import 'package:kyoryo/src/utilities/image_utils.dart';
 
-@RoutePage()
+@RoutePage<PhotoInspectionResult>()
 class BridgeInspectionEvaluationScreen extends ConsumerStatefulWidget {
   final InspectionPoint point;
-  final List<String> capturedPhotos;
-  final List<Photo> uploadedPhotos;
+  final PhotoInspectionResult photoInspectionResult;
   final InspectionPointReport? createdReport;
 
   const BridgeInspectionEvaluationScreen(
       {super.key,
       required this.point,
-      required this.capturedPhotos,
-      required this.uploadedPhotos,
+      required this.photoInspectionResult,
       this.createdReport});
 
   @override
@@ -37,12 +36,12 @@ class BridgeInspectionEvaluationScreen extends ConsumerStatefulWidget {
 
 class BridgeInspectionEvaluationScreenState
     extends ConsumerState<BridgeInspectionEvaluationScreen> {
+  late PhotoInspectionResult result;
   Future<void>? _pendingSubmission;
   InspectionPointReportStatus? _submissionType;
   String? _selectedCategory;
   String? _selectedHealthLevel;
   String? _selectedDamageType;
-  String? _preferredPhotoPath;
 
   late TextEditingController _textEditingController;
 
@@ -70,7 +69,7 @@ class BridgeInspectionEvaluationScreenState
     if (widget.createdReport == null) {
       throw Exception('Report is not created yet');
     }
-    await _compressCapturedPhotos(widget.capturedPhotos);
+    await _compressCapturedPhotos(result.newPhotoLocalPaths);
     await ref
         .read(bridgeInspectionProvider(widget.point.bridgeId!).notifier)
         .updateReport(
@@ -80,19 +79,19 @@ class BridgeInspectionEvaluationScreenState
               'damage_level': _selectedHealthLevel ?? '',
               'remark': _textEditingController.text,
             }),
-            capturedPhotoPaths: widget.capturedPhotos,
-            preferredPhotoPath: _preferredPhotoPath,
-            uploadedPhotos: widget.uploadedPhotos);
+            capturedPhotoPaths: result.newPhotoLocalPaths,
+            preferredPhotoPath: result.selectedPhotoPath,
+            uploadedPhotos: result.uploadedPhotos);
   }
 
   Future<void> _createReport(InspectionPointReportStatus status) async {
-    await _compressCapturedPhotos(widget.capturedPhotos);
+    await _compressCapturedPhotos(result.newPhotoLocalPaths);
     await ref
         .read(bridgeInspectionProvider(widget.point.bridgeId!).notifier)
         .createReport(
             pointId: widget.point.id!,
-            capturedPhotoPaths: widget.capturedPhotos,
-            preferredPhotoPath: _preferredPhotoPath,
+            capturedPhotoPaths: result.newPhotoLocalPaths,
+            preferredPhotoPath: result.selectedPhotoPath,
             status: status,
             metadata: {
           'damage_category': _selectedCategory ?? '',
@@ -105,6 +104,7 @@ class BridgeInspectionEvaluationScreenState
   @override
   void initState() {
     super.initState();
+    result = widget.photoInspectionResult;
     _textEditingController = TextEditingController();
 
     _textEditingController.text =
@@ -118,52 +118,58 @@ class BridgeInspectionEvaluationScreenState
   Widget build(BuildContext context) {
     final damageTypes = ref.watch(damageTypesProvider);
 
-    return Scaffold(
-        appBar: AppBar(
-            title: Text(widget.point.spanName!),
-            actions: MediaQuery.of(context).orientation == Orientation.landscape
-                ? [
-                    buildGoToPhotoSelectionButton(context),
-                    const SizedBox(width: 12),
-                  ]
-                : null),
-        body: OrientationBuilder(builder: ((context, orientation) {
-          if (orientation == Orientation.portrait) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                buildPhotosCarousel(context, orientation),
-                buildEvaluationForm(context, damageTypes),
-              ],
-            );
-          } else {
-            return Row(
-              children: [
-                buildPhotosCarousel(context, orientation),
-                buildEvaluationForm(context, damageTypes),
-              ],
-            );
-          }
-        })));
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) => didPop ? null : Navigator.pop(context, result),
+      child: Scaffold(
+          appBar: AppBar(title: Text(widget.point.spanName!), actions: [
+            buildGoToPhotoSelectionButton(context),
+          ]),
+          body: OrientationBuilder(builder: ((context, orientation) {
+            if (orientation == Orientation.portrait) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  buildPhotosCarousel(context, orientation),
+                  buildEvaluationForm(context, damageTypes),
+                ],
+              );
+            } else {
+              return Row(
+                children: [
+                  buildPhotosCarousel(context, orientation),
+                  buildEvaluationForm(context, damageTypes),
+                ],
+              );
+            }
+          }))),
+    );
   }
 
-  OutlinedButton buildGoToPhotoSelectionButton(BuildContext context) {
-    return OutlinedButton.icon(
-      onPressed: () {
-        context
-            .pushRoute(BridgeInspectionPhotoSelectionRoute(
-                capturedPhotoPaths: widget.capturedPhotos,
-                point: widget.point,
-                uploadedPhotos: widget.uploadedPhotos))
-            .then((selectedPhotoPath) {
-          setState(() {
-            _preferredPhotoPath = selectedPhotoPath as String?;
+  IconButton buildGoToPhotoSelectionButton(BuildContext context) {
+    return IconButton(
+        icon: const Icon(Icons.image),
+        color: Theme.of(context).primaryColor,
+        onPressed: () {
+          context
+              .pushRoute<PhotoInspectionResult>(
+                  BridgeInspectionPhotoSelectionRoute(
+            photoInspectionResult: result,
+            point: widget.point,
+          ))
+              .then((data) {
+            if (data == null) {
+              return;
+            }
+
+            setState(() {
+              result = result.copyWith(
+                  newPhotoLocalPaths: data.newPhotoLocalPaths,
+                  uploadedPhotos: data.uploadedPhotos,
+                  selectedPhotoPath: data.selectedPhotoPath);
+            });
           });
         });
-      },
-      icon: const Icon(Icons.image),
-      label: Text(AppLocalizations.of(context)!.goToPhotoSelectionButton),
-    );
   }
 
   Expanded buildEvaluationForm(
@@ -365,16 +371,16 @@ class BridgeInspectionEvaluationScreenState
 
   bool isPhotoSelected(dynamic photo) {
     if (photo is String) {
-      return photo == _preferredPhotoPath;
+      return photo == result.selectedPhotoPath;
     } else {
-      return photo.photoLink == _preferredPhotoPath;
+      return photo.photoLink == result.selectedPhotoPath;
     }
   }
 
   Expanded buildPhotosCarousel(BuildContext context, Orientation orientation) {
     List<dynamic> combinedList = [
-      ...widget.uploadedPhotos,
-      ...widget.capturedPhotos,
+      ...result.uploadedPhotos,
+      ...result.newPhotoLocalPaths,
     ];
 
     return Expanded(
@@ -408,20 +414,15 @@ class BridgeInspectionEvaluationScreenState
                       Positioned(
                           top: 2,
                           right: 2,
-                          child: Icon(
-                            Icons.check_circle,
-                            color: isPhotoSelected(combinedList[index])
-                                ? Theme.of(context).primaryColor
-                                : Theme.of(context).disabledColor,
-                          )),
+                          child: SelectedPhotoCheckMark(
+                              isSelected:
+                                  isPhotoSelected(combinedList[index]))),
                     ],
                   );
                 },
               );
             }).toList(),
           )),
-          if (orientation == Orientation.portrait)
-            buildGoToPhotoSelectionButton(context)
         ]),
       ),
     );
