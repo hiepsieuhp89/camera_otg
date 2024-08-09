@@ -819,7 +819,8 @@ class _BridgeInspectionScreenState
                     ),
                     icon: Icon(pointTypeUI.icon),
                   );
-                })
+                }),
+                const SizedBox(height: 8),
               ])
         : null;
   }
