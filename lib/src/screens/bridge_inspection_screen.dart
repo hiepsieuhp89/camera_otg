@@ -257,6 +257,8 @@ class _BridgeInspectionScreenState
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 8.0),
                                 child: GridView.builder(
+                                  key: const PageStorageKey<String>(
+                                      'inspection-point-list'),
                                   gridDelegate:
                                       SliverGridDelegateWithFixedCrossAxisCount(
                                     crossAxisCount:
