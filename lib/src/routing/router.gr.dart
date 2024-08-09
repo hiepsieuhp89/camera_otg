@@ -41,6 +41,7 @@ abstract class _$AppRouter extends RootStackRouter {
           key: args.key,
           photoInspectionResult: args.photoInspectionResult,
           point: args.point,
+          createdReport: args.createdReport,
         ),
       );
     },
@@ -170,6 +171,7 @@ class BridgeInspectionPhotoSelectionRoute
     Key? key,
     required PhotoInspectionResult photoInspectionResult,
     required InspectionPoint point,
+    InspectionPointReport? createdReport,
     List<PageRouteInfo>? children,
   }) : super(
           BridgeInspectionPhotoSelectionRoute.name,
@@ -177,6 +179,7 @@ class BridgeInspectionPhotoSelectionRoute
             key: key,
             photoInspectionResult: photoInspectionResult,
             point: point,
+            createdReport: createdReport,
           ),
           initialChildren: children,
         );
@@ -192,6 +195,7 @@ class BridgeInspectionPhotoSelectionRouteArgs {
     this.key,
     required this.photoInspectionResult,
     required this.point,
+    this.createdReport,
   });
 
   final Key? key;
@@ -200,9 +204,11 @@ class BridgeInspectionPhotoSelectionRouteArgs {
 
   final InspectionPoint point;
 
+  final InspectionPointReport? createdReport;
+
   @override
   String toString() {
-    return 'BridgeInspectionPhotoSelectionRouteArgs{key: $key, photoInspectionResult: $photoInspectionResult, point: $point}';
+    return 'BridgeInspectionPhotoSelectionRouteArgs{key: $key, photoInspectionResult: $photoInspectionResult, point: $point, createdReport: $createdReport}';
   }
 }
 

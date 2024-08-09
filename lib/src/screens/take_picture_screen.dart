@@ -199,6 +199,7 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
 
     context.router
         .push<PhotoInspectionResult>(BridgeInspectionPhotoSelectionRoute(
+            createdReport: widget.createdReport,
             photoInspectionResult: PhotoInspectionResult(
                 uploadedPhotos: uploadedPhotos,
                 newPhotoLocalPaths: capturedPhotoPaths,

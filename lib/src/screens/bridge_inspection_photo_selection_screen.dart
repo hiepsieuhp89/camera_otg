@@ -7,9 +7,11 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kyoryo/src/models/inspection_point_report.dart';
 import 'package:kyoryo/src/models/photo_inspection_result.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
+import 'package:kyoryo/src/routing/router.dart';
 import 'package:kyoryo/src/services/inspection_point_report.service.dart';
 import 'package:kyoryo/src/ui/selected_photo_check_mark.dart';
 import 'package:kyoryo/src/utilities/image_utils.dart';
@@ -18,11 +20,13 @@ import 'package:kyoryo/src/utilities/image_utils.dart';
 class BridgeInspectionPhotoSelectionScreen extends ConsumerStatefulWidget {
   final PhotoInspectionResult photoInspectionResult;
   final InspectionPoint point;
+  final InspectionPointReport? createdReport;
 
   const BridgeInspectionPhotoSelectionScreen({
     super.key,
     required this.photoInspectionResult,
     required this.point,
+    this.createdReport,
   });
 
   @override
@@ -75,7 +79,10 @@ class _BridgeInspectionPhotoSelectionScreenState
             : null,
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            Navigator.pop(context, result);
+            context.pushRoute(BridgeInspectionEvaluationRoute(
+                point: widget.point,
+                photoInspectionResult: result,
+                createdReport: widget.createdReport));
           },
           child: const Icon(Icons.check),
         ),
