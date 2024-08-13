@@ -7,22 +7,27 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kyoryo/src/models/inspection_point_report.dart';
+import 'package:kyoryo/src/models/photo_inspection_result.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
-import 'package:kyoryo/src/models/photo.dart';
 import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
+import 'package:kyoryo/src/routing/router.dart';
 import 'package:kyoryo/src/services/inspection_point_report.service.dart';
+import 'package:kyoryo/src/ui/selected_photo_check_mark.dart';
+import 'package:kyoryo/src/utilities/image_utils.dart';
 
-@RoutePage()
+@RoutePage<PhotoInspectionResult>()
 class BridgeInspectionPhotoSelectionScreen extends ConsumerStatefulWidget {
-  final List<String> capturedPhotoPaths;
-  final List<Photo> uploadedPhotos;
+  final PhotoInspectionResult photoInspectionResult;
   final InspectionPoint point;
+  final InspectionPointReport? createdReport;
 
-  const BridgeInspectionPhotoSelectionScreen(
-      {super.key,
-      required this.capturedPhotoPaths,
-      required this.point,
-      required this.uploadedPhotos});
+  const BridgeInspectionPhotoSelectionScreen({
+    super.key,
+    required this.photoInspectionResult,
+    required this.point,
+    this.createdReport,
+  });
 
   @override
   ConsumerState<BridgeInspectionPhotoSelectionScreen> createState() =>
@@ -31,15 +36,22 @@ class BridgeInspectionPhotoSelectionScreen extends ConsumerStatefulWidget {
 
 class _BridgeInspectionPhotoSelectionScreenState
     extends ConsumerState<BridgeInspectionPhotoSelectionScreen> {
-  String? selectedPhotoPath;
-  dynamic currentlyShowingPhoto;
+  final CarouselController carouselController = CarouselController();
+  late PhotoInspectionResult result;
+  int currentIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    currentlyShowingPhoto = widget.uploadedPhotos.isNotEmpty
-        ? widget.uploadedPhotos.first
-        : widget.capturedPhotoPaths.first;
+    if (widget.photoInspectionResult.selectedPhotoPath.isEmpty) {
+      result = widget.photoInspectionResult.copyWith(
+          selectedPhotoPath: widget.photoInspectionResult.uploadedPhotos
+                  .firstOrNull?.photoLink ??
+              widget.photoInspectionResult.newPhotoLocalPaths.firstOrNull ??
+              '');
+    } else {
+      result = widget.photoInspectionResult.copyWith();
+    }
   }
 
   @override
@@ -54,24 +66,23 @@ class _BridgeInspectionPhotoSelectionScreenState
 
     return PopScope(
       canPop: false,
-      onPopInvoked: (didPoke) {
-        if (!didPoke) {
-          Navigator.pop(context, selectedPhotoPath);
+      onPopInvoked: (didPope) {
+        if (!didPope) {
+          Navigator.pop(context, result);
         }
       },
       child: Scaffold(
         appBar: MediaQuery.of(context).orientation == Orientation.portrait
             ? AppBar(
                 title: Text(AppLocalizations.of(context)!.pleaseSelectAPhoto),
-                leading: IconButton(
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: () => Navigator.pop(context, selectedPhotoPath),
-                ),
               )
             : null,
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            Navigator.pop(context, selectedPhotoPath);
+            context.pushRoute(BridgeInspectionEvaluationRoute(
+                point: widget.point,
+                photoInspectionResult: result,
+                createdReport: widget.createdReport));
           },
           child: const Icon(Icons.check),
         ),
@@ -80,6 +91,7 @@ class _BridgeInspectionPhotoSelectionScreenState
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                buildPhotosCarousel(context, orientation),
                 Expanded(
                     child: previousPhoto == null
                         ? Center(
@@ -87,7 +99,6 @@ class _BridgeInspectionPhotoSelectionScreenState
                                 AppLocalizations.of(context)!.noPastPhotoFound))
                         : CachedNetworkImage(
                             imageUrl: previousPhoto.photoLink)),
-                buildPhotosCarousel(context, orientation),
               ],
             );
           } else {
@@ -114,73 +125,81 @@ class _BridgeInspectionPhotoSelectionScreenState
     );
   }
 
-  bool isPhotoSelected(dynamic photo) {
-    if (photo == null) {
-      return false;
+  void removeCurrentPhoto() {
+    result.removePhoto(currentIndex);
+
+    if (currentIndex >= result.allPhotos.length) {
+      currentIndex = result.allPhotos.length - 1;
     }
 
-    if (photo is String) {
-      return photo == selectedPhotoPath;
-    } else {
-      return photo.photoLink == selectedPhotoPath;
+    setState(() {});
+  }
+
+  void viewCurrentPhoto() {
+    viewImage(context,
+        imageUrl: result.allPhotos[currentIndex] is String
+            ? result.allPhotos[currentIndex]
+            : result.allPhotos[currentIndex].photoLink);
+  }
+
+  void selectCurrentPhoto() {
+    if (result.allPhotos[currentIndex] is String) {
+      result.selectedPhotoPath = result.allPhotos[currentIndex];
+    } else if (result.allPhotos[currentIndex]?.photoLink != null) {
+      result.selectedPhotoPath = result.allPhotos[currentIndex].photoLink;
     }
+
+    setState(() {});
   }
 
   Expanded buildPhotosCarousel(BuildContext context, Orientation orientation) {
-    List<dynamic> combinedList = [
-      ...widget.uploadedPhotos,
-      ...widget.capturedPhotoPaths,
-    ];
-
     return Expanded(
       flex: 1,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+        padding: const EdgeInsets.symmetric(horizontal: 0),
         child: Column(children: [
           if (orientation == Orientation.landscape)
             AppBar(
               title: Text(AppLocalizations.of(context)!.pleaseSelectAPhoto),
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () => Navigator.pop(context, selectedPhotoPath),
-              ),
             ),
           Expanded(
             child: CarouselSlider(
+              carouselController: carouselController,
               options: CarouselOptions(
-                viewportFraction: 0.8,
+                viewportFraction: 1.0,
                 initialPage: 0,
                 enableInfiniteScroll: false,
                 enlargeCenterPage: true,
                 reverse: false,
                 onPageChanged: (index, reason) {
                   setState(() {
-                    currentlyShowingPhoto = combinedList[index];
+                    currentIndex = index;
                   });
                 },
                 scrollDirection: Axis.horizontal,
               ),
-              items: combinedList.mapIndexed((index, photo) {
+              items: result.allPhotos.mapIndexed((index, photo) {
                 return Builder(
                   builder: (BuildContext context) {
                     return Stack(
                       children: [
-                        combinedList[index] is String
+                        result.allPhotos[index] is String
                             ? Image.file(
-                                File(combinedList[index]),
+                                File(result.allPhotos[index]),
                                 fit: BoxFit.cover,
                               )
                             : CachedNetworkImage(
-                                imageUrl: combinedList[index].photoLink,
+                                imageUrl: result.allPhotos[index].photoLink,
                                 fit: BoxFit.cover),
                         Positioned(
                             top: 2,
                             right: 2,
-                            child: Icon(
-                              Icons.check_circle,
-                              color: isPhotoSelected(combinedList[index])
-                                  ? Theme.of(context).primaryColor
-                                  : Theme.of(context).disabledColor,
+                            child: SelectedPhotoCheckMark(
+                              isSelected: result.isPhotoSelected(
+                                  result.allPhotos[index] is String &&
+                                          result.allPhotos[index] != null
+                                      ? result.allPhotos[index]
+                                      : result.allPhotos[index].photoLink),
                             )),
                       ],
                     );
@@ -189,20 +208,35 @@ class _BridgeInspectionPhotoSelectionScreenState
               }).toList(),
             ),
           ),
-          TextButton.icon(
-              icon: const Icon(Icons.check_circle),
-              onPressed: isPhotoSelected(currentlyShowingPhoto)
-                  ? null
-                  : () {
-                      setState(() {
-                        if (currentlyShowingPhoto is String) {
-                          selectedPhotoPath = currentlyShowingPhoto;
-                        } else if (currentlyShowingPhoto?.photoLink != null) {
-                          selectedPhotoPath = currentlyShowingPhoto.photoLink;
-                        }
-                      });
-                    },
-              label: Text(AppLocalizations.of(context)!.setPreferredPhoto)),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                IconButton(
+                    icon: const Icon(
+                      Icons.open_in_full,
+                    ),
+                    onPressed: currentIndex < 0 ? null : viewCurrentPhoto),
+                IconButton(
+                  icon: const Icon(Icons.check_circle),
+                  onPressed: currentIndex < 0 ||
+                          result.isPhotoSelected(
+                              result.allPhotos[currentIndex] is String
+                                  ? result.allPhotos[currentIndex]
+                                  : result.allPhotos[currentIndex].photoLink)
+                      ? null
+                      : selectCurrentPhoto,
+                ),
+                IconButton(
+                  icon: const Icon(
+                    Icons.delete,
+                  ),
+                  onPressed: currentIndex < 0 ? null : removeCurrentPhoto,
+                )
+              ],
+            ),
+          )
         ]),
       ),
     );

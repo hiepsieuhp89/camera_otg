@@ -257,13 +257,15 @@ class _BridgeInspectionScreenState
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 8.0),
                                 child: GridView.builder(
+                                  key: const PageStorageKey<String>(
+                                      'inspection-point-list'),
                                   gridDelegate:
                                       SliverGridDelegateWithFixedCrossAxisCount(
                                     crossAxisCount:
                                         orientation == Orientation.portrait
                                             ? 1
                                             : 2,
-                                    mainAxisExtent: 232,
+                                    mainAxisExtent: 253,
                                     mainAxisSpacing: 8.0,
                                     crossAxisSpacing: 8.0,
                                   ),
@@ -819,7 +821,8 @@ class _BridgeInspectionScreenState
                     ),
                     icon: Icon(pointTypeUI.icon),
                   );
-                })
+                }),
+                const SizedBox(height: 8),
               ])
         : null;
   }

@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kyoryo/src/models/diagram.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/models/inspection_point_report.dart';
-import 'package:kyoryo/src/models/photo.dart';
+import 'package:kyoryo/src/models/photo_inspection_result.dart';
 import 'package:kyoryo/src/providers/api.provider.dart';
 import 'package:kyoryo/src/providers/shared_preferences.provider.dart';
 import 'package:kyoryo/src/routing/auth_guard.dart';
@@ -17,7 +17,6 @@ import 'package:kyoryo/src/screens/bridge_inspection_evaluation_screen.dart';
 import 'package:kyoryo/src/screens/bridge_inspection_photo_selection_screen.dart';
 import 'package:kyoryo/src/screens/bridge_inspection_screen.dart';
 import 'package:kyoryo/src/screens/inspection_point_creation_screen.dart';
-import 'package:kyoryo/src/screens/preview_pictures_screen.dart';
 import 'package:kyoryo/src/screens/take_picture_screen.dart';
 import 'package:kyoryo/src/services/api.service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -44,7 +43,6 @@ class AppRouter extends _$AppRouter {
         AutoRoute(page: LoginRoute.page),
         AutoRoute(page: BridgeFiltersRoute.page, guards: [_authGuard]),
         AutoRoute(page: BridgeListRoute.page, guards: [_authGuard]),
-        AutoRoute(page: PreviewPicturesRoute.page),
         AutoRoute(
             page: BridgeInspectionEvaluationRoute.page, guards: [_authGuard]),
         AutoRoute(

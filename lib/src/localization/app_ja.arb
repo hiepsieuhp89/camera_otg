@@ -82,7 +82,6 @@
     }
   },
   "noPastPhotoFound": "過去の写真が見つかりません",
-  "goToPhotoSelectionButton": "過年度写真表示",
   "confirmationForNoPhoto": "写真撮影が完了していませんが、よろしいですか？",
   "yesOption": "「YES」",
   "noOption": "「NO」",
