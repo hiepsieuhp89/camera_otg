@@ -93,6 +93,9 @@ class InpsectionPointListItem extends ConsumerWidget {
     }
 
     return Card(
+      color: previousReport == null
+          ? Theme.of(context).secondaryHeaderColor
+          : null,
       child: Container(
         constraints: const BoxConstraints(
           maxHeight: 228,
