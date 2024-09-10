@@ -93,7 +93,7 @@ class InpsectionPointListItem extends ConsumerWidget {
     }
 
     return Card(
-      color: previousReport == null
+      color: previousReport == null && point.type == InspectionPointType.damage
           ? Theme.of(context).secondaryHeaderColor
           : null,
       child: Container(
