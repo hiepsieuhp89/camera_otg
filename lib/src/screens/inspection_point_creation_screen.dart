@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kyoryo/src/models/diagram.dart';
@@ -24,11 +25,15 @@ class InspectionPointCreationScreen extends ConsumerStatefulWidget {
 class InspectionPointCreationScreenState
     extends ConsumerState<InspectionPointCreationScreen> {
   late TextEditingController _nameController;
+  late TextEditingController _spanNumberController;
+  late TextEditingController _elementNumberController;
   double _top = 0;
   double _left = 0;
   int _imageWidth = 0;
   int _imageHeight = 0;
   String _spanName = '';
+  String _spanNumber = '';
+  String _elementNumber = '';
   Future<void>? _pendingSubmission;
 
   final GlobalKey _imageKey = GlobalKey();
@@ -37,6 +42,8 @@ class InspectionPointCreationScreenState
   void initState() {
     super.initState();
     _nameController = TextEditingController();
+    _spanNumberController = TextEditingController();
+    _elementNumberController = TextEditingController();
   }
 
   void createInspecitonPoint() {
@@ -62,7 +69,8 @@ class InspectionPointCreationScreenState
               spanName: _spanName,
               type: widget.pointType,
               bridgeId: currentBridge.id,
-              spanNumber: "1",
+              spanNumber: _spanNumber,
+              elementNumber: _elementNumber,
               diagramMarkingX: markCoordinateX,
               diagramMarkingY: markCoordinateY,
               diagramId: widget.diagram?.id))
@@ -131,6 +139,40 @@ class InspectionPointCreationScreenState
                     label: Text(AppLocalizations.of(context)!.name),
                     border: const OutlineInputBorder(),
                   )),
+              const SizedBox(height: 10.0),
+              TextField(
+                  controller: _spanNumberController,
+                  onSubmitted: (value) {
+                    setState(() {
+                      _spanNumber = value;
+                    });
+                  },
+                  decoration: InputDecoration(
+                    label: Text(AppLocalizations.of(context)!.spanNumber),
+                    border: const OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  inputFormatters: <TextInputFormatter>[
+                    FilteringTextInputFormatter.digitsOnly,
+                  ]
+              ),
+              const SizedBox(height: 10.0),
+              TextField(
+                  controller: _elementNumberController,
+                  onSubmitted: (value) {
+                    setState(() {
+                      _elementNumber = value;
+                    });
+                  },
+                  decoration: InputDecoration(
+                    label: Text(AppLocalizations.of(context)!.elementNumber),
+                    border: const OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  inputFormatters: <TextInputFormatter>[
+                    FilteringTextInputFormatter.digitsOnly,
+                  ]
+              ),
               if (imageWidget != null) ...[
                 const SizedBox(height: 16),
                 Row(
