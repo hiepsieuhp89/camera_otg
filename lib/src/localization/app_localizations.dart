@@ -361,6 +361,18 @@ abstract class AppLocalizations {
   /// **'部材名'**
   String get name;
 
+  /// No description provided for @spanNumber.
+  ///
+  /// In ja, this message translates to:
+  /// **'径間番号'**
+  String get spanNumber;
+
+  /// No description provided for @elementNumber.
+  ///
+  /// In ja, this message translates to:
+  /// **'要素番号'**
+  String get elementNumber;
+
   /// No description provided for @createThenEvalutatePoints.
   ///
   /// In ja, this message translates to:

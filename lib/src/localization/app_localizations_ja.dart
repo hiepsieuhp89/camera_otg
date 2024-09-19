@@ -146,6 +146,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get name => '部材名';
 
   @override
+  String get spanNumber => '径間番号';
+
+  @override
+  String get elementNumber => '要素番号';
+
+  @override
   String get createThenEvalutatePoints => '点検ポイントを作成してください';
 
   @override
