@@ -55,19 +55,13 @@ class InpsectionPointListItem extends ConsumerWidget {
       labelText = '$photoRefNumberWithLabel${point.spanName ?? ''}';
     }
 
-    Column buildDetailsColumn(report, previousReport, activeReport) {
+    Column buildDetailsColumn(report) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          report ==
-                  previousReport // I don't know why it is like that, Ando san asked
-              ? Text(
+              Text(
                   '${AppLocalizations.of(context)!.targetMaterial}: '
-                  '${activeReport?.metadata?["component_name"] ?? ''}',
-                  style: adjustedSmallTextStyle)
-              : Text(
-                  '${AppLocalizations.of(context)!.targetMaterial}: '
-                  '${previousReport?.metadata?["component_name"] ?? ''}',
+                  '${report?.metadata?["damage_category"] ?? ''}',
                   style: adjustedSmallTextStyle),
           Text(
               '${report?.metadata?['damage_type']?.toString() ?? ''}'
@@ -105,8 +99,7 @@ class InpsectionPointListItem extends ConsumerWidget {
                               .bodySmall
                               ?.copyWith(fontWeight: FontWeight.bold),
                         ),
-                        buildDetailsColumn(
-                            activeReport, previousReport, activeReport),
+                        buildDetailsColumn(activeReport),
                         const SizedBox(height: 10.0),
                         Text(
                           '${AppLocalizations.of(context)!.lastTime}:',
@@ -115,8 +108,7 @@ class InpsectionPointListItem extends ConsumerWidget {
                               .bodySmall
                               ?.copyWith(fontWeight: FontWeight.bold),
                         ),
-                        buildDetailsColumn(
-                            previousReport, previousReport, activeReport)
+                        buildDetailsColumn(previousReport)
                       ],
                     ),
                   ])),
@@ -282,8 +274,7 @@ class InpsectionPointListItem extends ConsumerWidget {
                                   ),
                                 ),
                                 const SizedBox(height: 3.0),
-                                buildDetailsColumn(previousReport,
-                                    previousReport, activeReport)
+                                buildDetailsColumn(previousReport)
                               ],
                             ),
                           ),
@@ -300,8 +291,7 @@ class InpsectionPointListItem extends ConsumerWidget {
                                 ),
                                 const SizedBox(height: 3.0),
                                 activeReport != null
-                                    ? buildDetailsColumn(activeReport,
-                                        previousReport, activeReport)
+                                    ? buildDetailsColumn(activeReport)
                                     : Text(
                                         AppLocalizations.of(context)!.noDataYet,
                                         style: adjustedSmallTextStyle),
