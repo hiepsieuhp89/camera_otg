@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -36,6 +37,12 @@ class InpsectionPointListItem extends ConsumerWidget {
     final isInspectionInProgress =
         ref.watch(isInspectionInProgressProvider(point.bridgeId!));
 
+    final adjustedSmallTextStyle =
+        Theme.of(context).textTheme.bodySmall?.copyWith(
+              fontSize:
+                  (Theme.of(context).textTheme.bodySmall?.fontSize ?? 12.0) - 2,
+            );
+
     String labelText;
 
     if (point.type == InspectionPointType.damage) {
@@ -46,6 +53,85 @@ class InpsectionPointListItem extends ConsumerWidget {
           ? '${AppLocalizations.of(context)!.photoRefNumber(point.photoRefNumber.toString())}：'
           : '';
       labelText = '$photoRefNumberWithLabel${point.spanName ?? ''}';
+    }
+
+    Column buildDetailsColumn(report, previousReport, activeReport) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          report ==
+                  previousReport // I don't know why it is like that, Ando san asked
+              ? Text(
+                  '${AppLocalizations.of(context)!.targetMaterial}: '
+                  '${activeReport?.metadata?["component_name"] ?? ''}',
+                  style: adjustedSmallTextStyle)
+              : Text(
+                  '${AppLocalizations.of(context)!.targetMaterial}: '
+                  '${previousReport?.metadata?["component_name"] ?? ''}',
+                  style: adjustedSmallTextStyle),
+          Text(
+              '${report?.metadata?['damage_type']?.toString() ?? ''}'
+              '/'
+              '${report?.metadata?['damage_level']?.toString() ?? ''}',
+              style: adjustedSmallTextStyle),
+          const SizedBox(height: 3.0),
+          Text(
+              // '${AppLocalizations.of(context)!.remark}:\n'
+              report?.metadata?['remark']?.toString() ?? '',
+              style: adjustedSmallTextStyle),
+        ],
+      );
+    }
+
+    Future showDetailsListPopUp() {
+      return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return LayoutBuilder(
+              builder: (BuildContext context, BoxConstraints constraints) {
+            return AlertDialog(
+              backgroundColor: Theme.of(context).secondaryHeaderColor,
+              content: SingleChildScrollView(
+                  child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${AppLocalizations.of(context)!.thisTime}:',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        buildDetailsColumn(
+                            activeReport, previousReport, activeReport),
+                        const SizedBox(height: 10.0),
+                        Text(
+                          '${AppLocalizations.of(context)!.lastTime}:',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        buildDetailsColumn(
+                            previousReport, previousReport, activeReport)
+                      ],
+                    ),
+                  ])),
+            );
+          });
+        },
+      );
+    }
+
+    Widget showDetailsButton() {
+      return IconButton.filled(
+          onPressed: () {
+            showDetailsListPopUp();
+          },
+          icon: const Icon(Icons.info));
     }
 
     Widget buildActionButton() {
@@ -102,52 +188,132 @@ class InpsectionPointListItem extends ConsumerWidget {
           minHeight: 228,
         ),
         padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
           children: [
-            Row(
-              children: <Widget>[
-                Expanded(
-                  child: _imageGroup(context, previousPhoto, activeReport,
-                      isInspectionInProgress),
-                )
-              ],
-            ),
-            const SizedBox(height: 10.0),
-            Row(
-              children: [
-                point.type == InspectionPointType.damage
-                    ? Icon(Icons.broken_image_outlined,
-                        color: Theme.of(context).primaryColor)
-                    : Icon(Icons.image_search_outlined,
-                        color: Theme.of(context).primaryColor),
-                const SizedBox(width: 8.0),
-                Expanded(
-                  child: Text(
-                    labelText,
-                    style: Theme.of(context).textTheme.titleMedium,
-                    textAlign: TextAlign.left,
-                    overflow: TextOverflow.ellipsis,
+            // Left Column: Existing content
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      point.type == InspectionPointType.damage
+                          ? Icon(Icons.broken_image_outlined,
+                              color: Theme.of(context).primaryColor)
+                          : Icon(Icons.image_search_outlined,
+                              color: Theme.of(context).primaryColor),
+                      const SizedBox(width: 8.0),
+                      Expanded(
+                        child: Text(
+                          labelText,
+                          style: Theme.of(context).textTheme.titleMedium,
+                          textAlign: TextAlign.left,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
+                  _imageGroup(context, previousPhoto, activeReport,
+                      isInspectionInProgress),
+                  const SizedBox(height: 10.0),
+                  Text(
                     AppLocalizations.of(context)!.inspectionDate(
-                        activeReport?.date == null
+                        (activeReport?.date ?? previousReport?.date) == null
                             ? ''
-                            : DateFormat('yy年MM月dd日 HH:mm')
-                                .format(activeReport!.date!)),
-                    style: Theme.of(context).textTheme.bodySmall),
-              ],
+                            : (activeReport?.date != null
+                                ? DateFormat('yy年MM月dd日 HH:mm')
+                                    .format(activeReport!.date!)
+                                : DateFormat('yy年MM月dd日')
+                                    .format(previousReport!.date!))),
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  Row(
+                    mainAxisAlignment: MediaQuery.of(context).orientation !=
+                            Orientation.portrait
+                        ? MainAxisAlignment.spaceEvenly
+                        : MainAxisAlignment.end,
+                    children: [
+                      if (MediaQuery.of(context).orientation ==
+                          Orientation.portrait)
+                        Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${AppLocalizations.of(context)!.damageType}: '
+                                '${activeReport?.metadata?['damage_type']?.toString() ?? previousReport?.metadata?['damage_type']?.toString() ?? ''}',
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                              const SizedBox(width: 8.0),
+                              Text(
+                                '${AppLocalizations.of(context)!.damageLevel}: '
+                                '${activeReport?.metadata?['damage_level']?.toString() ?? previousReport?.metadata?['damage_level']?.toString() ?? ''}',
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ]),
+                      const Spacer(),
+                      if (MediaQuery.of(context).orientation ==
+                          Orientation.portrait)
+                        showDetailsButton(),
+                      const SizedBox(width: 8),
+                      buildActionButton()
+                    ],
+                  ),
+                ],
+              ),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [buildActionButton()],
-            )
+            const SizedBox(width: 20.0), // Space between columns
+            // Right Column: New additional content
+            if (MediaQuery.of(context).orientation != Orientation.portrait)
+              Expanded(
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return SingleChildScrollView(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${AppLocalizations.of(context)!.lastTime}:',
+                                  style: adjustedSmallTextStyle?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 3.0),
+                                buildDetailsColumn(previousReport,
+                                    previousReport, activeReport)
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8.0),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${AppLocalizations.of(context)!.thisTime}:',
+                                  style: adjustedSmallTextStyle?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 3.0),
+                                activeReport != null
+                                    ? buildDetailsColumn(activeReport,
+                                        previousReport, activeReport)
+                                    : Text(
+                                        AppLocalizations.of(context)!.noDataYet,
+                                        style: adjustedSmallTextStyle),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
           ],
         ),
       ),
