@@ -241,6 +241,30 @@ abstract class AppLocalizations {
   /// **'備考'**
   String get remark;
 
+  /// No description provided for @damageLevel.
+  ///
+  /// In ja, this message translates to:
+  /// **'損傷度'**
+  String get damageLevel;
+
+  /// No description provided for @lastTime.
+  ///
+  /// In ja, this message translates to:
+  /// **'前回'**
+  String get lastTime;
+
+  /// No description provided for @thisTime.
+  ///
+  /// In ja, this message translates to:
+  /// **'今回'**
+  String get thisTime;
+
+  /// No description provided for @targetMaterial.
+  ///
+  /// In ja, this message translates to:
+  /// **'対象部材'**
+  String get targetMaterial;
+
   /// No description provided for @pleaseSelectAPhoto.
   ///
   /// In ja, this message translates to:

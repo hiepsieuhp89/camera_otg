@@ -86,6 +86,18 @@ class AppLocalizationsJa extends AppLocalizations {
   String get remark => '備考';
 
   @override
+  String get damageLevel => '損傷度';
+
+  @override
+  String get lastTime => '前回';
+
+  @override
+  String get thisTime => '今回';
+
+  @override
+  String get targetMaterial => '対象部材';
+
+  @override
   String get pleaseSelectAPhoto => '採用用写真を選択してください';
 
   @override
