@@ -95,6 +95,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get thisTime => '今回';
 
   @override
+  String get noDataYet => 'まだデータはありません';
+
+  @override
   String get targetMaterial => '対象部材';
 
   @override

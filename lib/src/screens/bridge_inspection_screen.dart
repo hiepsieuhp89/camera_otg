@@ -264,7 +264,7 @@ class _BridgeInspectionScreenState
                                     crossAxisCount:
                                         orientation == Orientation.portrait
                                             ? 1
-                                            : 2,
+                                            : 1,
                                     mainAxisExtent: 253,
                                     mainAxisSpacing: 8.0,
                                     crossAxisSpacing: 8.0,

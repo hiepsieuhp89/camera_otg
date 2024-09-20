@@ -259,6 +259,12 @@ abstract class AppLocalizations {
   /// **'今回'**
   String get thisTime;
 
+  /// No description provided for @noDataYet.
+  ///
+  /// In ja, this message translates to:
+  /// **'まだデータはありません'**
+  String get noDataYet;
+
   /// No description provided for @targetMaterial.
   ///
   /// In ja, this message translates to:

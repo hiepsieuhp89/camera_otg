@@ -50,6 +50,7 @@
   "damageLevel": "損傷度",
   "lastTime": "前回",
   "thisTime": "今回",
+  "noDataYet": "まだデータはありません",
   "targetMaterial": "対象部材",
   "pleaseSelectAPhoto": "採用用写真を選択してください",
   "failedToCreateInspectionReport": "点検報告書の作成に失敗しました",
