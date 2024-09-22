@@ -1,5 +1,4 @@
 import 'package:collection/collection.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -59,10 +58,10 @@ class InpsectionPointListItem extends ConsumerWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-              Text(
-                  '${AppLocalizations.of(context)!.targetMaterial}: '
-                  '${report?.metadata?["damage_category"] ?? ''}',
-                  style: adjustedSmallTextStyle),
+          Text(
+              '${AppLocalizations.of(context)!.targetMaterial}: '
+              '${report?.metadata?["damage_category"] ?? ''}',
+              style: adjustedSmallTextStyle),
           Text(
               '${report?.metadata?['damage_type']?.toString() ?? ''}'
               '/'
