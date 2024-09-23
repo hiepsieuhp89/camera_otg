@@ -267,7 +267,11 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
                 isSkipped: isSkipped
             ),
             point: widget.inspectionPoint,
-            createdReport: widget.createdReport))
+            createdReport: widget.createdReport,
+            previousReport: ref
+                .read(bridgeInspectionProvider(widget.inspectionPoint.bridgeId!)
+                    .notifier)
+                .findPreviousReportFromPoint(widget.inspectionPoint.id!)))
         .then((result) {
       _setLandscapeOrientation();
 

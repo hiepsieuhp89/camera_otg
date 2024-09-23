@@ -23,11 +23,12 @@ class BridgeInspectionEvaluationScreen extends ConsumerStatefulWidget {
   final PhotoInspectionResult photoInspectionResult;
   final InspectionPointReport? createdReport;
 
-  const BridgeInspectionEvaluationScreen(
-      {super.key,
-      required this.point,
-      required this.photoInspectionResult,
-      this.createdReport});
+  const BridgeInspectionEvaluationScreen({
+    super.key,
+    required this.point,
+    required this.photoInspectionResult,
+    this.createdReport,
+  });
 
   @override
   ConsumerState<BridgeInspectionEvaluationScreen> createState() =>
@@ -44,6 +45,8 @@ class BridgeInspectionEvaluationScreenState
   String? _selectedDamageType;
 
   late TextEditingController _textEditingController;
+  late TextEditingController _damageCategoryController;
+  late TextEditingController _damageTypeController;
 
   Future<void> submitInspection(InspectionPointReportStatus status) async {
     final reportSubmission = (widget.createdReport != null
@@ -105,14 +108,29 @@ class BridgeInspectionEvaluationScreenState
   @override
   void initState() {
     super.initState();
+    final previousReport = ref
+        .read(bridgeInspectionProvider(widget.point.bridgeId!).notifier)
+        .findPreviousReportFromPoint(widget.point.id!);
+
     result = widget.photoInspectionResult;
     _textEditingController = TextEditingController();
+    _damageCategoryController = TextEditingController();
+    _damageTypeController = TextEditingController();
 
-    _textEditingController.text =
-        widget.createdReport?.metadata['remark'] ?? result.skipReason ?? '';
-    _selectedCategory = widget.createdReport?.metadata['damage_category'];
-    _selectedDamageType = widget.createdReport?.metadata['damage_type'];
-    _selectedHealthLevel = widget.createdReport?.metadata['damage_level'];
+
+    _textEditingController.text = widget.createdReport?.metadata['remark'] ??
+        previousReport?.metadata['remark'] ?? result.skipReason ?? ''
+        '';
+    _selectedCategory = widget.createdReport?.metadata['damage_category'] ??
+        previousReport?.metadata['damage_category'];
+    _selectedDamageType = widget.createdReport?.metadata['damage_type'] ??
+        previousReport?.metadata['damage_type'];
+    _selectedHealthLevel = widget.createdReport?.metadata['damage_level'] ??
+        previousReport?.metadata['damage_level'];
+
+    _damageCategoryController.text = _selectedCategory ?? '';
+    _damageTypeController.text = _selectedDamageType ?? '';
+
   }
 
   @override
@@ -189,6 +207,7 @@ class BridgeInspectionEvaluationScreenState
                         Expanded(
                             child: DropdownMenu<String>(
                           initialSelection: _selectedCategory,
+                          controller: _damageCategoryController,
                           label: Text(AppLocalizations.of(context)!.damageType),
                           expandedInsets: const EdgeInsets.all(0),
                           onSelected: (category) {
@@ -201,6 +220,7 @@ class BridgeInspectionEvaluationScreenState
                                 : setState(() {
                                     _selectedCategory = category;
                                     _selectedDamageType = null;
+                                    _damageTypeController.text = '';
                                   });
                           },
                           dropdownMenuEntries: damageTypes.hasValue
@@ -217,18 +237,16 @@ class BridgeInspectionEvaluationScreenState
                         )),
                         const SizedBox(width: 8),
                         Expanded(
-                            child: DropdownMenu<DamageType>(
-                          initialSelection: damageTypes.hasValue
-                              ? damageTypes.value!.firstWhereOrNull(
-                                  (type) => type.nameJp == _selectedDamageType)
-                              : null,
+                            child: DropdownMenu<String>(
+                          controller: _damageTypeController,
+                          initialSelection: _selectedDamageType,
                           label:
                               Text(AppLocalizations.of(context)!.damageDetails),
                           enabled: _selectedCategory != null,
                           expandedInsets: const EdgeInsets.all(0),
-                          onSelected: (damageType) {
+                          onSelected: (value) {
                             setState(() {
-                              _selectedDamageType = damageType?.nameJp;
+                              _selectedDamageType = value;
                             });
                           },
                           dropdownMenuEntries: damageTypes.hasValue
@@ -237,7 +255,7 @@ class BridgeInspectionEvaluationScreenState
                                       type.category == _selectedCategory)
                                   .map((type) {
                                   return DropdownMenuEntry(
-                                    value: type,
+                                    value: type.nameJp,
                                     label: type.nameJp,
                                   );
                                 }).toList()
