@@ -46,6 +46,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get finishEvaluation => '入力完了';
 
   @override
+  String get skipEvaluation => '入力省略';
+
+  @override
   String lastInspectionDate(Object dateTime) {
     return '最終点検日時：$dateTime';
   }

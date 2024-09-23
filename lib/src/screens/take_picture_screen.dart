@@ -1,3 +1,4 @@
+import 'dart:ffi';
 import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
@@ -47,6 +48,8 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
   double _currentExposureOffset = 0.0;
   double _maxExposureOffset = 0.0;
   double _minExposureOffset = 0.0;
+  String skipReason = "";
+  bool isSkipped = false;
 
   @override
   void initState() {
@@ -75,6 +78,37 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
       });
     }
   }
+
+  // Future<String?> showSkipReasonDialog(BuildContext context) async {
+  //   final TextEditingController controller = TextEditingController();
+  //
+  //   return showDialog<String>(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         title: Text('Enter skip reason'),
+  //         content: TextField(
+  //           controller: controller,
+  //           decoration: InputDecoration(hintText: 'Reason'),
+  //         ),
+  //         actions: <Widget>[
+  //           TextButton(
+  //             child: Text('Cancel'),
+  //             onPressed: () {
+  //               Navigator.of(context).pop(); // Dismiss the dialog
+  //             },
+  //           ),
+  //           TextButton(
+  //             child: Text('OK'),
+  //             onPressed: () {
+  //               Navigator.of(context).pop(controller.text); // Return the input text
+  //             },
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
 
   Future<void> _initCamera() async {
     WidgetsFlutterBinding.ensureInitialized();
@@ -201,6 +235,8 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
         .push<PhotoInspectionResult>(BridgeInspectionPhotoSelectionRoute(
             createdReport: widget.createdReport,
             photoInspectionResult: PhotoInspectionResult(
+                skipReason: skipReason,
+                isSkipped: isSkipped,
                 uploadedPhotos: uploadedPhotos,
                 newPhotoLocalPaths: capturedPhotoPaths,
                 selectedPhotoPath: selectedPhotoPath ?? ''),
@@ -227,7 +263,10 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
             photoInspectionResult: PhotoInspectionResult(
                 uploadedPhotos: uploadedPhotos,
                 newPhotoLocalPaths: capturedPhotoPaths,
-                selectedPhotoPath: selectedPhotoPath ?? ''),
+                selectedPhotoPath: selectedPhotoPath ?? '',
+                skipReason: skipReason,
+                isSkipped: isSkipped
+            ),
             point: widget.inspectionPoint,
             createdReport: widget.createdReport))
         .then((result) {
@@ -259,6 +298,9 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
             TextButton(
               child: Text(AppLocalizations.of(context)!.yesOption),
               onPressed: () {
+                // skipReason = (await showSkipReasonDialog(context))!;
+                skipReason = '点検をスキップした。';
+                isSkipped = true;
                 if (widget.createdReport == null) {
                   ref
                       .read(bridgeInspectionProvider(
@@ -267,7 +309,7 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
                       .createReport(
                           pointId: widget.inspectionPoint.id!,
                           capturedPhotoPaths: [],
-                          metadata: {'remark': '点検をスキップした。'},
+                          metadata: {'remark': skipReason},
                           status: InspectionPointReportStatus.skipped);
                 } else {
                   ref
@@ -277,7 +319,7 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
                       .updateReport(
                           report: widget.createdReport!.copyWith(
                               photos: [],
-                              metadata: {'remark': '点検をスキップした。'},
+                              metadata: {'remark': skipReason},
                               status: InspectionPointReportStatus.skipped),
                           capturedPhotoPaths: [],
                           uploadedPhotos: []);
@@ -285,6 +327,7 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
 
                 context.router
                     .popUntilRouteWithName(BridgeInspectionRoute.name);
+                _navigateToReportScreen();
               },
             ),
           ],

@@ -86,6 +86,7 @@ class BridgeInspectionEvaluationScreenState
 
   Future<void> _createReport(InspectionPointReportStatus status) async {
     await _compressCapturedPhotos(result.newPhotoLocalPaths);
+    if (result.isSkipped) status = InspectionPointReportStatus.skipped;
     await ref
         .read(bridgeInspectionProvider(widget.point.bridgeId!).notifier)
         .createReport(
@@ -108,7 +109,7 @@ class BridgeInspectionEvaluationScreenState
     _textEditingController = TextEditingController();
 
     _textEditingController.text =
-        widget.createdReport?.metadata['remark'] ?? '';
+        widget.createdReport?.metadata['remark'] ?? result.skipReason ?? '';
     _selectedCategory = widget.createdReport?.metadata['damage_category'];
     _selectedDamageType = widget.createdReport?.metadata['damage_type'];
     _selectedHealthLevel = widget.createdReport?.metadata['damage_level'];
@@ -328,7 +329,14 @@ class BridgeInspectionEvaluationScreenState
                           builder: ((context, snapshot) {
                             final isLoading = snapshot.connectionState ==
                                 ConnectionState.waiting;
-
+                            final label = result.isSkipped
+                                ? Text(AppLocalizations.of(context)!
+                                    .skipEvaluation)
+                                : Text(AppLocalizations.of(context)!
+                                    .finishEvaluation);
+                            final inspectionStatus = result.isSkipped
+                                ? InspectionPointReportStatus.skipped
+                                : InspectionPointReportStatus.finished;
                             return FilledButton.icon(
                               icon: isLoading &&
                                       _submissionType ==
@@ -342,14 +350,11 @@ class BridgeInspectionEvaluationScreenState
                                       ),
                                     )
                                   : const Icon(Icons.check),
-                              label: Text(AppLocalizations.of(context)!
-                                  .finishEvaluation),
+                              label: label,
                               onPressed: isLoading
                                   ? null
                                   : () {
-                                      submitInspection(
-                                              InspectionPointReportStatus
-                                                  .finished)
+                                      submitInspection(inspectionStatus)
                                           .catchError((_) {
                                         ScaffoldMessenger.of(context)
                                             .showSnackBar(SnackBar(
