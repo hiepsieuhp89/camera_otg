@@ -298,7 +298,7 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
               child: Text(AppLocalizations.of(context)!.yesOption),
               onPressed: () {
                 // skipReason = (await showSkipReasonDialog(context))!;
-                skipReason = '点検をスキップした。';
+                skipReason = AppLocalizations.of(context)!.inspectionWasSkipped;
                 isSkipped = true;
                 if (widget.createdReport == null) {
                   ref

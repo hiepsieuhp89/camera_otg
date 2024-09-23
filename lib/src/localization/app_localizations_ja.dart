@@ -46,6 +46,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get finishEvaluation => '入力完了';
 
   @override
+  String get inspectionWasSkipped => '点検をスキップした。';
+
+  @override
   String get skipEvaluation => '入力省略';
 
   @override
