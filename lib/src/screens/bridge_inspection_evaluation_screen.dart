@@ -117,17 +117,20 @@ class BridgeInspectionEvaluationScreenState
     _damageCategoryController = TextEditingController();
     _damageTypeController = TextEditingController();
 
-
-    _textEditingController.text = result.isSkipped!
+    if (widget.createdReport != null) {
+      _textEditingController.text = result.isSkipped!
         ? result.skipReason.toString()
-        : widget.createdReport?.metadata['remark'] ?? previousReport?.metadata['remark'] ?? '';
-
-    _selectedCategory = widget.createdReport?.metadata['damage_category'] ??
-        previousReport?.metadata['damage_category'];
-    _selectedDamageType = widget.createdReport?.metadata['damage_type'] ??
-        previousReport?.metadata['damage_type'];
-    _selectedHealthLevel = widget.createdReport?.metadata['damage_level'] ??
-        previousReport?.metadata['damage_level'];
+        : widget.createdReport?.metadata['remark'] ?? '';
+      _selectedDamageType = widget.createdReport?.metadata['damage_type'];
+      _selectedHealthLevel = widget.createdReport?.metadata['damage_level'];
+    } else {
+      _textEditingController.text = result.isSkipped!
+        ? result.skipReason.toString()
+        : widget.previousReport?.metadata['remark'] ?? '';
+      _selectedCategory = previousReport?.metadata['damage_category'];
+      _selectedDamageType = previousReport?.metadata['damage_type'];
+      _selectedHealthLevel = previousReport?.metadata['damage_level'];
+    }
 
     _damageCategoryController.text = _selectedCategory ?? '';
     _damageTypeController.text = _selectedDamageType ?? '';
