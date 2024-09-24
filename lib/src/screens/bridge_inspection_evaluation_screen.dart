@@ -303,8 +303,9 @@ class BridgeInspectionEvaluationScreenState
               ),
               const SizedBox(height: 16),
               Row(
+
                 children: [
-                  if (result.isSkipped == false)
+                  if (result.isSkipped == false) ...[
                     Expanded(
                         child: FutureBuilder(
                             future: _pendingSubmission,
@@ -346,7 +347,8 @@ class BridgeInspectionEvaluationScreenState
                                     backgroundColor: Colors.orange),
                               );
                             }))),
-                  const SizedBox(width: 16),
+                    const SizedBox(width: 16),
+                  ],
                   Expanded(
                       child: FutureBuilder(
                           future: _pendingSubmission,
