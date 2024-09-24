@@ -5,7 +5,7 @@ class PhotoInspectionResult {
   final List<Photo> _uploadedPhotos;
   String selectedPhotoPath;
   String? skipReason;
-  bool? isSkipped;
+  bool isSkipped;
   List<dynamic> get allPhotos => [..._uploadedPhotos, ..._newPhotoLocalPaths];
 
   List<String> get newPhotoLocalPaths => _newPhotoLocalPaths;
@@ -16,7 +16,7 @@ class PhotoInspectionResult {
       required List<Photo> uploadedPhotos,
       required this.selectedPhotoPath,
        this.skipReason,
-        this.isSkipped})
+        this.isSkipped = false})
       : _newPhotoLocalPaths = newPhotoLocalPaths.toList(),
         _uploadedPhotos = uploadedPhotos.toList();
 

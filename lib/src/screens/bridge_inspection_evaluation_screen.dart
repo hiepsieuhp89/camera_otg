@@ -89,7 +89,7 @@ class BridgeInspectionEvaluationScreenState
 
   Future<void> _createReport(InspectionPointReportStatus status) async {
     await _compressCapturedPhotos(result.newPhotoLocalPaths);
-    if (result.isSkipped!) status = InspectionPointReportStatus.skipped;
+    if (result.isSkipped) status = InspectionPointReportStatus.skipped;
     await ref
         .read(bridgeInspectionProvider(widget.point.bridgeId!).notifier)
         .createReport(
@@ -118,13 +118,13 @@ class BridgeInspectionEvaluationScreenState
     _damageTypeController = TextEditingController();
 
     if (widget.createdReport != null) {
-      _textEditingController.text = result.isSkipped!
+      _textEditingController.text = result.isSkipped
           ? result.skipReason.toString()
           : widget.createdReport?.metadata['remark'] ?? '';
       _selectedDamageType = widget.createdReport?.metadata['damage_type'];
       _selectedHealthLevel = widget.createdReport?.metadata['damage_level'];
     } else {
-      _textEditingController.text = result.isSkipped!
+      _textEditingController.text = result.isSkipped
           ? result.skipReason.toString()
           : previousReport?.metadata['remark'] ?? '';
       _selectedCategory = previousReport?.metadata['damage_category'];
@@ -172,7 +172,7 @@ class BridgeInspectionEvaluationScreenState
     return IconButton(
         icon: const Icon(Icons.image),
         color: Theme.of(context).primaryColor,
-        onPressed: result.isSkipped == false
+        onPressed: !result.isSkipped
             ? () {
                 context
                     .pushRoute<PhotoInspectionResult>(
@@ -305,7 +305,7 @@ class BridgeInspectionEvaluationScreenState
               Row(
 
                 children: [
-                  if (result.isSkipped == false) ...[
+                  if (!result.isSkipped) ...[
                     Expanded(
                         child: FutureBuilder(
                             future: _pendingSubmission,
@@ -355,12 +355,12 @@ class BridgeInspectionEvaluationScreenState
                           builder: ((context, snapshot) {
                             final isLoading = snapshot.connectionState ==
                                 ConnectionState.waiting;
-                            final label = result.isSkipped!
+                            final label = result.isSkipped
                                 ? Text(AppLocalizations.of(context)!
                                     .skipEvaluation)
                                 : Text(AppLocalizations.of(context)!
                                     .finishEvaluation);
-                            final inspectionStatus = result.isSkipped!
+                            final inspectionStatus = result.isSkipped
                                 ? InspectionPointReportStatus.skipped
                                 : InspectionPointReportStatus.finished;
                             return FilledButton.icon(
