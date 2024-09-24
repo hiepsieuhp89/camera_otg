@@ -169,10 +169,11 @@ class BridgeInspectionEvaluationScreenState
     );
   }
 
-  IconButton buildGoToPhotoSelectionButton(BuildContext context) {
-    return IconButton(
+  StatelessWidget buildGoToPhotoSelectionButton(BuildContext context) {
+    if (result.isSkipped == false) {
+      return IconButton(
         icon: const Icon(Icons.image),
-        color: Theme.of(context).primaryColor,
+         color: Theme.of(context).primaryColor,
         onPressed: () {
           context
               .pushRoute<PhotoInspectionResult>(
@@ -193,6 +194,9 @@ class BridgeInspectionEvaluationScreenState
             });
           });
         });
+    } else {
+      return const Icon(Icons.image_outlined);
+    }
   }
 
   Expanded buildEvaluationForm(
@@ -303,6 +307,7 @@ class BridgeInspectionEvaluationScreenState
               const SizedBox(height: 16),
               Row(
                 children: [
+                  if (result.isSkipped == false)
                   Expanded(
                       child: FutureBuilder(
                           future: _pendingSubmission,
