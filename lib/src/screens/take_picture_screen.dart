@@ -509,7 +509,9 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
                   onPressed:
                       capturedPhotoPaths.isEmpty && uploadedPhotos.isEmpty
                           ? _confirmSkippingPoint
-                          : _navigateToReportScreen,
+                          : (){ isSkipped = false;
+                                skipReason = "";
+                                _navigateToReportScreen();},
                   child: const Icon(Icons.check),
                 ),
                 const SizedBox(height: 16)
