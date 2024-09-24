@@ -89,7 +89,7 @@ class BridgeInspectionEvaluationScreenState
 
   Future<void> _createReport(InspectionPointReportStatus status) async {
     await _compressCapturedPhotos(result.newPhotoLocalPaths);
-    if (result.isSkipped) status = InspectionPointReportStatus.skipped;
+    if (result.isSkipped!) status = InspectionPointReportStatus.skipped;
     await ref
         .read(bridgeInspectionProvider(widget.point.bridgeId!).notifier)
         .createReport(
@@ -118,7 +118,7 @@ class BridgeInspectionEvaluationScreenState
     _damageTypeController = TextEditingController();
 
 
-    _textEditingController.text = result.isSkipped
+    _textEditingController.text = result.isSkipped!
         ? result.skipReason.toString()
         : widget.createdReport?.metadata['remark'] ?? previousReport?.metadata['remark'] ?? '';
 
@@ -348,12 +348,12 @@ class BridgeInspectionEvaluationScreenState
                           builder: ((context, snapshot) {
                             final isLoading = snapshot.connectionState ==
                                 ConnectionState.waiting;
-                            final label = result.isSkipped
+                            final label = result.isSkipped!
                                 ? Text(AppLocalizations.of(context)!
                                     .skipEvaluation)
                                 : Text(AppLocalizations.of(context)!
                                     .finishEvaluation);
-                            final inspectionStatus = result.isSkipped
+                            final inspectionStatus = result.isSkipped!
                                 ? InspectionPointReportStatus.skipped
                                 : InspectionPointReportStatus.finished;
                             return FilledButton.icon(
