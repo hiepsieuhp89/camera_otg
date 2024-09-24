@@ -4,7 +4,9 @@ import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kyoryo/src/models/photo_inspection_result.dart';
@@ -259,19 +261,16 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
 
     context
         .pushRoute<PhotoInspectionResult>(BridgeInspectionEvaluationRoute(
-            photoInspectionResult: PhotoInspectionResult(
-                uploadedPhotos: uploadedPhotos,
-                newPhotoLocalPaths: capturedPhotoPaths,
-                selectedPhotoPath: selectedPhotoPath ?? '',
-                skipReason: skipReason,
-                isSkipped: isSkipped
-            ),
-            point: widget.inspectionPoint,
-            createdReport: widget.createdReport,
-            previousReport: ref
-                .read(bridgeInspectionProvider(widget.inspectionPoint.bridgeId!)
-                    .notifier)
-                .findPreviousReportFromPoint(widget.inspectionPoint.id!)))
+      photoInspectionResult: PhotoInspectionResult(
+          uploadedPhotos: uploadedPhotos,
+          newPhotoLocalPaths: capturedPhotoPaths,
+          selectedPhotoPath: selectedPhotoPath ?? '',
+          skipReason: skipReason,
+          isSkipped: isSkipped
+      ),
+      point: widget.inspectionPoint,
+      createdReport: widget.createdReport,
+    ))
         .then((result) {
       _setLandscapeOrientation();
 
@@ -439,33 +438,36 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
         child: ClipRect(
           child: OverflowBox(
             alignment: Alignment.centerLeft,
-            child: FittedBox(
-                fit: BoxFit.fitHeight,
-                alignment: Alignment.centerLeft,
-                child: FutureBuilder(
-                  future: _initializeControllerFuture,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.done) {
-                      return SizedBox(
-                        width: screenHeight * _controller!.value.aspectRatio,
-                        height: screenHeight,
-                        child: CameraPreview(_controller!, child: LayoutBuilder(
-                            builder: (BuildContext context,
-                                BoxConstraints constraints) {
-                          return GestureDetector(
-                            behavior: HitTestBehavior.opaque,
-                            onTapDown: (TapDownDetails details) =>
-                                _onViewFinderTap(details, constraints),
-                          );
-                        })),
-                      );
-                    } else {
-                      return Container(
-                        color: Colors.black,
-                      );
-                    }
-                  },
-                )),
+            child: FutureBuilder(
+              future: _initializeControllerFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.done) {
+                  return CustomPaint(
+                    foregroundPainter: CameraGrid(),
+                    child: FittedBox(
+                        fit: BoxFit.fitHeight,
+                        alignment: Alignment.centerLeft,
+                        child: SizedBox(
+                          width: screenHeight * _controller!.value.aspectRatio,
+                          height: screenHeight,
+                          child: CameraPreview(_controller!, child:
+                              LayoutBuilder(builder: (BuildContext context,
+                                  BoxConstraints constraints) {
+                            return GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onTapDown: (TapDownDetails details) =>
+                                  _onViewFinderTap(details, constraints),
+                            );
+                          })),
+                        )),
+                  );
+                } else {
+                  return Container(
+                    color: Colors.black,
+                  );
+                }
+              },
+            ),
           ),
         ),
       ),
@@ -694,4 +696,25 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
       ),
     );
   }
+}
+
+class CameraGrid extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint paint = Paint()
+      ..color = Colors.white.withOpacity(0.5)
+      ..strokeWidth = 1.0;
+
+    canvas.drawLine(
+        Offset(size.width / 3, 0), Offset(size.width / 3, size.height), paint);
+    canvas.drawLine(Offset(size.width / 3 * 2, 0),
+        Offset(size.width / 3 * 2, size.height), paint);
+    canvas.drawLine(
+        Offset(0, size.height / 3), Offset(size.width, size.height / 3), paint);
+    canvas.drawLine(Offset(0, size.height / 3 * 2),
+        Offset(size.width, size.height / 3 * 2), paint);
+  }
+
+  @override
+  bool shouldRepaint(CameraGrid oldDelegate) => false;
 }
