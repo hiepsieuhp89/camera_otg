@@ -1,17 +1,17 @@
 name: kyoryo
-description: 'A new Flutter project.'
+description: "A new Flutter project."
 
-publish_to: 'none'
+publish_to: "none"
 
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.2.5 <4.0.0'
+  sdk: ">=3.2.5 <4.0.0"
 
 dependencies:
   cached_network_image: ^3.3.1
   camera: ^0.11.0
-  carousel_slider: ^4.2.1
+  carousel_slider: ^5.0.0
   collection: ^1.18.0
   flutter:
     sdk: flutter
@@ -31,7 +31,7 @@ dependencies:
   shared_preferences: ^2.2.2
   audioplayers: ^6.0.0
   auth0_flutter: ^1.1.0
-  auto_route: ^8.3.0
+  auto_route: ^9.2.2
   logging: ^1.2.0
 
 dev_dependencies:
@@ -44,8 +44,8 @@ dev_dependencies:
   riverpod_lint: ^2.3.9
   freezed: ^2.4.7
   json_serializable: ^6.8.0
-  flutter_launcher_icons: ^0.13.1
-  auto_route_generator: ^8.1.0
+  flutter_launcher_icons: ^0.14.0
+  auto_route_generator: ^9.0.0
 
 flutter:
   uses-material-design: true

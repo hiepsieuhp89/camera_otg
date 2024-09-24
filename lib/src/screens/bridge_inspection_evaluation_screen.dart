@@ -17,7 +17,7 @@ import 'package:kyoryo/src/routing/router.dart';
 import 'package:kyoryo/src/ui/selected_photo_check_mark.dart';
 import 'package:kyoryo/src/utilities/image_utils.dart';
 
-@RoutePage<PhotoInspectionResult>()
+@RoutePage()
 class BridgeInspectionEvaluationScreen extends ConsumerStatefulWidget {
   final InspectionPoint point;
   final PhotoInspectionResult photoInspectionResult;
@@ -49,11 +49,21 @@ class BridgeInspectionEvaluationScreenState
   late TextEditingController _damageTypeController;
 
   Future<void> submitInspection(InspectionPointReportStatus status) async {
+    final router = AutoRouter.of(context);
+
+    showMessageFailure() {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+              AppLocalizations.of(context)!.failedToCreateInspectionReport)));
+    }
+
     final reportSubmission = (widget.createdReport != null
             ? _updateReport(status)
             : _createReport(status))
         .then((_) {
-      context.router.popUntilRouteWithName(BridgeInspectionRoute.name);
+      router.popUntilRouteWithName(BridgeInspectionRoute.name);
+    }).catchError((_) {
+      showMessageFailure();
     });
 
     setState(() {
@@ -89,7 +99,6 @@ class BridgeInspectionEvaluationScreenState
 
   Future<void> _createReport(InspectionPointReportStatus status) async {
     await _compressCapturedPhotos(result.newPhotoLocalPaths);
-    if (result.isSkipped) status = InspectionPointReportStatus.skipped;
     await ref
         .read(bridgeInspectionProvider(widget.point.bridgeId!).notifier)
         .createReport(
@@ -142,9 +151,10 @@ class BridgeInspectionEvaluationScreenState
 
     return PopScope(
       canPop: false,
-      onPopInvoked: (didPop) => didPop ? null : Navigator.pop(context, result),
+      onPopInvokedWithResult: (didPop, Object? result) =>
+          didPop ? null : Navigator.pop(context, result),
       child: Scaffold(
-          appBar: AppBar(title: Text(widget.point.spanName!), actions: [
+          appBar: AppBar(title: Text(widget.point.spanName ?? ''), actions: [
             buildGoToPhotoSelectionButton(context),
           ]),
           body: OrientationBuilder(builder: ((context, orientation) {
@@ -168,32 +178,31 @@ class BridgeInspectionEvaluationScreenState
     );
   }
 
-  StatelessWidget buildGoToPhotoSelectionButton(BuildContext context) {
+  IconButton buildGoToPhotoSelectionButton(BuildContext context) {
+    onButtonPressed() {
+      context.router
+          .push<PhotoInspectionResult>(BridgeInspectionPhotoSelectionRoute(
+        photoInspectionResult: result,
+        point: widget.point,
+      ))
+          .then((data) {
+        if (data == null) {
+          return;
+        }
+
+        setState(() {
+          result = result.copyWith(
+              newPhotoLocalPaths: data.newPhotoLocalPaths,
+              uploadedPhotos: data.uploadedPhotos,
+              selectedPhotoPath: data.selectedPhotoPath);
+        });
+      });
+    }
+
     return IconButton(
         icon: const Icon(Icons.image),
         color: Theme.of(context).primaryColor,
-        onPressed: !result.isSkipped
-            ? () {
-                context
-                    .pushRoute<PhotoInspectionResult>(
-                        BridgeInspectionPhotoSelectionRoute(
-                  photoInspectionResult: result,
-                  point: widget.point,
-                ))
-                    .then((data) {
-                  if (data == null) {
-                    return;
-                  }
-
-                  setState(() {
-                    result = result.copyWith(
-                        newPhotoLocalPaths: data.newPhotoLocalPaths,
-                        uploadedPhotos: data.uploadedPhotos,
-                        selectedPhotoPath: data.selectedPhotoPath);
-                  });
-                });
-              }
-            : null);
+        onPressed: !result.isSkipped ? onButtonPressed : null);
   }
 
   Expanded buildEvaluationForm(
@@ -303,7 +312,6 @@ class BridgeInspectionEvaluationScreenState
               ),
               const SizedBox(height: 16),
               Row(
-
                 children: [
                   if (!result.isSkipped) ...[
                     Expanded(
@@ -332,15 +340,8 @@ class BridgeInspectionEvaluationScreenState
                                     ? null
                                     : () {
                                         submitInspection(
-                                                InspectionPointReportStatus
-                                                    .pending)
-                                            .catchError((_) {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(SnackBar(
-                                                  content: Text(AppLocalizations
-                                                          .of(context)!
-                                                      .failedToCreateInspectionReport)));
-                                        });
+                                            InspectionPointReportStatus
+                                                .pending);
                                       },
                                 style: FilledButton.styleFrom(
                                     minimumSize: const Size.fromHeight(55),
@@ -365,8 +366,7 @@ class BridgeInspectionEvaluationScreenState
                                 : InspectionPointReportStatus.finished;
                             return FilledButton.icon(
                               icon: isLoading &&
-                                      _submissionType ==
-                                          InspectionPointReportStatus.finished
+                                      _submissionType == inspectionStatus
                                   ? Container(
                                       width: 24,
                                       height: 24,
@@ -380,14 +380,7 @@ class BridgeInspectionEvaluationScreenState
                               onPressed: isLoading
                                   ? null
                                   : () {
-                                      submitInspection(inspectionStatus)
-                                          .catchError((_) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(SnackBar(
-                                                content: Text(AppLocalizations
-                                                        .of(context)!
-                                                    .failedToCreateInspectionReport)));
-                                      });
+                                      submitInspection(inspectionStatus);
                                     },
                               style: FilledButton.styleFrom(
                                   minimumSize: const Size.fromHeight(55)),

@@ -16,13 +16,17 @@ class LoginScreen extends ConsumerWidget {
         child: FilledButton(
           onPressed: () {
             ref.read(authenticationProvider.notifier).login().then((_) {
-              context.replaceRoute(const BridgeListRoute());
+              if (context.mounted) {
+                context.replaceRoute(const BridgeListRoute());
+              }
             }).catchError((error, stackTrace) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(error.toString()),
-                ),
-              );
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(error.toString()),
+                  ),
+                );
+              }
             });
           },
           child: Text(AppLocalizations.of(context)!.loginButton),

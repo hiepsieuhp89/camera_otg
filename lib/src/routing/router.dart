@@ -24,7 +24,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 part 'router.gr.dart';
 
 @AutoRouterConfig()
-class AppRouter extends _$AppRouter {
+class AppRouter extends RootStackRouter {
   late final AuthGuard _authGuard;
 
   AppRouter(

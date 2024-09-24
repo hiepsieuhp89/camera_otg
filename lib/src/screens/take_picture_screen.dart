@@ -4,9 +4,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kyoryo/src/models/photo_inspection_result.dart';
@@ -37,7 +35,6 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
     with WidgetsBindingObserver {
   CameraController? _controller;
   Future<void>? _initializeControllerFuture;
-  Orientation? currentOrientation;
   Photo? previousPhoto;
   String? selectedPhotoPath;
   List<String> capturedPhotoPaths = [];
@@ -49,35 +46,15 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
   double _currentExposureOffset = 0.0;
   double _maxExposureOffset = 0.0;
   double _minExposureOffset = 0.0;
-  String skipReason = "";
-  bool isSkipped = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        setState(() {
-          currentOrientation = MediaQuery.of(context).orientation;
-        });
-      }
-    });
     _enterFullScreen();
     _initCamera();
     _initPhotos();
     _setLandscapeOrientation();
-  }
-
-  @override
-  void didChangeMetrics() {
-    super.didChangeMetrics();
-    if (mounted) {
-      setState(() {
-        currentOrientation = MediaQuery.of(context).orientation;
-      });
-    }
   }
 
   Future<void> _initCamera() async {
@@ -197,7 +174,10 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
     }
   }
 
-  void _navigateToPreview() {
+  void _navigateToPreview({
+    bool isSkipped = false,
+    String? skipReason,
+  }) {
     _resetOrientation();
     _exitFullScreen();
 
@@ -224,7 +204,7 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
     });
   }
 
-  void _navigateToReportScreen() {
+  void _navigateToReportScreen({bool isSkipped = false, String? skipReason}) {
     _resetOrientation();
     _exitFullScreen();
 
@@ -235,8 +215,7 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
           newPhotoLocalPaths: capturedPhotoPaths,
           selectedPhotoPath: selectedPhotoPath ?? '',
           skipReason: skipReason,
-          isSkipped: isSkipped
-      ),
+          isSkipped: isSkipped),
       point: widget.inspectionPoint,
       createdReport: widget.createdReport,
     ))
@@ -269,22 +248,10 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
             TextButton(
               child: Text(AppLocalizations.of(context)!.yesOption),
               onPressed: () {
-                skipReason = AppLocalizations.of(context)!.inspectionWasSkipped;
-                isSkipped = true;
-                if (widget.createdReport != null) {
-                  ref
-                      .read(bridgeInspectionProvider(
-                              widget.inspectionPoint.bridgeId!)
-                          .notifier)
-                      .updateReport(
-                          report: widget.createdReport!.copyWith(
-                              photos: [],
-                              metadata: {'remark': skipReason},
-                              status: InspectionPointReportStatus.skipped),
-                          capturedPhotoPaths: [],
-                          uploadedPhotos: []);
-                }
-                _navigateToReportScreen();
+                _navigateToReportScreen(
+                    isSkipped: true,
+                    skipReason:
+                        AppLocalizations.of(context)!.inspectionWasSkipped);
               },
             ),
           ],
@@ -509,9 +476,7 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
                   onPressed:
                       capturedPhotoPaths.isEmpty && uploadedPhotos.isEmpty
                           ? _confirmSkippingPoint
-                          : (){ isSkipped = false;
-                                skipReason = "";
-                                _navigateToReportScreen();},
+                          : _navigateToReportScreen,
                   child: const Icon(Icons.check),
                 ),
                 const SizedBox(height: 16)

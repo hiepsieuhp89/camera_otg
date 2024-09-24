@@ -9,97 +9,6 @@
 
 part of 'router.dart';
 
-abstract class _$AppRouter extends RootStackRouter {
-  // ignore: unused_element
-  _$AppRouter({super.navigatorKey});
-
-  @override
-  final Map<String, PageFactory> pagesMap = {
-    BridgeFiltersRoute.name: (routeData) {
-      return AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: const BridgeFiltersScreen(),
-      );
-    },
-    BridgeInspectionEvaluationRoute.name: (routeData) {
-      final args = routeData.argsAs<BridgeInspectionEvaluationRouteArgs>();
-      return AutoRoutePage<PhotoInspectionResult>(
-        routeData: routeData,
-        child: BridgeInspectionEvaluationScreen(
-          key: args.key,
-          point: args.point,
-          photoInspectionResult: args.photoInspectionResult,
-          createdReport: args.createdReport,
-        ),
-      );
-    },
-    BridgeInspectionPhotoSelectionRoute.name: (routeData) {
-      final args = routeData.argsAs<BridgeInspectionPhotoSelectionRouteArgs>();
-      return AutoRoutePage<PhotoInspectionResult>(
-        routeData: routeData,
-        child: BridgeInspectionPhotoSelectionScreen(
-          key: args.key,
-          photoInspectionResult: args.photoInspectionResult,
-          point: args.point,
-          createdReport: args.createdReport,
-        ),
-      );
-    },
-    BridgeInspectionRoute.name: (routeData) {
-      return AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: const BridgeInspectionScreen(),
-      );
-    },
-    BridgeListRoute.name: (routeData) {
-      return AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: const BridgeListScreen(),
-      );
-    },
-    InspectionPointCreationRoute.name: (routeData) {
-      final args = routeData.argsAs<InspectionPointCreationRouteArgs>();
-      return AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: InspectionPointCreationScreen(
-          key: args.key,
-          diagram: args.diagram,
-          pointType: args.pointType,
-        ),
-      );
-    },
-    InspectionPointDiagramSelectRoute.name: (routeData) {
-      return AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: const InspectionPointDiagramSelectScreen(),
-      );
-    },
-    LoginRoute.name: (routeData) {
-      return AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: const LoginScreen(),
-      );
-    },
-    SplashRoute.name: (routeData) {
-      return AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: const SplashScreen(),
-      );
-    },
-    TakePictureRoute.name: (routeData) {
-      final args = routeData.argsAs<TakePictureRouteArgs>();
-      return AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: TakePictureScreen(
-          key: args.key,
-          inspectionPoint: args.inspectionPoint,
-          createdReport: args.createdReport,
-        ),
-      );
-    },
-  };
-}
-
 /// generated route for
 /// [BridgeFiltersScreen]
 class BridgeFiltersRoute extends PageRouteInfo<void> {
@@ -111,7 +20,12 @@ class BridgeFiltersRoute extends PageRouteInfo<void> {
 
   static const String name = 'BridgeFiltersRoute';
 
-  static const PageInfo<void> page = PageInfo<void>(name);
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const BridgeFiltersScreen();
+    },
+  );
 }
 
 /// generated route for
@@ -137,8 +51,18 @@ class BridgeInspectionEvaluationRoute
 
   static const String name = 'BridgeInspectionEvaluationRoute';
 
-  static const PageInfo<BridgeInspectionEvaluationRouteArgs> page =
-      PageInfo<BridgeInspectionEvaluationRouteArgs>(name);
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<BridgeInspectionEvaluationRouteArgs>();
+      return BridgeInspectionEvaluationScreen(
+        key: args.key,
+        point: args.point,
+        photoInspectionResult: args.photoInspectionResult,
+        createdReport: args.createdReport,
+      );
+    },
+  );
 }
 
 class BridgeInspectionEvaluationRouteArgs {
@@ -186,8 +110,18 @@ class BridgeInspectionPhotoSelectionRoute
 
   static const String name = 'BridgeInspectionPhotoSelectionRoute';
 
-  static const PageInfo<BridgeInspectionPhotoSelectionRouteArgs> page =
-      PageInfo<BridgeInspectionPhotoSelectionRouteArgs>(name);
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<BridgeInspectionPhotoSelectionRouteArgs>();
+      return BridgeInspectionPhotoSelectionScreen(
+        key: args.key,
+        photoInspectionResult: args.photoInspectionResult,
+        point: args.point,
+        createdReport: args.createdReport,
+      );
+    },
+  );
 }
 
 class BridgeInspectionPhotoSelectionRouteArgs {
@@ -223,7 +157,12 @@ class BridgeInspectionRoute extends PageRouteInfo<void> {
 
   static const String name = 'BridgeInspectionRoute';
 
-  static const PageInfo<void> page = PageInfo<void>(name);
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const BridgeInspectionScreen();
+    },
+  );
 }
 
 /// generated route for
@@ -237,7 +176,12 @@ class BridgeListRoute extends PageRouteInfo<void> {
 
   static const String name = 'BridgeListRoute';
 
-  static const PageInfo<void> page = PageInfo<void>(name);
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const BridgeListScreen();
+    },
+  );
 }
 
 /// generated route for
@@ -261,8 +205,17 @@ class InspectionPointCreationRoute
 
   static const String name = 'InspectionPointCreationRoute';
 
-  static const PageInfo<InspectionPointCreationRouteArgs> page =
-      PageInfo<InspectionPointCreationRouteArgs>(name);
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<InspectionPointCreationRouteArgs>();
+      return InspectionPointCreationScreen(
+        key: args.key,
+        diagram: args.diagram,
+        pointType: args.pointType,
+      );
+    },
+  );
 }
 
 class InspectionPointCreationRouteArgs {
@@ -295,7 +248,12 @@ class InspectionPointDiagramSelectRoute extends PageRouteInfo<void> {
 
   static const String name = 'InspectionPointDiagramSelectRoute';
 
-  static const PageInfo<void> page = PageInfo<void>(name);
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const InspectionPointDiagramSelectScreen();
+    },
+  );
 }
 
 /// generated route for
@@ -309,7 +267,12 @@ class LoginRoute extends PageRouteInfo<void> {
 
   static const String name = 'LoginRoute';
 
-  static const PageInfo<void> page = PageInfo<void>(name);
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const LoginScreen();
+    },
+  );
 }
 
 /// generated route for
@@ -323,7 +286,12 @@ class SplashRoute extends PageRouteInfo<void> {
 
   static const String name = 'SplashRoute';
 
-  static const PageInfo<void> page = PageInfo<void>(name);
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const SplashScreen();
+    },
+  );
 }
 
 /// generated route for
@@ -346,8 +314,17 @@ class TakePictureRoute extends PageRouteInfo<TakePictureRouteArgs> {
 
   static const String name = 'TakePictureRoute';
 
-  static const PageInfo<TakePictureRouteArgs> page =
-      PageInfo<TakePictureRouteArgs>(name);
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<TakePictureRouteArgs>();
+      return TakePictureScreen(
+        key: args.key,
+        inspectionPoint: args.inspectionPoint,
+        createdReport: args.createdReport,
+      );
+    },
+  );
 }
 
 class TakePictureRouteArgs {

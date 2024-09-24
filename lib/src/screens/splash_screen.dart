@@ -24,22 +24,28 @@ class _SplashScreenPageState extends ConsumerState<SplashScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) => performHydration());
   }
 
+  void goToLogin() {
+    context.replaceRoute(const LoginRoute());
+  }
+
+  void goToBridgeList() {
+    context.replaceRoute(const BridgeListRoute());
+  }
+
   Future<void> performHydration() async {
     await ref
         .read(authenticationProvider.notifier)
         .checkAuthenticated()
         .then((isAuthenticated) {
       if (!isAuthenticated) {
-        context.replaceRoute(const LoginRoute());
-
-        return;
+        goToBridgeList();
       }
 
       Future.wait([
         ref.watch(damageTypesProvider.future),
         ref.read(currentMunicipalityProvider.notifier).fetch()
       ]).then((_) {
-        context.replaceRoute(const BridgeListRoute());
+        goToBridgeList();
       });
     });
   }
