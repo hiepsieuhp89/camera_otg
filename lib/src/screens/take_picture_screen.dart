@@ -80,37 +80,6 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
     }
   }
 
-  // Future<String?> showSkipReasonDialog(BuildContext context) async {
-  //   final TextEditingController controller = TextEditingController();
-  //
-  //   return showDialog<String>(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return AlertDialog(
-  //         title: Text('Enter skip reason'),
-  //         content: TextField(
-  //           controller: controller,
-  //           decoration: InputDecoration(hintText: 'Reason'),
-  //         ),
-  //         actions: <Widget>[
-  //           TextButton(
-  //             child: Text('Cancel'),
-  //             onPressed: () {
-  //               Navigator.of(context).pop(); // Dismiss the dialog
-  //             },
-  //           ),
-  //           TextButton(
-  //             child: Text('OK'),
-  //             onPressed: () {
-  //               Navigator.of(context).pop(controller.text); // Return the input text
-  //             },
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
-
   Future<void> _initCamera() async {
     WidgetsFlutterBinding.ensureInitialized();
     final cameras = await availableCameras();
@@ -300,7 +269,6 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
             TextButton(
               child: Text(AppLocalizations.of(context)!.yesOption),
               onPressed: () {
-                // skipReason = (await showSkipReasonDialog(context))!;
                 skipReason = AppLocalizations.of(context)!.inspectionWasSkipped;
                 isSkipped = true;
                 if (widget.createdReport == null) {
