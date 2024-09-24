@@ -118,9 +118,10 @@ class BridgeInspectionEvaluationScreenState
     _damageTypeController = TextEditingController();
 
 
-    _textEditingController.text = widget.createdReport?.metadata['remark'] ??
-        previousReport?.metadata['remark'] ?? result.skipReason ?? ''
-        '';
+    _textEditingController.text = result.isSkipped
+        ? result.skipReason.toString()
+        : widget.createdReport?.metadata['remark'] ?? previousReport?.metadata['remark'] ?? '';
+
     _selectedCategory = widget.createdReport?.metadata['damage_category'] ??
         previousReport?.metadata['damage_category'];
     _selectedDamageType = widget.createdReport?.metadata['damage_type'] ??
