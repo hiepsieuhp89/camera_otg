@@ -119,14 +119,14 @@ class BridgeInspectionEvaluationScreenState
 
     if (widget.createdReport != null) {
       _textEditingController.text = result.isSkipped!
-        ? result.skipReason.toString()
-        : widget.createdReport?.metadata['remark'] ?? '';
+          ? result.skipReason.toString()
+          : widget.createdReport?.metadata['remark'] ?? '';
       _selectedDamageType = widget.createdReport?.metadata['damage_type'];
       _selectedHealthLevel = widget.createdReport?.metadata['damage_level'];
     } else {
       _textEditingController.text = result.isSkipped!
-        ? result.skipReason.toString()
-        : previousReport?.metadata['remark'] ?? '';
+          ? result.skipReason.toString()
+          : previousReport?.metadata['remark'] ?? '';
       _selectedCategory = previousReport?.metadata['damage_category'];
       _selectedDamageType = previousReport?.metadata['damage_type'];
       _selectedHealthLevel = previousReport?.metadata['damage_level'];
@@ -134,7 +134,6 @@ class BridgeInspectionEvaluationScreenState
 
     _damageCategoryController.text = _selectedCategory ?? '';
     _damageTypeController.text = _selectedDamageType ?? '';
-
   }
 
   @override
@@ -170,33 +169,31 @@ class BridgeInspectionEvaluationScreenState
   }
 
   StatelessWidget buildGoToPhotoSelectionButton(BuildContext context) {
-    if (result.isSkipped == false) {
-      return IconButton(
+    return IconButton(
         icon: const Icon(Icons.image),
-         color: Theme.of(context).primaryColor,
-        onPressed: () {
-          context
-              .pushRoute<PhotoInspectionResult>(
-                  BridgeInspectionPhotoSelectionRoute(
-            photoInspectionResult: result,
-            point: widget.point,
-          ))
-              .then((data) {
-            if (data == null) {
-              return;
-            }
+        color: Theme.of(context).primaryColor,
+        onPressed: result.isSkipped == false
+            ? () {
+                context
+                    .pushRoute<PhotoInspectionResult>(
+                        BridgeInspectionPhotoSelectionRoute(
+                  photoInspectionResult: result,
+                  point: widget.point,
+                ))
+                    .then((data) {
+                  if (data == null) {
+                    return;
+                  }
 
-            setState(() {
-              result = result.copyWith(
-                  newPhotoLocalPaths: data.newPhotoLocalPaths,
-                  uploadedPhotos: data.uploadedPhotos,
-                  selectedPhotoPath: data.selectedPhotoPath);
-            });
-          });
-        });
-    } else {
-      return const Icon(Icons.image_outlined);
-    }
+                  setState(() {
+                    result = result.copyWith(
+                        newPhotoLocalPaths: data.newPhotoLocalPaths,
+                        uploadedPhotos: data.uploadedPhotos,
+                        selectedPhotoPath: data.selectedPhotoPath);
+                  });
+                });
+              }
+            : null);
   }
 
   Expanded buildEvaluationForm(
@@ -308,47 +305,47 @@ class BridgeInspectionEvaluationScreenState
               Row(
                 children: [
                   if (result.isSkipped == false)
-                  Expanded(
-                      child: FutureBuilder(
-                          future: _pendingSubmission,
-                          builder: ((context, snapshot) {
-                            final isLoading = snapshot.connectionState ==
-                                ConnectionState.waiting;
+                    Expanded(
+                        child: FutureBuilder(
+                            future: _pendingSubmission,
+                            builder: ((context, snapshot) {
+                              final isLoading = snapshot.connectionState ==
+                                  ConnectionState.waiting;
 
-                            return FilledButton.icon(
-                              icon: isLoading &&
-                                      _submissionType ==
-                                          InspectionPointReportStatus.pending
-                                  ? Container(
-                                      width: 24,
-                                      height: 24,
-                                      padding: const EdgeInsets.all(2.0),
-                                      child: const CircularProgressIndicator(
-                                        strokeWidth: 3,
-                                      ),
-                                    )
-                                  : const Icon(Icons.timer),
-                              label: Text(
-                                  AppLocalizations.of(context)!.holdButton),
-                              onPressed: isLoading
-                                  ? null
-                                  : () {
-                                      submitInspection(
-                                              InspectionPointReportStatus
-                                                  .pending)
-                                          .catchError((_) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(SnackBar(
-                                                content: Text(AppLocalizations
-                                                        .of(context)!
-                                                    .failedToCreateInspectionReport)));
-                                      });
-                                    },
-                              style: FilledButton.styleFrom(
-                                  minimumSize: const Size.fromHeight(55),
-                                  backgroundColor: Colors.orange),
-                            );
-                          }))),
+                              return FilledButton.icon(
+                                icon: isLoading &&
+                                        _submissionType ==
+                                            InspectionPointReportStatus.pending
+                                    ? Container(
+                                        width: 24,
+                                        height: 24,
+                                        padding: const EdgeInsets.all(2.0),
+                                        child: const CircularProgressIndicator(
+                                          strokeWidth: 3,
+                                        ),
+                                      )
+                                    : const Icon(Icons.timer),
+                                label: Text(
+                                    AppLocalizations.of(context)!.holdButton),
+                                onPressed: isLoading
+                                    ? null
+                                    : () {
+                                        submitInspection(
+                                                InspectionPointReportStatus
+                                                    .pending)
+                                            .catchError((_) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(SnackBar(
+                                                  content: Text(AppLocalizations
+                                                          .of(context)!
+                                                      .failedToCreateInspectionReport)));
+                                        });
+                                      },
+                                style: FilledButton.styleFrom(
+                                    minimumSize: const Size.fromHeight(55),
+                                    backgroundColor: Colors.orange),
+                              );
+                            }))),
                   const SizedBox(width: 16),
                   Expanded(
                       child: FutureBuilder(
