@@ -169,6 +169,18 @@ abstract class AppLocalizations {
   /// **'入力完了'**
   String get finishEvaluation;
 
+  /// No description provided for @inspectionWasSkipped.
+  ///
+  /// In ja, this message translates to:
+  /// **'点検をスキップした。'**
+  String get inspectionWasSkipped;
+
+  /// No description provided for @skipEvaluation.
+  ///
+  /// In ja, this message translates to:
+  /// **'入力省略'**
+  String get skipEvaluation;
+
   /// Last inspection date and time
   ///
   /// In ja, this message translates to:

@@ -64,12 +64,10 @@ class InpsectionPointListItem extends ConsumerWidget {
               style: adjustedSmallTextStyle),
           Text(
               '${report?.metadata?['damage_type']?.toString() ?? ''}'
-              '/'
               '${report?.metadata?['damage_level']?.toString() ?? ''}',
               style: adjustedSmallTextStyle),
           const SizedBox(height: 3.0),
           Text(
-              // '${AppLocalizations.of(context)!.remark}:\n'
               report?.metadata?['remark']?.toString() ?? '',
               style: adjustedSmallTextStyle),
         ],
