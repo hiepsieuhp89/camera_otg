@@ -126,7 +126,7 @@ class BridgeInspectionEvaluationScreenState
     } else {
       _textEditingController.text = result.isSkipped!
         ? result.skipReason.toString()
-        : widget.previousReport?.metadata['remark'] ?? '';
+        : previousReport?.metadata['remark'] ?? '';
       _selectedCategory = previousReport?.metadata['damage_category'];
       _selectedDamageType = previousReport?.metadata['damage_type'];
       _selectedHealthLevel = previousReport?.metadata['damage_level'];
