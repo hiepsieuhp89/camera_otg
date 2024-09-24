@@ -271,17 +271,7 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
               onPressed: () {
                 skipReason = AppLocalizations.of(context)!.inspectionWasSkipped;
                 isSkipped = true;
-                if (widget.createdReport == null) {
-                  ref
-                      .read(bridgeInspectionProvider(
-                              widget.inspectionPoint.bridgeId!)
-                          .notifier)
-                      .createReport(
-                          pointId: widget.inspectionPoint.id!,
-                          capturedPhotoPaths: [],
-                          metadata: {'remark': skipReason},
-                          status: InspectionPointReportStatus.skipped);
-                } else {
+                if (widget.createdReport != null) {
                   ref
                       .read(bridgeInspectionProvider(
                               widget.inspectionPoint.bridgeId!)
@@ -294,9 +284,6 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
                           capturedPhotoPaths: [],
                           uploadedPhotos: []);
                 }
-
-                context.router
-                    .popUntilRouteWithName(BridgeInspectionRoute.name);
                 _navigateToReportScreen();
               },
             ),
