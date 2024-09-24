@@ -59,7 +59,9 @@ class BridgeListScreen extends ConsumerWidget {
             MenuItemButton(
                 onPressed: () {
                   ref.read(authenticationProvider.notifier).logout().then((_) {
-                    context.pushRoute(const LoginRoute());
+                    if (context.mounted) {
+                      context.pushRoute(const LoginRoute());
+                    }
                   });
                 },
                 child: Row(

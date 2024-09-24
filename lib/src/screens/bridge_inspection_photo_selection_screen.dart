@@ -16,7 +16,7 @@ import 'package:kyoryo/src/services/inspection_point_report.service.dart';
 import 'package:kyoryo/src/ui/selected_photo_check_mark.dart';
 import 'package:kyoryo/src/utilities/image_utils.dart';
 
-@RoutePage<PhotoInspectionResult>()
+@RoutePage()
 class BridgeInspectionPhotoSelectionScreen extends ConsumerStatefulWidget {
   final PhotoInspectionResult photoInspectionResult;
   final InspectionPoint point;
@@ -36,7 +36,8 @@ class BridgeInspectionPhotoSelectionScreen extends ConsumerStatefulWidget {
 
 class _BridgeInspectionPhotoSelectionScreenState
     extends ConsumerState<BridgeInspectionPhotoSelectionScreen> {
-  final CarouselController carouselController = CarouselController();
+  final CarouselSliderController carouselController =
+      CarouselSliderController();
   late PhotoInspectionResult result;
   int currentIndex = 0;
 
@@ -66,7 +67,7 @@ class _BridgeInspectionPhotoSelectionScreenState
 
     return PopScope(
       canPop: false,
-      onPopInvoked: (didPope) {
+      onPopInvokedWithResult: (didPope, _) {
         if (!didPope) {
           Navigator.pop(context, result);
         }
@@ -79,7 +80,7 @@ class _BridgeInspectionPhotoSelectionScreenState
             : null,
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            context.pushRoute(BridgeInspectionEvaluationRoute(
+            context.router.replace(BridgeInspectionEvaluationRoute(
                 point: widget.point,
                 photoInspectionResult: result,
                 createdReport: widget.createdReport));

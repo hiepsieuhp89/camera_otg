@@ -15,8 +15,8 @@ class PhotoInspectionResult {
       {required List<String> newPhotoLocalPaths,
       required List<Photo> uploadedPhotos,
       required this.selectedPhotoPath,
-       this.skipReason,
-        this.isSkipped = false})
+      this.skipReason,
+      this.isSkipped = false})
       : _newPhotoLocalPaths = newPhotoLocalPaths.toList(),
         _uploadedPhotos = uploadedPhotos.toList();
 

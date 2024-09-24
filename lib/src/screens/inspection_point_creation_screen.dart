@@ -46,6 +46,10 @@ class InspectionPointCreationScreenState
     _elementNumberController = TextEditingController();
   }
 
+  void goToTakePictureScreen(InspectionPoint point) {
+    context.pushRoute(TakePictureRoute(inspectionPoint: point));
+  }
+
   void createInspecitonPoint() {
     final currentBridge = ref.watch(currentBridgeProvider);
     final inspectionPointsNotiffier =
@@ -74,11 +78,7 @@ class InspectionPointCreationScreenState
               diagramMarkingX: markCoordinateX,
               diagramMarkingY: markCoordinateY,
               diagramId: widget.diagram?.id))
-          .then(
-        (createdPoint) {
-          context.pushRoute(TakePictureRoute(inspectionPoint: createdPoint));
-        },
-      );
+          .then(goToTakePictureScreen);
     });
   }
 
@@ -154,8 +154,7 @@ class InspectionPointCreationScreenState
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
                     FilteringTextInputFormatter.digitsOnly,
-                  ]
-              ),
+                  ]),
               const SizedBox(height: 10.0),
               TextField(
                   controller: _elementNumberController,
@@ -171,8 +170,7 @@ class InspectionPointCreationScreenState
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
                     FilteringTextInputFormatter.digitsOnly,
-                  ]
-              ),
+                  ]),
               if (imageWidget != null) ...[
                 const SizedBox(height: 16),
                 Row(
