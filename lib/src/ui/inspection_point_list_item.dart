@@ -172,6 +172,8 @@ class InpsectionPointListItem extends ConsumerWidget {
     return Card(
       color: previousReport == null && point.type == InspectionPointType.damage
           ? Theme.of(context).secondaryHeaderColor
+          : activeReport?.status == InspectionPointReportStatus.finished
+          ? Theme.of(context).primaryColorLight
           : null,
       child: Container(
         constraints: const BoxConstraints(
