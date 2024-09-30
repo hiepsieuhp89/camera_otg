@@ -279,6 +279,7 @@ class BridgeInspectionEvaluationScreenState
                     ),
                     const SizedBox(height: 8),
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         DropdownMenu<String>(
                           initialSelection: _selectedHealthLevel,
@@ -298,19 +299,22 @@ class BridgeInspectionEvaluationScreenState
                         ),
                         const SizedBox(width: 8),
                         Expanded(
-                            child: TextField(
-                                controller: _textEditingController,
-                                decoration: InputDecoration(
-                                  label: Text(
-                                      AppLocalizations.of(context)!.remark),
-                                  border: const OutlineInputBorder(),
-                                )))
+                          child: TextField(
+                            controller: _textEditingController,
+                            maxLines: 5,
+                            keyboardType: TextInputType.multiline,
+                            decoration: InputDecoration(
+                              labelText: AppLocalizations.of(context)!.remark,
+                              border: const OutlineInputBorder(),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               Row(
                 children: [
                   if (!result.isSkipped) ...[
