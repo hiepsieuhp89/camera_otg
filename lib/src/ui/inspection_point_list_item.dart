@@ -131,7 +131,9 @@ class InpsectionPointListItem extends ConsumerWidget {
                     startInspect(point);
                   }
                 : null,
-            icon: const Icon(Icons.manage_search_rounded));
+            icon: const Icon(Icons.manage_search_outlined),
+            style: FilledButton.styleFrom(backgroundColor: Colors.orange),
+        );
       }
 
       switch (activeReport.status) {
