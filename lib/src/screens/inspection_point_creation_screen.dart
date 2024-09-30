@@ -144,7 +144,7 @@ class InspectionPointCreationScreenState
                       ),
                     ),
                   ),
-                  const SizedBox(width: 10.0),
+                  const SizedBox(width: 8.0),
                   Expanded(
                     child: TextField(
                       controller: _spanNumberController,
@@ -163,7 +163,7 @@ class InspectionPointCreationScreenState
                       ],
                     ),
                   ),
-                  const SizedBox(width: 10.0),
+                  const SizedBox(width: 8.0),
                   Expanded(
                     child: TextField(
                       controller: _elementNumberController,
