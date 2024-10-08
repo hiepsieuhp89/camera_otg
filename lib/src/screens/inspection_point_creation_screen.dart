@@ -128,49 +128,64 @@ class InspectionPointCreationScreenState
           padding: const EdgeInsets.all(16),
           child: ListView(
             children: [
-              TextField(
-                  controller: _nameController,
-                  onSubmitted: (value) {
-                    setState(() {
-                      _spanName = value;
-                    });
-                  },
-                  decoration: InputDecoration(
-                    label: Text(AppLocalizations.of(context)!.name),
-                    border: const OutlineInputBorder(),
-                  )),
-              const SizedBox(height: 10.0),
-              TextField(
-                  controller: _spanNumberController,
-                  onSubmitted: (value) {
-                    setState(() {
-                      _spanNumber = value;
-                    });
-                  },
-                  decoration: InputDecoration(
-                    label: Text(AppLocalizations.of(context)!.spanNumber),
-                    border: const OutlineInputBorder(),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _nameController,
+                      onSubmitted: (value) {
+                        setState(() {
+                          _spanName = value;
+                        });
+                      },
+                      decoration: InputDecoration(
+                        label: Text(AppLocalizations.of(context)!.name),
+                        border: const OutlineInputBorder(),
+                      ),
+                    ),
                   ),
-                  keyboardType: TextInputType.number,
-                  inputFormatters: <TextInputFormatter>[
-                    FilteringTextInputFormatter.digitsOnly,
-                  ]),
-              const SizedBox(height: 10.0),
-              TextField(
-                  controller: _elementNumberController,
-                  onSubmitted: (value) {
-                    setState(() {
-                      _elementNumber = value;
-                    });
-                  },
-                  decoration: InputDecoration(
-                    label: Text(AppLocalizations.of(context)!.elementNumber),
-                    border: const OutlineInputBorder(),
+                  const SizedBox(width: 8.0),
+                  Expanded(
+                    child: TextField(
+                      controller: _spanNumberController,
+                      onSubmitted: (value) {
+                        setState(() {
+                          _spanNumber = value;
+                        });
+                      },
+                      decoration: InputDecoration(
+                        label: Text(AppLocalizations.of(context)!.spanNumber),
+                        border: const OutlineInputBorder(),
+                      ),
+                      keyboardType: TextInputType.number,
+                      inputFormatters: <TextInputFormatter>[
+                        FilteringTextInputFormatter.digitsOnly,
+                      ],
+                    ),
                   ),
-                  keyboardType: TextInputType.number,
-                  inputFormatters: <TextInputFormatter>[
-                    FilteringTextInputFormatter.digitsOnly,
-                  ]),
+                  const SizedBox(width: 8.0),
+                  Expanded(
+                    child: TextField(
+                      controller: _elementNumberController,
+                      onSubmitted: (value) {
+                        setState(() {
+                          _elementNumber = value;
+                        });
+                      },
+                      decoration: InputDecoration(
+                        label:
+                            Text(AppLocalizations.of(context)!.elementNumber),
+                        border: const OutlineInputBorder(),
+                      ),
+                      keyboardType: TextInputType.number,
+                      inputFormatters: <TextInputFormatter>[
+                        FilteringTextInputFormatter.digitsOnly,
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10.0),
               if (imageWidget != null) ...[
                 const SizedBox(height: 16),
                 Row(
@@ -187,27 +202,32 @@ class InspectionPointCreationScreenState
 
                     setState(() {});
                   },
-                  child: Stack(children: [
-                    imageWidget,
-                    Positioned(
+                  child: Stack(
+                    children: [
+                      imageWidget,
+                      Positioned(
                         top: _top,
                         left: _left,
                         child: const Icon(
                           Icons.circle,
                           color: Colors.red,
                           size: 20,
-                        ))
-                  ]),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 SizedBox(
-                    height: 50,
-                    child: Center(
-                      child: Text(
-                          AppLocalizations.of(context)!
-                              .pleaseTapOnWhereTheDamageLocates,
-                          style: Theme.of(context).textTheme.bodySmall),
-                    )),
-              ]
+                  height: 50,
+                  child: Center(
+                    child: Text(
+                      AppLocalizations.of(context)!
+                          .pleaseTapOnWhereTheDamageLocates,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ));
