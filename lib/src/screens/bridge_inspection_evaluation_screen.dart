@@ -154,6 +154,7 @@ class BridgeInspectionEvaluationScreenState
       onPopInvokedWithResult: (didPop, Object? result) =>
           didPop ? null : Navigator.pop(context, result),
       child: Scaffold(
+          resizeToAvoidBottomInset: false,
           appBar: AppBar(title: Text(widget.point.spanName ?? ''), actions: [
             buildGoToPhotoSelectionButton(context),
           ]),
@@ -274,14 +275,10 @@ class BridgeInspectionEvaluationScreenState
                                   );
                                 }).toList()
                               : const [],
-                        ))
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+                        )),
+                        const SizedBox(width: 8),
                         DropdownMenu<String>(
+                          width: 78,
                           initialSelection: _selectedHealthLevel,
                           label: Text(AppLocalizations.of(context)!.damage),
                           onSelected: (healthLevel) {
@@ -297,7 +294,12 @@ class BridgeInspectionEvaluationScreenState
                             DropdownMenuEntry(value: 'e', label: 'e'),
                           ],
                         ),
-                        const SizedBox(width: 8),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         Expanded(
                           child: TextField(
                             controller: _textEditingController,
