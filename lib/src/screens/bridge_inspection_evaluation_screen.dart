@@ -277,22 +277,23 @@ class BridgeInspectionEvaluationScreenState
                               : const [],
                         )),
                         const SizedBox(width: 8),
-                        DropdownMenu<String>(
-                          width: 78,
-                          initialSelection: _selectedHealthLevel,
-                          label: Text(AppLocalizations.of(context)!.damage),
-                          onSelected: (healthLevel) {
-                            setState(() {
-                              _selectedHealthLevel = healthLevel;
-                            });
-                          },
-                          dropdownMenuEntries: const [
-                            DropdownMenuEntry(value: 'a', label: 'a'),
-                            DropdownMenuEntry(value: 'b', label: 'b'),
-                            DropdownMenuEntry(value: 'c', label: 'c'),
-                            DropdownMenuEntry(value: 'd', label: 'd'),
-                            DropdownMenuEntry(value: 'e', label: 'e'),
-                          ],
+                        Expanded(
+                          child: DropdownMenu<String>(
+                            initialSelection: _selectedHealthLevel,
+                            label: Text(AppLocalizations.of(context)!.damage),
+                            onSelected: (healthLevel) {
+                              setState(() {
+                                _selectedHealthLevel = healthLevel;
+                              });
+                            },
+                            dropdownMenuEntries: const [
+                              DropdownMenuEntry(value: 'a', label: 'a'),
+                              DropdownMenuEntry(value: 'b', label: 'b'),
+                              DropdownMenuEntry(value: 'c', label: 'c'),
+                              DropdownMenuEntry(value: 'd', label: 'd'),
+                              DropdownMenuEntry(value: 'e', label: 'e'),
+                            ],
+                          ),
                         ),
                       ],
                     ),

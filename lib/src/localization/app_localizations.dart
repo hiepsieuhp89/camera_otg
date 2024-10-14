@@ -240,7 +240,7 @@ abstract class AppLocalizations {
   /// No description provided for @damageDetails.
   ///
   /// In ja, this message translates to:
-  /// **'損傷の種類'**
+  /// **'損傷種類'**
   String get damageDetails;
 
   /// No description provided for @damage.
