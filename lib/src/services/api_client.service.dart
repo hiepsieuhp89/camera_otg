@@ -108,7 +108,9 @@ class ApiClient {
         return null;
       // NOTE: Backend should throw 401, but whatever
       case 403:
-        throw UnauthorizedApiException();
+        throw UnauthorizedApiException(
+            endpoint: response.request!.url.toString(),
+            statusCode: response.statusCode);
       default:
         throw Exception(
             'Error: ${response.statusCode}, Body: ${response.body}');
@@ -117,8 +119,18 @@ class ApiClient {
 }
 
 class UnauthorizedApiException implements Exception {
+  final String message;
+  final String endpoint;
+  final int statusCode;
+
+  UnauthorizedApiException({
+    this.message = 'Unauthorized request',
+    required this.endpoint,
+    required this.statusCode,
+  });
+
   @override
   String toString() {
-    return 'UnauthorizedApiException';
+    return 'UnauthorizedApiException: $message (Endpoint: $endpoint, Status Code: $statusCode)';
   }
 }
