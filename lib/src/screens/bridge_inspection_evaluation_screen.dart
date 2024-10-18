@@ -155,9 +155,11 @@ class BridgeInspectionEvaluationScreenState
           didPop ? null : Navigator.pop(context, result),
       child: Scaffold(
           resizeToAvoidBottomInset: false,
-          appBar: AppBar(title: Text(widget.point.spanName ?? ''), actions: [
-            buildGoToPhotoSelectionButton(context),
-          ]),
+          appBar: MediaQuery.of(context).orientation == Orientation.portrait
+              ? AppBar(title: Text(widget.point.spanName ?? ''), actions: [
+                  buildGoToPhotoSelectionButton(context),
+                ])
+              : null,
           body: OrientationBuilder(builder: ((context, orientation) {
             if (orientation == Orientation.portrait) {
               return Column(
@@ -277,42 +279,39 @@ class BridgeInspectionEvaluationScreenState
                               : const [],
                         )),
                         const SizedBox(width: 8),
-                        Expanded(
-                          child: DropdownMenu<String>(
-                            initialSelection: _selectedHealthLevel,
-                            label: Text(AppLocalizations.of(context)!.damage),
-                            onSelected: (healthLevel) {
-                              setState(() {
-                                _selectedHealthLevel = healthLevel;
-                              });
-                            },
-                            dropdownMenuEntries: const [
-                              DropdownMenuEntry(value: 'a', label: 'a'),
-                              DropdownMenuEntry(value: 'b', label: 'b'),
-                              DropdownMenuEntry(value: 'c', label: 'c'),
-                              DropdownMenuEntry(value: 'd', label: 'd'),
-                              DropdownMenuEntry(value: 'e', label: 'e'),
-                            ],
-                          ),
+                        DropdownMenu<String>(
+                          width: 80,
+                          initialSelection: _selectedHealthLevel,
+                          label: Text(AppLocalizations.of(context)!.damage),
+                          onSelected: (healthLevel) {
+                            setState(() {
+                              _selectedHealthLevel = healthLevel;
+                            });
+                          },
+                          dropdownMenuEntries: const [
+                            DropdownMenuEntry(value: 'a', label: 'a'),
+                            DropdownMenuEntry(value: 'b', label: 'b'),
+                            DropdownMenuEntry(value: 'c', label: 'c'),
+                            DropdownMenuEntry(value: 'd', label: 'd'),
+                            DropdownMenuEntry(value: 'e', label: 'e'),
+                          ],
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: _textEditingController,
-                            maxLines: 5,
-                            keyboardType: TextInputType.multiline,
-                            decoration: InputDecoration(
-                              labelText: AppLocalizations.of(context)!.remark,
-                              border: const OutlineInputBorder(),
-                            ),
-                          ),
-                        ),
-                      ],
+                    Expanded(
+                      child: TextField(
+                          minLines: 7,
+                          maxLines: null,
+                          controller: _textEditingController,
+                          keyboardType: TextInputType.multiline,
+                          decoration: InputDecoration(
+                            labelText: AppLocalizations.of(context)!.remark,
+                            border: const OutlineInputBorder(),
+                            constraints: const BoxConstraints(
+                                minHeight: double.infinity,
+                                minWidth: double.infinity),
+                          )),
                     ),
                   ],
                 ),
@@ -320,15 +319,23 @@ class BridgeInspectionEvaluationScreenState
               const SizedBox(height: 12),
               Row(
                 children: [
-                  if (!result.isSkipped) ...[
-                    Expanded(
-                        child: FutureBuilder(
-                            future: _pendingSubmission,
-                            builder: ((context, snapshot) {
-                              final isLoading = snapshot.connectionState ==
-                                  ConnectionState.waiting;
+                  if (MediaQuery.of(context).orientation ==
+                      Orientation.landscape)
+                    buildGoToPhotoSelectionButton(context),
+                  const Spacer(),
+                  FutureBuilder(
+                      future: _pendingSubmission,
+                      builder: ((context, snapshot) {
+                        final isLoading =
+                            snapshot.connectionState == ConnectionState.waiting;
+                        final inspectionStatus = result.isSkipped
+                            ? InspectionPointReportStatus.skipped
+                            : InspectionPointReportStatus.finished;
 
-                              return FilledButton.icon(
+                        return Row(
+                          children: [
+                            if (!result.isSkipped) ...[
+                              FilledButton.icon(
                                 icon: isLoading &&
                                         _submissionType ==
                                             InspectionPointReportStatus.pending
@@ -351,48 +358,40 @@ class BridgeInspectionEvaluationScreenState
                                                 .pending);
                                       },
                                 style: FilledButton.styleFrom(
-                                    minimumSize: const Size.fromHeight(55),
                                     backgroundColor: Colors.orange),
-                              );
-                            }))),
-                    const SizedBox(width: 16),
-                  ],
-                  Expanded(
-                      child: FutureBuilder(
-                          future: _pendingSubmission,
-                          builder: ((context, snapshot) {
-                            final isLoading = snapshot.connectionState ==
-                                ConnectionState.waiting;
-                            final label = result.isSkipped
-                                ? Text(AppLocalizations.of(context)!
-                                    .skipEvaluation)
-                                : Text(AppLocalizations.of(context)!
-                                    .finishEvaluation);
-                            final inspectionStatus = result.isSkipped
-                                ? InspectionPointReportStatus.skipped
-                                : InspectionPointReportStatus.finished;
-                            return FilledButton.icon(
-                              icon: isLoading &&
-                                      _submissionType == inspectionStatus
-                                  ? Container(
-                                      width: 24,
-                                      height: 24,
-                                      padding: const EdgeInsets.all(2.0),
-                                      child: const CircularProgressIndicator(
-                                        strokeWidth: 3,
-                                      ),
-                                    )
-                                  : const Icon(Icons.check),
-                              label: label,
-                              onPressed: isLoading
-                                  ? null
-                                  : () {
-                                      submitInspection(inspectionStatus);
-                                    },
-                              style: FilledButton.styleFrom(
-                                  minimumSize: const Size.fromHeight(55)),
-                            );
-                          })))
+                              ),
+                              const SizedBox(width: 16),
+                            ],
+                            FilledButton.icon(
+                                onPressed: isLoading
+                                    ? null
+                                    : () {
+                                        submitInspection(inspectionStatus);
+                                      },
+                                // style: FilledButton.styleFrom(
+                                //     minimumSize: const Size.fromHeight(55)),
+                                icon: isLoading &&
+                                        _submissionType == inspectionStatus
+                                    ? Container(
+                                        width: 24,
+                                        height: 24,
+                                        padding: const EdgeInsets.all(2.0),
+                                        child: const CircularProgressIndicator(
+                                          strokeWidth: 3,
+                                        ),
+                                      )
+                                    : inspectionStatus ==
+                                            InspectionPointReportStatus.finished
+                                        ? const Icon(Icons.check)
+                                        : const Icon(Icons.do_not_disturb),
+                                label: result.isSkipped
+                                    ? Text(AppLocalizations.of(context)!
+                                        .skipEvaluation)
+                                    : Text(AppLocalizations.of(context)!
+                                        .finishEvaluation))
+                          ],
+                        );
+                      }))
                 ],
               )
             ],
@@ -416,10 +415,12 @@ class BridgeInspectionEvaluationScreenState
 
     return Expanded(
       flex: 1,
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Column(children: [
-          Expanded(
+      child: Column(children: [
+        if (MediaQuery.of(context).orientation == Orientation.landscape)
+          AppBar(title: Text(widget.point.spanName ?? '')),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8.0),
+          child: Expanded(
               child: CarouselSlider(
             options: CarouselOptions(
               viewportFraction: 0.8,
@@ -454,8 +455,8 @@ class BridgeInspectionEvaluationScreenState
               );
             }).toList(),
           )),
-        ]),
-      ),
+        ),
+      ]),
     );
   }
 }
