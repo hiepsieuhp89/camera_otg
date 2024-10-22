@@ -4,6 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:kyoryo/src/models/inspection.dart';
 import 'package:kyoryo/src/models/inspection_point_report.dart';
+import 'package:kyoryo/src/models/inspection_point_report_photo.dart';
 import 'package:kyoryo/src/models/photo.dart';
 import 'package:kyoryo/src/providers/api.provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -72,29 +73,26 @@ class BridgeInspection extends _$BridgeInspection {
       throw Exception('No active inspection found');
     }
 
-    List<Photo> uploadedPhotos = [];
-    int? preferredPhotoId;
+    List<InspectionPointReportPhoto> reportPhotos = [];
 
     for (int i = 0; i < capturedPhotoPaths.length; i++) {
       String path = capturedPhotoPaths[i];
       Photo photo = await ref.read(apiServiceProvider).uploadPhoto(path);
-      if (path == preferredPhotoPath) {
-        preferredPhotoId = photo.id;
-      }
-      uploadedPhotos.add(photo);
+
+      reportPhotos.add(InspectionPointReportPhoto(
+          photoId: photo.id!,
+          url: path,
+          sequenceNumber: path == preferredPhotoPath ? 1 : null));
     }
 
-    final report = await ref
-        .read(apiServiceProvider)
-        .createReport(
-            report: InspectionPointReport(
-                inspectionPointId: pointId,
-                inspectionId: currentState[1]!.id!,
-                preferredPhotoId: preferredPhotoId,
-                metadata: metadata,
-                status: status),
-            photoIds: uploadedPhotos.map((photo) => photo.id!).toList())
-        .then((report) => report.copyWith(photos: uploadedPhotos));
+    final report = await ref.read(apiServiceProvider).createReport(
+          report: InspectionPointReport(
+              photos: reportPhotos,
+              inspectionPointId: pointId,
+              inspectionId: currentState[1]!.id!,
+              metadata: metadata,
+              status: status),
+        );
 
     final currentActiveInspection = currentState[1]!.copyWith(reports: [
       ...currentState[1]!.reports,
@@ -106,7 +104,7 @@ class BridgeInspection extends _$BridgeInspection {
   Future<void> updateReport(
       {required InspectionPointReport report,
       required List<String> capturedPhotoPaths,
-      required List<Photo> uploadedPhotos,
+      required List<InspectionPointReportPhoto> uploadedPhotos,
       String? preferredPhotoPath}) async {
     final currentState = await future;
 
@@ -119,29 +117,29 @@ class BridgeInspection extends _$BridgeInspection {
       return;
     }
 
-    int? preferredPhotoId;
-    List<Photo> newPhotos = [];
+    List<InspectionPointReportPhoto> newPhotos = [];
 
     for (int i = 0; i < capturedPhotoPaths.length; i++) {
       String path = capturedPhotoPaths[i];
       Photo photo = await ref.read(apiServiceProvider).uploadPhoto(path);
-      if (path == preferredPhotoPath) {
-        preferredPhotoId = photo.id;
-      }
-      newPhotos.add(photo);
+      newPhotos.add(InspectionPointReportPhoto(
+          url: photo.photoLink,
+          photoId: photo.id!,
+          sequenceNumber: preferredPhotoPath == path ? 1 : null));
     }
 
-    for (Photo photo in uploadedPhotos) {
-      if (photo.photoLink == preferredPhotoPath) {
-        preferredPhotoId = photo.id;
-        break;
+    for (int i = 0; i < uploadedPhotos.length; i++) {
+      if (uploadedPhotos[i].url == preferredPhotoPath) {
+        uploadedPhotos[i] = uploadedPhotos[i].copyWith(sequenceNumber: 1);
+      } else {
+        uploadedPhotos[i] = uploadedPhotos[i].copyWith(sequenceNumber: null);
       }
     }
 
-    final updatedReport = await ref.read(apiServiceProvider).updateReport(report
-        .copyWith(
-            photos: [...uploadedPhotos, ...newPhotos],
-            preferredPhotoId: preferredPhotoId));
+    final updatedReport =
+        await ref.read(apiServiceProvider).updateReport(report.copyWith(
+              photos: [...uploadedPhotos, ...newPhotos],
+            ));
 
     final currentActiveInspection = currentState[1]!.copyWith(
       reports: [

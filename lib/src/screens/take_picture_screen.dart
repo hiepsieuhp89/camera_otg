@@ -7,11 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kyoryo/src/models/inspection_point_report_photo.dart';
 import 'package:kyoryo/src/models/photo_inspection_result.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/models/inspection_point_report.dart';
 import 'package:kyoryo/src/models/marking.dart';
-import 'package:kyoryo/src/models/photo.dart';
 import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
 import 'package:kyoryo/src/routing/router.dart';
 import 'package:kyoryo/src/services/inspection_point_report.service.dart';
@@ -35,10 +35,10 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
     with WidgetsBindingObserver {
   CameraController? _controller;
   Future<void>? _initializeControllerFuture;
-  Photo? previousPhoto;
+  InspectionPointReportPhoto? previousPhoto;
   String? selectedPhotoPath;
   List<String> capturedPhotoPaths = [];
-  List<Photo> uploadedPhotos = [];
+  List<InspectionPointReportPhoto> uploadedPhotos = [];
   bool showPreviousPhoto = false;
   double _currentZoomLevel = 1.0;
   double _maxZoomLevel = 1.0;
@@ -411,7 +411,7 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
                 child: Stack(
                   children: [
                     CachedNetworkImage(
-                      imageUrl: previousPhoto!.photoLink,
+                      imageUrl: previousPhoto!.url,
                       height: 150,
                     ),
                     Positioned(
@@ -419,8 +419,7 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
                         right: 0,
                         child: IconButton(
                           onPressed: () {
-                            viewImage(context,
-                                imageUrl: previousPhoto!.photoLink);
+                            viewImage(context, imageUrl: previousPhoto!.url);
                           },
                           icon: const Icon(Icons.fullscreen),
                           iconSize: 30,
@@ -591,7 +590,7 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
     if (capturedPhotoPaths.isNotEmpty) {
       latestPhotoProvider = FileImage(File(capturedPhotoPaths.last));
     } else if (uploadedPhotos.isNotEmpty) {
-      latestPhotoProvider = NetworkImage(uploadedPhotos.last.photoLink);
+      latestPhotoProvider = NetworkImage(uploadedPhotos.last.url);
     }
 
     return GestureDetector(

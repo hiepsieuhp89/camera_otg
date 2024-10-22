@@ -1,19 +1,19 @@
-import 'package:kyoryo/src/models/photo.dart';
+import 'package:kyoryo/src/models/inspection_point_report_photo.dart';
 
 class PhotoInspectionResult {
   final List<String> _newPhotoLocalPaths;
-  final List<Photo> _uploadedPhotos;
+  final List<InspectionPointReportPhoto> _uploadedPhotos;
   String selectedPhotoPath;
   String? skipReason;
   bool isSkipped;
   List<dynamic> get allPhotos => [..._uploadedPhotos, ..._newPhotoLocalPaths];
 
   List<String> get newPhotoLocalPaths => _newPhotoLocalPaths;
-  List<Photo> get uploadedPhotos => _uploadedPhotos;
+  List<InspectionPointReportPhoto> get uploadedPhotos => _uploadedPhotos;
 
   PhotoInspectionResult(
       {required List<String> newPhotoLocalPaths,
-      required List<Photo> uploadedPhotos,
+      required List<InspectionPointReportPhoto> uploadedPhotos,
       required this.selectedPhotoPath,
       this.skipReason,
       this.isSkipped = false})
@@ -22,7 +22,7 @@ class PhotoInspectionResult {
 
   PhotoInspectionResult copyWith({
     List<String>? newPhotoLocalPaths,
-    List<Photo>? uploadedPhotos,
+    List<InspectionPointReportPhoto>? uploadedPhotos,
     String? selectedPhotoPath,
   }) {
     return PhotoInspectionResult(
@@ -54,21 +54,21 @@ class PhotoInspectionResult {
     }
 
     if (selectedPhotoPath == path) {
-      selectedPhotoPath = _uploadedPhotos.firstOrNull?.photoLink ??
+      selectedPhotoPath = _uploadedPhotos.firstOrNull?.url ??
           _newPhotoLocalPaths.firstOrNull ??
           '';
     }
   }
 
-  void removeUploadedPhoto(Photo photo) {
-    _uploadedPhotos.removeWhere((p) => p.id == photo.id);
+  void removeUploadedPhoto(InspectionPointReportPhoto reportPhoto) {
+    _uploadedPhotos.removeWhere((p) => p.photoId == reportPhoto.photoId);
 
     if (_uploadedPhotos.isEmpty && _newPhotoLocalPaths.isEmpty) {
       selectedPhotoPath = '';
     }
 
-    selectedPhotoPath = selectedPhotoPath == photo.photoLink
-        ? _uploadedPhotos.firstOrNull?.photoLink ??
+    selectedPhotoPath = selectedPhotoPath == reportPhoto.url
+        ? _uploadedPhotos.firstOrNull?.url ??
             _newPhotoLocalPaths.firstOrNull ??
             ''
         : selectedPhotoPath;

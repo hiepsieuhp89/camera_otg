@@ -108,9 +108,8 @@ class ApiService {
       InspectionPointReport report) async {
     final jsonResponse = await apiClient.put('api/mobile/reports/${report.id}',
         body: {
-          'photos_ids': report.photos.map((photo) => photo.id).toList(),
+          'photos': report.toJson()['photos'],
           'meta_data': report.metadata,
-          'preferred_photo_id': report.preferredPhotoId,
           'inspection_point_id': report.inspectionPointId,
           'status': report.toJson()['status']
         },
@@ -127,15 +126,14 @@ class ApiService {
     return Inspection.fromJson(jsonResponse);
   }
 
-  Future<InspectionPointReport> createReport(
-      {required InspectionPointReport report,
-      List<int> photoIds = const []}) async {
+  Future<InspectionPointReport> createReport({
+    required InspectionPointReport report,
+  }) async {
     final jsonResponse = await apiClient.post(
         'api/mobile/inspections/${report.inspectionId}/reports',
         body: {
-          'photos_ids': photoIds,
+          'photos': report.toJson()['photos'],
           'meta_data': report.metadata,
-          'preferred_photo_id': report.preferredPhotoId,
           'inspection_point_id': report.inspectionPointId,
           'status': report.toJson()['status']
         },

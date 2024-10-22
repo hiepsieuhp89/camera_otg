@@ -5,8 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/models/inspection_point_report.dart';
+import 'package:kyoryo/src/models/inspection_point_report_photo.dart';
 import 'package:kyoryo/src/models/marking.dart';
-import 'package:kyoryo/src/models/photo.dart';
 import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
 import 'package:kyoryo/src/services/inspection_point_report.service.dart';
 import 'package:kyoryo/src/utilities/image_utils.dart';
@@ -344,27 +344,36 @@ class InpsectionPointListItem extends ConsumerWidget {
     );
   }
 
-  Widget _imageGroup(BuildContext context, Photo? previousPhoto,
-      InspectionPointReport? activeReport, bool hasActiveInspection) {
+  Widget _imageGroup(
+      BuildContext context,
+      InspectionPointReportPhoto? previousPhoto,
+      InspectionPointReport? activeReport,
+      bool hasActiveInspection) {
     final List<String> imagePaths = point.type == InspectionPointType.damage
         ? [
             point.diagramMarkedPhotoLink ??
                 point.diagram?.photo?.photoLink ??
                 '',
-            previousPhoto?.photoLink ?? '',
+            previousPhoto?.url ?? '',
           ]
-        : [previousPhoto?.photoLink ?? ''];
+        : [previousPhoto?.url ?? ''];
 
     if (activeReport != null) {
       imagePaths.addAll(activeReport.photos.sorted((a, b) {
-        if (a.id == activeReport.preferredPhotoId) {
+        if (a.sequenceNumber == 1) {
           return -1;
-        } else if (b.id == activeReport.preferredPhotoId) {
+        } else if (b.sequenceNumber == 1) {
           return 1;
+        } else if (a.sequenceNumber != null && b.sequenceNumber == null) {
+          return -1;
+        } else if (a.sequenceNumber == null && b.sequenceNumber != null) {
+          return 1;
+        } else if (a.sequenceNumber != null && b.sequenceNumber != null) {
+          return a.sequenceNumber!.compareTo(b.sequenceNumber!);
         } else {
           return 0;
         }
-      }).map((photo) => photo.photoLink));
+      }).map((photo) => photo.url));
     }
 
     return SizedBox(

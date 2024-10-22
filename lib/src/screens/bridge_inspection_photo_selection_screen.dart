@@ -46,10 +46,10 @@ class _BridgeInspectionPhotoSelectionScreenState
     super.initState();
     if (widget.photoInspectionResult.selectedPhotoPath.isEmpty) {
       result = widget.photoInspectionResult.copyWith(
-          selectedPhotoPath: widget.photoInspectionResult.uploadedPhotos
-                  .firstOrNull?.photoLink ??
-              widget.photoInspectionResult.newPhotoLocalPaths.firstOrNull ??
-              '');
+          selectedPhotoPath:
+              widget.photoInspectionResult.uploadedPhotos.firstOrNull?.url ??
+                  widget.photoInspectionResult.newPhotoLocalPaths.firstOrNull ??
+                  '');
     } else {
       result = widget.photoInspectionResult.copyWith();
     }
@@ -98,8 +98,7 @@ class _BridgeInspectionPhotoSelectionScreenState
                         ? Center(
                             child: Text(
                                 AppLocalizations.of(context)!.noPastPhotoFound))
-                        : CachedNetworkImage(
-                            imageUrl: previousPhoto.photoLink)),
+                        : CachedNetworkImage(imageUrl: previousPhoto.url)),
               ],
             );
           } else {
@@ -115,7 +114,7 @@ class _BridgeInspectionPhotoSelectionScreenState
                               child: Text(AppLocalizations.of(context)!
                                   .noPastPhotoFound))
                           : CachedNetworkImage(
-                              imageUrl: previousPhoto.photoLink,
+                              imageUrl: previousPhoto.url,
                             ),
                     )),
               ],
@@ -140,14 +139,14 @@ class _BridgeInspectionPhotoSelectionScreenState
     viewImage(context,
         imageUrl: result.allPhotos[currentIndex] is String
             ? result.allPhotos[currentIndex]
-            : result.allPhotos[currentIndex].photoLink);
+            : result.allPhotos[currentIndex].url);
   }
 
   void selectCurrentPhoto() {
     if (result.allPhotos[currentIndex] is String) {
       result.selectedPhotoPath = result.allPhotos[currentIndex];
-    } else if (result.allPhotos[currentIndex]?.photoLink != null) {
-      result.selectedPhotoPath = result.allPhotos[currentIndex].photoLink;
+    } else if (result.allPhotos[currentIndex]?.url != null) {
+      result.selectedPhotoPath = result.allPhotos[currentIndex].url;
     }
 
     setState(() {});
@@ -190,7 +189,7 @@ class _BridgeInspectionPhotoSelectionScreenState
                                 fit: BoxFit.cover,
                               )
                             : CachedNetworkImage(
-                                imageUrl: result.allPhotos[index].photoLink,
+                                imageUrl: result.allPhotos[index].url,
                                 fit: BoxFit.cover),
                         Positioned(
                             top: 2,
@@ -200,7 +199,7 @@ class _BridgeInspectionPhotoSelectionScreenState
                                   result.allPhotos[index] is String &&
                                           result.allPhotos[index] != null
                                       ? result.allPhotos[index]
-                                      : result.allPhotos[index].photoLink),
+                                      : result.allPhotos[index].url),
                             )),
                       ],
                     );
@@ -225,7 +224,7 @@ class _BridgeInspectionPhotoSelectionScreenState
                           result.isPhotoSelected(
                               result.allPhotos[currentIndex] is String
                                   ? result.allPhotos[currentIndex]
-                                  : result.allPhotos[currentIndex].photoLink)
+                                  : result.allPhotos[currentIndex].url)
                       ? null
                       : selectCurrentPhoto,
                 ),

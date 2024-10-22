@@ -403,7 +403,7 @@ class BridgeInspectionEvaluationScreenState
     if (photo is String) {
       return photo == result.selectedPhotoPath;
     } else {
-      return photo.photoLink == result.selectedPhotoPath;
+      return photo.url == result.selectedPhotoPath;
     }
   }
 
@@ -441,7 +441,7 @@ class BridgeInspectionEvaluationScreenState
                               fit: BoxFit.fill,
                             )
                           : CachedNetworkImage(
-                              imageUrl: combinedList[index].photoLink,
+                              imageUrl: combinedList[index].url,
                               fit: BoxFit.fill),
                       Positioned(
                           top: 2,
