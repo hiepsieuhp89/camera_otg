@@ -254,35 +254,24 @@ class _BridgeInspectionScreenState
                                         .future),
                               ]),
                               child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 8.0),
-                                child: GridView.builder(
-                                  key: const PageStorageKey<String>(
-                                      'inspection-point-list'),
-                                  gridDelegate:
-                                      SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount:
-                                        orientation == Orientation.portrait
-                                            ? 1
-                                            : 1,
-                                    mainAxisExtent: 253,
-                                    mainAxisSpacing: 8.0,
-                                    crossAxisSpacing: 8.0,
-                                  ),
                                   padding: const EdgeInsets.symmetric(
-                                      vertical: 8.0, horizontal: 8.0),
-                                  itemCount: data.$1.length,
-                                  itemBuilder:
-                                      (BuildContext context, int index) {
-                                    final point = data.$1[index];
+                                      horizontal: 8.0),
+                                  child: ListView.builder(
+                                    key: const PageStorageKey<String>(
+                                        'inspection-point-list'),
+                                    itemCount: data.$1.length,
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 8.0, horizontal: 8.0),
+                                    itemBuilder:
+                                        (BuildContext context, int index) {
+                                      final point = data.$1[index];
 
-                                    return InpsectionPointListItem(
-                                      point: point,
-                                      startInspect: _startInspectingPoint,
-                                    );
-                                  },
-                                ),
-                              ),
+                                      return InpsectionPointListItem(
+                                        point: point,
+                                        startInspect: _startInspectingPoint,
+                                      );
+                                    },
+                                  )),
                             );
                           },
                           loading: () => const Center(

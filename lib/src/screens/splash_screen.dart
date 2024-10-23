@@ -38,7 +38,7 @@ class _SplashScreenPageState extends ConsumerState<SplashScreen> {
         .checkAuthenticated()
         .then((isAuthenticated) {
       if (!isAuthenticated) {
-        goToBridgeList();
+        return goToLogin();
       }
 
       Future.wait([

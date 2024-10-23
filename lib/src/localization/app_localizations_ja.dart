@@ -85,7 +85,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get damageType => '対象部材';
 
   @override
-  String get damageDetails => '損傷の種類';
+  String get damageDetails => '損傷種類';
 
   @override
   String get damage => '損傷度';

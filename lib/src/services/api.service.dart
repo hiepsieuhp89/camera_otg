@@ -108,7 +108,7 @@ class ApiService {
       InspectionPointReport report) async {
     final jsonResponse = await apiClient.put('api/mobile/reports/${report.id}',
         body: {
-          'photos': report.photos.map((photo) => photo.id).toList(),
+          'photos_ids': report.photos.map((photo) => photo.id).toList(),
           'meta_data': report.metadata,
           'preferred_photo_id': report.preferredPhotoId,
           'inspection_point_id': report.inspectionPointId,
