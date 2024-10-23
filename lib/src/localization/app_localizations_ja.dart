@@ -255,4 +255,16 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get logoutButton => 'ログアウト';
+
+  @override
+  String get comparePhotos => '写真比較';
+
+  @override
+  String get selectAndOrderPhotos => '写真選択と並び替え';
+
+  @override
+  String get errorFinishingInspection => '点検終了時にエラーが発生しました';
+
+  @override
+  String get pendingReportsWarning => '保留点検が存在しておりますので、点検完了ができません。';
 }

@@ -202,7 +202,7 @@ class InpsectionPointListItem extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _imageGroup(context, previousPhoto, activeReport,
+                      buildImageGroup(context, previousPhoto, activeReport,
                           isInspectionInProgress),
                       const SizedBox(height: 10.0),
                       Text(
@@ -344,7 +344,7 @@ class InpsectionPointListItem extends ConsumerWidget {
     );
   }
 
-  Widget _imageGroup(
+  Widget buildImageGroup(
       BuildContext context,
       InspectionPointReportPhoto? previousPhoto,
       InspectionPointReport? activeReport,
@@ -373,7 +373,7 @@ class InpsectionPointListItem extends ConsumerWidget {
         } else {
           return 0;
         }
-      }).map((photo) => photo.url));
+      }).map((photo) => photo.url!));
     }
 
     return SizedBox(

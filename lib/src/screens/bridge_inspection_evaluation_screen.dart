@@ -12,21 +12,20 @@ import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/models/inspection_point_report.dart';
 import 'package:kyoryo/src/models/photo_inspection_result.dart';
 import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
+import 'package:kyoryo/src/providers/current_photo_inspection_result.provider.dart';
 import 'package:kyoryo/src/providers/misc.provider.dart';
 import 'package:kyoryo/src/routing/router.dart';
-import 'package:kyoryo/src/ui/selected_photo_check_mark.dart';
+import 'package:kyoryo/src/ui/photo_sequence_number_mark.dart';
 import 'package:kyoryo/src/utilities/image_utils.dart';
 
 @RoutePage()
 class BridgeInspectionEvaluationScreen extends ConsumerStatefulWidget {
   final InspectionPoint point;
-  final PhotoInspectionResult photoInspectionResult;
   final InspectionPointReport? createdReport;
 
   const BridgeInspectionEvaluationScreen({
     super.key,
     required this.point,
-    required this.photoInspectionResult,
     this.createdReport,
   });
 
@@ -82,36 +81,37 @@ class BridgeInspectionEvaluationScreenState
     if (widget.createdReport == null) {
       throw Exception('Report is not created yet');
     }
-    await _compressCapturedPhotos(result.newPhotoLocalPaths);
+    await _compressCapturedPhotos(result.photosNotYetUploaded);
     await ref
         .read(bridgeInspectionProvider(widget.point.bridgeId!).notifier)
         .updateReport(
-            report: widget.createdReport!.copyWith(status: status, metadata: {
-              'damage_category': _selectedCategory ?? '',
-              'damage_type': _selectedDamageType ?? '',
-              'damage_level': _selectedHealthLevel ?? '',
-              'remark': _textEditingController.text,
-            }),
-            capturedPhotoPaths: result.newPhotoLocalPaths,
-            preferredPhotoPath: result.selectedPhotoPath,
-            uploadedPhotos: result.uploadedPhotos);
+          report: widget.createdReport!.copyWith(
+              status: status,
+              metadata: {
+                'damage_category': _selectedCategory ?? '',
+                'damage_type': _selectedDamageType ?? '',
+                'damage_level': _selectedHealthLevel ?? '',
+                'remark': _textEditingController.text,
+              },
+              photos: result.photos),
+        );
   }
 
   Future<void> _createReport(InspectionPointReportStatus status) async {
-    await _compressCapturedPhotos(result.newPhotoLocalPaths);
+    await _compressCapturedPhotos(result.photosNotYetUploaded);
     await ref
         .read(bridgeInspectionProvider(widget.point.bridgeId!).notifier)
         .createReport(
-            pointId: widget.point.id!,
-            capturedPhotoPaths: result.newPhotoLocalPaths,
-            preferredPhotoPath: result.selectedPhotoPath,
-            status: status,
-            metadata: {
-          'damage_category': _selectedCategory ?? '',
-          'damage_type': _selectedDamageType ?? '',
-          'damage_level': _selectedHealthLevel ?? '',
-          'remark': _textEditingController.text,
-        });
+            report: InspectionPointReport(
+                inspectionPointId: widget.point.id!,
+                status: status,
+                metadata: {
+                  'damage_category': _selectedCategory ?? '',
+                  'damage_type': _selectedDamageType ?? '',
+                  'damage_level': _selectedHealthLevel ?? '',
+                  'remark': _textEditingController.text,
+                },
+                photos: result.photos));
   }
 
   @override
@@ -121,7 +121,7 @@ class BridgeInspectionEvaluationScreenState
         .read(bridgeInspectionProvider(widget.point.bridgeId!).notifier)
         .findPreviousReportFromPoint(widget.point.id!);
 
-    result = widget.photoInspectionResult;
+    result = ref.read(currentPhotoInspectionResultProvider);
     _textEditingController = TextEditingController();
     _damageCategoryController = TextEditingController();
     _damageTypeController = TextEditingController();
@@ -184,20 +184,15 @@ class BridgeInspectionEvaluationScreenState
   IconButton buildGoToPhotoSelectionButton(BuildContext context) {
     onButtonPressed() {
       context.router
-          .push<PhotoInspectionResult>(BridgeInspectionPhotoSelectionRoute(
-        photoInspectionResult: result,
-        point: widget.point,
-      ))
+          .push<PhotoInspectionResult>(BridgeInspectionPhotosTabRoute(
+              point: widget.point, createdReport: widget.createdReport))
           .then((data) {
         if (data == null) {
           return;
         }
 
         setState(() {
-          result = result.copyWith(
-              newPhotoLocalPaths: data.newPhotoLocalPaths,
-              uploadedPhotos: data.uploadedPhotos,
-              selectedPhotoPath: data.selectedPhotoPath);
+          result = result.copyWith();
         });
       });
     }
@@ -208,7 +203,7 @@ class BridgeInspectionEvaluationScreenState
         onPressed: !result.isSkipped ? onButtonPressed : null);
   }
 
-  Expanded buildEvaluationForm(
+  buildEvaluationForm(
       BuildContext context, AsyncValue<List<DamageType>> damageTypes) {
     return Expanded(
         flex: 1,
@@ -399,20 +394,7 @@ class BridgeInspectionEvaluationScreenState
         ));
   }
 
-  bool isPhotoSelected(dynamic photo) {
-    if (photo is String) {
-      return photo == result.selectedPhotoPath;
-    } else {
-      return photo.url == result.selectedPhotoPath;
-    }
-  }
-
-  Expanded buildPhotosCarousel(BuildContext context, Orientation orientation) {
-    List<dynamic> combinedList = [
-      ...result.uploadedPhotos,
-      ...result.newPhotoLocalPaths,
-    ];
-
+  buildPhotosCarousel(BuildContext context, Orientation orientation) {
     return Expanded(
       flex: 1,
       child: Column(children: [
@@ -430,25 +412,24 @@ class BridgeInspectionEvaluationScreenState
               enlargeCenterPage: true,
               scrollDirection: Axis.horizontal,
             ),
-            items: combinedList.mapIndexed((index, photo) {
+            items: result.photos.mapIndexed((index, photo) {
               return Builder(
                 builder: (BuildContext context) {
                   return Stack(
                     children: [
-                      combinedList[index] is String
-                          ? Image.file(
-                              File(combinedList[index]),
+                      photo.url != null
+                          ? CachedNetworkImage(
+                              imageUrl: photo.url!, fit: BoxFit.fill)
+                          : Image.file(
+                              File(photo.localPath!),
                               fit: BoxFit.fill,
-                            )
-                          : CachedNetworkImage(
-                              imageUrl: combinedList[index].url,
-                              fit: BoxFit.fill),
+                            ),
                       Positioned(
-                          top: 2,
-                          right: 2,
-                          child: SelectedPhotoCheckMark(
-                              isSelected:
-                                  isPhotoSelected(combinedList[index]))),
+                        top: 2,
+                        right: 2,
+                        child: PhotoSequenceNumberMark(
+                            number: photo.sequenceNumber),
+                      )
                     ],
                   );
                 },

@@ -60,13 +60,7 @@ class BridgeInspection extends _$BridgeInspection {
     return inspectionsToReturn;
   }
 
-  Future<void> createReport(
-      {required int pointId,
-      required List<String> capturedPhotoPaths,
-      Map<String, dynamic>? metadata,
-      String? preferredPhotoPath,
-      InspectionPointReportStatus status =
-          InspectionPointReportStatus.finished}) async {
+  Future<void> createReport({required InspectionPointReport report}) async {
     final currentState = await future;
 
     if (currentState[1] == null) {
@@ -75,37 +69,35 @@ class BridgeInspection extends _$BridgeInspection {
 
     List<InspectionPointReportPhoto> reportPhotos = [];
 
-    for (int i = 0; i < capturedPhotoPaths.length; i++) {
-      String path = capturedPhotoPaths[i];
-      Photo photo = await ref.read(apiServiceProvider).uploadPhoto(path);
+    for (int i = 0; i < report.photos.length; i++) {
+      if (report.photos[i].photoId == null &&
+          report.photos[i].localPath != null) {
+        Photo photo = await ref
+            .read(apiServiceProvider)
+            .uploadPhoto(report.photos[i].localPath!);
 
-      reportPhotos.add(InspectionPointReportPhoto(
-          photoId: photo.id!,
-          url: path,
-          sequenceNumber: path == preferredPhotoPath ? 1 : null));
+        reportPhotos.add(report.photos[i].copyWith(
+          photoId: photo.id,
+          url: photo.photoLink,
+        ));
+      } else {
+        reportPhotos.add(report.photos[i]);
+      }
     }
 
-    final report = await ref.read(apiServiceProvider).createReport(
-          report: InspectionPointReport(
-              photos: reportPhotos,
-              inspectionPointId: pointId,
-              inspectionId: currentState[1]!.id!,
-              metadata: metadata,
-              status: status),
+    final created = await ref.read(apiServiceProvider).createReport(
+          report: report.copyWith(
+              photos: reportPhotos, inspectionId: currentState[1]!.id!),
         );
 
     final currentActiveInspection = currentState[1]!.copyWith(reports: [
       ...currentState[1]!.reports,
-      report,
+      created,
     ]);
     state = AsyncData([currentState[0], currentActiveInspection]);
   }
 
-  Future<void> updateReport(
-      {required InspectionPointReport report,
-      required List<String> capturedPhotoPaths,
-      required List<InspectionPointReportPhoto> uploadedPhotos,
-      String? preferredPhotoPath}) async {
+  Future<void> updateReport({required InspectionPointReport report}) async {
     final currentState = await future;
 
     if (currentState[1] == null) {
@@ -117,28 +109,21 @@ class BridgeInspection extends _$BridgeInspection {
       return;
     }
 
-    List<InspectionPointReportPhoto> newPhotos = [];
+    List<InspectionPointReportPhoto> photos = List.from(report.photos);
 
-    for (int i = 0; i < capturedPhotoPaths.length; i++) {
-      String path = capturedPhotoPaths[i];
-      Photo photo = await ref.read(apiServiceProvider).uploadPhoto(path);
-      newPhotos.add(InspectionPointReportPhoto(
-          url: photo.photoLink,
-          photoId: photo.id!,
-          sequenceNumber: preferredPhotoPath == path ? 1 : null));
-    }
+    for (int i = 0; i < photos.length; i++) {
+      if (photos[i].photoId == null && photos[i].localPath != null) {
+        Photo photo = await ref
+            .read(apiServiceProvider)
+            .uploadPhoto(photos[i].localPath!);
 
-    for (int i = 0; i < uploadedPhotos.length; i++) {
-      if (uploadedPhotos[i].url == preferredPhotoPath) {
-        uploadedPhotos[i] = uploadedPhotos[i].copyWith(sequenceNumber: 1);
-      } else {
-        uploadedPhotos[i] = uploadedPhotos[i].copyWith(sequenceNumber: null);
+        photos[i] = photos[i].copyWith(photoId: photo.id, url: photo.photoLink);
       }
     }
 
     final updatedReport =
         await ref.read(apiServiceProvider).updateReport(report.copyWith(
-              photos: [...uploadedPhotos, ...newPhotos],
+              photos: photos,
             ));
 
     final currentActiveInspection = currentState[1]!.copyWith(
@@ -199,4 +184,16 @@ bool isInspectionInProgress(IsInspectionInProgressRef ref, int bridgeId) {
       ref.watch(bridgeInspectionProvider(bridgeId)).value?[1];
 
   return activeInspection != null ? !activeInspection.isFinished : false;
+}
+
+@riverpod
+int numberOfPendingReports(NumberOfPendingReportsRef ref, int bridgeId) {
+  final activeInspection =
+      ref.watch(bridgeInspectionProvider(bridgeId)).value?[1];
+
+  return activeInspection?.reports
+          .where(
+              (report) => report.status == InspectionPointReportStatus.pending)
+          .length ??
+      0;
 }

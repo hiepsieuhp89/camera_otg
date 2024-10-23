@@ -22,7 +22,7 @@ class InspectionPointReport with _$InspectionPointReport {
     @Default(InspectionPointReportStatus.finished)
     InspectionPointReportStatus status,
     @JsonKey(name: 'inspection_point_id') required int inspectionPointId,
-    @JsonKey(name: 'inspection_id') required int inspectionId,
+    @JsonKey(name: 'inspection_id') int? inspectionId,
     @JsonKey(name: 'meta_data') dynamic metadata,
     DateTime? date,
     @Default([]) List<InspectionPointReportPhoto> photos,

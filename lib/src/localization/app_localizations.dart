@@ -572,6 +572,30 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'ログアウト'**
   String get logoutButton;
+
+  /// No description provided for @comparePhotos.
+  ///
+  /// In ja, this message translates to:
+  /// **'写真比較'**
+  String get comparePhotos;
+
+  /// No description provided for @selectAndOrderPhotos.
+  ///
+  /// In ja, this message translates to:
+  /// **'写真選択と並び替え'**
+  String get selectAndOrderPhotos;
+
+  /// No description provided for @errorFinishingInspection.
+  ///
+  /// In ja, this message translates to:
+  /// **'点検終了時にエラーが発生しました'**
+  String get errorFinishingInspection;
+
+  /// No description provided for @pendingReportsWarning.
+  ///
+  /// In ja, this message translates to:
+  /// **'保留点検が存在しておりますので、点検完了ができません。'**
+  String get pendingReportsWarning;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

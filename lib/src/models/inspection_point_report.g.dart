@@ -14,7 +14,7 @@ _$InspectionPointReportImpl _$$InspectionPointReportImplFromJson(
               _$InspectionPointReportStatusEnumMap, json['status']) ??
           InspectionPointReportStatus.finished,
       inspectionPointId: (json['inspection_point_id'] as num).toInt(),
-      inspectionId: (json['inspection_id'] as num).toInt(),
+      inspectionId: (json['inspection_id'] as num?)?.toInt(),
       metadata: json['meta_data'],
       date:
           json['date'] == null ? null : DateTime.parse(json['date'] as String),

@@ -187,5 +187,13 @@
   "loginButton": "ログイン",
   "@loginButton": {},
   "logoutButton": "ログアウト",
-  "@logoutButton": {}
+  "@logoutButton": {},
+  "comparePhotos": "写真比較",
+  "@comparePhotos": {},
+  "selectAndOrderPhotos": "写真選択と並び替え",
+  "@selectAndOrderPhotos": {},
+  "errorFinishingInspection": "点検終了時にエラーが発生しました",
+  "@errorFinishingInspection": {},
+  "pendingReportsWarning": "保留点検が存在しておりますので、点検完了ができません。",
+  "@pendingReportsWarning": {}
 }

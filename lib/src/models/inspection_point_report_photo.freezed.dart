@@ -21,10 +21,11 @@ InspectionPointReportPhoto _$InspectionPointReportPhotoFromJson(
 
 /// @nodoc
 mixin _$InspectionPointReportPhoto {
+  String? get localPath => throw _privateConstructorUsedError;
   @JsonKey(name: 'photo_link')
-  String get url => throw _privateConstructorUsedError;
+  String? get url => throw _privateConstructorUsedError;
   @JsonKey(name: 'photo_id')
-  int get photoId => throw _privateConstructorUsedError;
+  int? get photoId => throw _privateConstructorUsedError;
   @JsonKey(name: 'photo_sequence_number')
   int? get sequenceNumber => throw _privateConstructorUsedError;
   @JsonKey(name: 'report_id')
@@ -44,8 +45,9 @@ abstract class $InspectionPointReportPhotoCopyWith<$Res> {
           InspectionPointReportPhoto>;
   @useResult
   $Res call(
-      {@JsonKey(name: 'photo_link') String url,
-      @JsonKey(name: 'photo_id') int photoId,
+      {String? localPath,
+      @JsonKey(name: 'photo_link') String? url,
+      @JsonKey(name: 'photo_id') int? photoId,
       @JsonKey(name: 'photo_sequence_number') int? sequenceNumber,
       @JsonKey(name: 'report_id') int? reportId});
 }
@@ -64,20 +66,25 @@ class _$InspectionPointReportPhotoCopyWithImpl<$Res,
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? url = null,
-    Object? photoId = null,
+    Object? localPath = freezed,
+    Object? url = freezed,
+    Object? photoId = freezed,
     Object? sequenceNumber = freezed,
     Object? reportId = freezed,
   }) {
     return _then(_value.copyWith(
-      url: null == url
+      localPath: freezed == localPath
+          ? _value.localPath
+          : localPath // ignore: cast_nullable_to_non_nullable
+              as String?,
+      url: freezed == url
           ? _value.url
           : url // ignore: cast_nullable_to_non_nullable
-              as String,
-      photoId: null == photoId
+              as String?,
+      photoId: freezed == photoId
           ? _value.photoId
           : photoId // ignore: cast_nullable_to_non_nullable
-              as int,
+              as int?,
       sequenceNumber: freezed == sequenceNumber
           ? _value.sequenceNumber
           : sequenceNumber // ignore: cast_nullable_to_non_nullable
@@ -100,8 +107,9 @@ abstract class _$$InspectionPointReportPhotoImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {@JsonKey(name: 'photo_link') String url,
-      @JsonKey(name: 'photo_id') int photoId,
+      {String? localPath,
+      @JsonKey(name: 'photo_link') String? url,
+      @JsonKey(name: 'photo_id') int? photoId,
       @JsonKey(name: 'photo_sequence_number') int? sequenceNumber,
       @JsonKey(name: 'report_id') int? reportId});
 }
@@ -119,20 +127,25 @@ class __$$InspectionPointReportPhotoImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? url = null,
-    Object? photoId = null,
+    Object? localPath = freezed,
+    Object? url = freezed,
+    Object? photoId = freezed,
     Object? sequenceNumber = freezed,
     Object? reportId = freezed,
   }) {
     return _then(_$InspectionPointReportPhotoImpl(
-      url: null == url
+      localPath: freezed == localPath
+          ? _value.localPath
+          : localPath // ignore: cast_nullable_to_non_nullable
+              as String?,
+      url: freezed == url
           ? _value.url
           : url // ignore: cast_nullable_to_non_nullable
-              as String,
-      photoId: null == photoId
+              as String?,
+      photoId: freezed == photoId
           ? _value.photoId
           : photoId // ignore: cast_nullable_to_non_nullable
-              as int,
+              as int?,
       sequenceNumber: freezed == sequenceNumber
           ? _value.sequenceNumber
           : sequenceNumber // ignore: cast_nullable_to_non_nullable
@@ -149,8 +162,9 @@ class __$$InspectionPointReportPhotoImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$InspectionPointReportPhotoImpl implements _InspectionPointReportPhoto {
   _$InspectionPointReportPhotoImpl(
-      {@JsonKey(name: 'photo_link') required this.url,
-      @JsonKey(name: 'photo_id') required this.photoId,
+      {this.localPath,
+      @JsonKey(name: 'photo_link') this.url,
+      @JsonKey(name: 'photo_id') this.photoId,
       @JsonKey(name: 'photo_sequence_number') this.sequenceNumber,
       @JsonKey(name: 'report_id') this.reportId});
 
@@ -159,11 +173,13 @@ class _$InspectionPointReportPhotoImpl implements _InspectionPointReportPhoto {
       _$$InspectionPointReportPhotoImplFromJson(json);
 
   @override
+  final String? localPath;
+  @override
   @JsonKey(name: 'photo_link')
-  final String url;
+  final String? url;
   @override
   @JsonKey(name: 'photo_id')
-  final int photoId;
+  final int? photoId;
   @override
   @JsonKey(name: 'photo_sequence_number')
   final int? sequenceNumber;
@@ -173,7 +189,7 @@ class _$InspectionPointReportPhotoImpl implements _InspectionPointReportPhoto {
 
   @override
   String toString() {
-    return 'InspectionPointReportPhoto(url: $url, photoId: $photoId, sequenceNumber: $sequenceNumber, reportId: $reportId)';
+    return 'InspectionPointReportPhoto(localPath: $localPath, url: $url, photoId: $photoId, sequenceNumber: $sequenceNumber, reportId: $reportId)';
   }
 
   @override
@@ -181,6 +197,8 @@ class _$InspectionPointReportPhotoImpl implements _InspectionPointReportPhoto {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$InspectionPointReportPhotoImpl &&
+            (identical(other.localPath, localPath) ||
+                other.localPath == localPath) &&
             (identical(other.url, url) || other.url == url) &&
             (identical(other.photoId, photoId) || other.photoId == photoId) &&
             (identical(other.sequenceNumber, sequenceNumber) ||
@@ -191,8 +209,8 @@ class _$InspectionPointReportPhotoImpl implements _InspectionPointReportPhoto {
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, url, photoId, sequenceNumber, reportId);
+  int get hashCode => Object.hash(
+      runtimeType, localPath, url, photoId, sequenceNumber, reportId);
 
   @JsonKey(ignore: true)
   @override
@@ -212,8 +230,9 @@ class _$InspectionPointReportPhotoImpl implements _InspectionPointReportPhoto {
 abstract class _InspectionPointReportPhoto
     implements InspectionPointReportPhoto {
   factory _InspectionPointReportPhoto(
-          {@JsonKey(name: 'photo_link') required final String url,
-          @JsonKey(name: 'photo_id') required final int photoId,
+          {final String? localPath,
+          @JsonKey(name: 'photo_link') final String? url,
+          @JsonKey(name: 'photo_id') final int? photoId,
           @JsonKey(name: 'photo_sequence_number') final int? sequenceNumber,
           @JsonKey(name: 'report_id') final int? reportId}) =
       _$InspectionPointReportPhotoImpl;
@@ -222,11 +241,13 @@ abstract class _InspectionPointReportPhoto
       _$InspectionPointReportPhotoImpl.fromJson;
 
   @override
+  String? get localPath;
+  @override
   @JsonKey(name: 'photo_link')
-  String get url;
+  String? get url;
   @override
   @JsonKey(name: 'photo_id')
-  int get photoId;
+  int? get photoId;
   @override
   @JsonKey(name: 'photo_sequence_number')
   int? get sequenceNumber;

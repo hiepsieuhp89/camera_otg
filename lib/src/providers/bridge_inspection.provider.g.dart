@@ -287,7 +287,137 @@ class _IsInspectionInProgressProviderElement
   int get bridgeId => (origin as IsInspectionInProgressProvider).bridgeId;
 }
 
-String _$bridgeInspectionHash() => r'f92d9e7d55216f69249d2ad6c3620d63b0da3e30';
+String _$numberOfPendingReportsHash() =>
+    r'3bcd8bbdd4db3cf668a0483d7522a84def4f9534';
+
+/// See also [numberOfPendingReports].
+@ProviderFor(numberOfPendingReports)
+const numberOfPendingReportsProvider = NumberOfPendingReportsFamily();
+
+/// See also [numberOfPendingReports].
+class NumberOfPendingReportsFamily extends Family<int> {
+  /// See also [numberOfPendingReports].
+  const NumberOfPendingReportsFamily();
+
+  /// See also [numberOfPendingReports].
+  NumberOfPendingReportsProvider call(
+    int bridgeId,
+  ) {
+    return NumberOfPendingReportsProvider(
+      bridgeId,
+    );
+  }
+
+  @override
+  NumberOfPendingReportsProvider getProviderOverride(
+    covariant NumberOfPendingReportsProvider provider,
+  ) {
+    return call(
+      provider.bridgeId,
+    );
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'numberOfPendingReportsProvider';
+}
+
+/// See also [numberOfPendingReports].
+class NumberOfPendingReportsProvider extends AutoDisposeProvider<int> {
+  /// See also [numberOfPendingReports].
+  NumberOfPendingReportsProvider(
+    int bridgeId,
+  ) : this._internal(
+          (ref) => numberOfPendingReports(
+            ref as NumberOfPendingReportsRef,
+            bridgeId,
+          ),
+          from: numberOfPendingReportsProvider,
+          name: r'numberOfPendingReportsProvider',
+          debugGetCreateSourceHash:
+              const bool.fromEnvironment('dart.vm.product')
+                  ? null
+                  : _$numberOfPendingReportsHash,
+          dependencies: NumberOfPendingReportsFamily._dependencies,
+          allTransitiveDependencies:
+              NumberOfPendingReportsFamily._allTransitiveDependencies,
+          bridgeId: bridgeId,
+        );
+
+  NumberOfPendingReportsProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.bridgeId,
+  }) : super.internal();
+
+  final int bridgeId;
+
+  @override
+  Override overrideWith(
+    int Function(NumberOfPendingReportsRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: NumberOfPendingReportsProvider._internal(
+        (ref) => create(ref as NumberOfPendingReportsRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        bridgeId: bridgeId,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeProviderElement<int> createElement() {
+    return _NumberOfPendingReportsProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is NumberOfPendingReportsProvider &&
+        other.bridgeId == bridgeId;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, bridgeId.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+mixin NumberOfPendingReportsRef on AutoDisposeProviderRef<int> {
+  /// The parameter `bridgeId` of this provider.
+  int get bridgeId;
+}
+
+class _NumberOfPendingReportsProviderElement
+    extends AutoDisposeProviderElement<int> with NumberOfPendingReportsRef {
+  _NumberOfPendingReportsProviderElement(super.provider);
+
+  @override
+  int get bridgeId => (origin as NumberOfPendingReportsProvider).bridgeId;
+}
+
+String _$bridgeInspectionHash() => r'13b11dd9562121f46bebbc64b1e97257d7aa7f65';
 
 abstract class _$BridgeInspection
     extends BuildlessAutoDisposeAsyncNotifier<List<Inspection?>> {

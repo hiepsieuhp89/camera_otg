@@ -47,6 +47,16 @@ class _BridgeInspectionScreenState
     }
   }
 
+  showFailureMessage() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.red,
+        showCloseIcon: true,
+        content: Text(AppLocalizations.of(context)!.errorFinishingInspection),
+      ),
+    );
+  }
+
   void _confirmFinishInspection() {
     final currentBridge = ref.watch(currentBridgeProvider);
     final numberOfCreatedReports =
@@ -56,11 +66,38 @@ class _BridgeInspectionScreenState
 
     if (!inspectionPoints.hasValue) return;
 
+    if (ref.watch(numberOfPendingReportsProvider(currentBridge.id)) > 0) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            content: Text(AppLocalizations.of(context)!.pendingReportsWarning),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text(AppLocalizations.of(context)!.yesOption),
+              ),
+            ],
+          );
+        },
+      );
+
+      return;
+    }
+
     if (inspectionPoints.value!.length == numberOfCreatedReports) {
       ref
           .read(bridgeInspectionProvider(ref.read(currentBridgeProvider)!.id)
               .notifier)
-          .setActiveInspectionFinished(true);
+          .setActiveInspectionFinished(true)
+          .then((_) {
+        ref.invalidate(inspectionPointsProvider(currentBridge.id));
+        ref.invalidate(bridgeInspectionProvider(currentBridge.id));
+      }).catchError((_) {
+        showFailureMessage();
+      });
 
       return;
     }
@@ -80,11 +117,18 @@ class _BridgeInspectionScreenState
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
+
                 ref
                     .read(bridgeInspectionProvider(
                             ref.read(currentBridgeProvider)!.id)
                         .notifier)
-                    .setActiveInspectionFinished(true);
+                    .setActiveInspectionFinished(true)
+                    .then((_) {
+                  ref.invalidate(inspectionPointsProvider(currentBridge.id));
+                  ref.invalidate(bridgeInspectionProvider(currentBridge.id));
+                }).catchError((_) {
+                  showFailureMessage();
+                });
               },
               child: Text(AppLocalizations.of(context)!.yesOption),
             ),
@@ -114,7 +158,10 @@ class _BridgeInspectionScreenState
                     .read(bridgeInspectionProvider(
                             ref.read(currentBridgeProvider)!.id)
                         .notifier)
-                    .setActiveInspectionFinished(false);
+                    .setActiveInspectionFinished(false)
+                    .catchError((_) {
+                  showFailureMessage();
+                });
               },
               child: Text(AppLocalizations.of(context)!.yesOption),
             ),
@@ -483,7 +530,6 @@ class _BridgeInspectionScreenState
     });
   }
 
-// ref.watch(bridgeInspectionPointFiltersProvider(currentBridge.id)).hasActiveFilters ? Colors.orange : null
   NavigationRail buildNavigationRail(
       BuildContext context, Bridge currentBridge, bool isInspectionInProgress) {
     return NavigationRail(

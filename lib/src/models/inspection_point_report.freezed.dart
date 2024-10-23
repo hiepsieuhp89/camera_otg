@@ -26,7 +26,7 @@ mixin _$InspectionPointReport {
   @JsonKey(name: 'inspection_point_id')
   int get inspectionPointId => throw _privateConstructorUsedError;
   @JsonKey(name: 'inspection_id')
-  int get inspectionId => throw _privateConstructorUsedError;
+  int? get inspectionId => throw _privateConstructorUsedError;
   @JsonKey(name: 'meta_data')
   dynamic get metadata => throw _privateConstructorUsedError;
   DateTime? get date => throw _privateConstructorUsedError;
@@ -49,7 +49,7 @@ abstract class $InspectionPointReportCopyWith<$Res> {
       {int? id,
       InspectionPointReportStatus status,
       @JsonKey(name: 'inspection_point_id') int inspectionPointId,
-      @JsonKey(name: 'inspection_id') int inspectionId,
+      @JsonKey(name: 'inspection_id') int? inspectionId,
       @JsonKey(name: 'meta_data') dynamic metadata,
       DateTime? date,
       List<InspectionPointReportPhoto> photos});
@@ -72,7 +72,7 @@ class _$InspectionPointReportCopyWithImpl<$Res,
     Object? id = freezed,
     Object? status = null,
     Object? inspectionPointId = null,
-    Object? inspectionId = null,
+    Object? inspectionId = freezed,
     Object? metadata = freezed,
     Object? date = freezed,
     Object? photos = null,
@@ -90,10 +90,10 @@ class _$InspectionPointReportCopyWithImpl<$Res,
           ? _value.inspectionPointId
           : inspectionPointId // ignore: cast_nullable_to_non_nullable
               as int,
-      inspectionId: null == inspectionId
+      inspectionId: freezed == inspectionId
           ? _value.inspectionId
           : inspectionId // ignore: cast_nullable_to_non_nullable
-              as int,
+              as int?,
       metadata: freezed == metadata
           ? _value.metadata
           : metadata // ignore: cast_nullable_to_non_nullable
@@ -123,7 +123,7 @@ abstract class _$$InspectionPointReportImplCopyWith<$Res>
       {int? id,
       InspectionPointReportStatus status,
       @JsonKey(name: 'inspection_point_id') int inspectionPointId,
-      @JsonKey(name: 'inspection_id') int inspectionId,
+      @JsonKey(name: 'inspection_id') int? inspectionId,
       @JsonKey(name: 'meta_data') dynamic metadata,
       DateTime? date,
       List<InspectionPointReportPhoto> photos});
@@ -144,7 +144,7 @@ class __$$InspectionPointReportImplCopyWithImpl<$Res>
     Object? id = freezed,
     Object? status = null,
     Object? inspectionPointId = null,
-    Object? inspectionId = null,
+    Object? inspectionId = freezed,
     Object? metadata = freezed,
     Object? date = freezed,
     Object? photos = null,
@@ -162,10 +162,10 @@ class __$$InspectionPointReportImplCopyWithImpl<$Res>
           ? _value.inspectionPointId
           : inspectionPointId // ignore: cast_nullable_to_non_nullable
               as int,
-      inspectionId: null == inspectionId
+      inspectionId: freezed == inspectionId
           ? _value.inspectionId
           : inspectionId // ignore: cast_nullable_to_non_nullable
-              as int,
+              as int?,
       metadata: freezed == metadata
           ? _value.metadata
           : metadata // ignore: cast_nullable_to_non_nullable
@@ -189,7 +189,7 @@ class _$InspectionPointReportImpl implements _InspectionPointReport {
       {this.id,
       this.status = InspectionPointReportStatus.finished,
       @JsonKey(name: 'inspection_point_id') required this.inspectionPointId,
-      @JsonKey(name: 'inspection_id') required this.inspectionId,
+      @JsonKey(name: 'inspection_id') this.inspectionId,
       @JsonKey(name: 'meta_data') this.metadata,
       this.date,
       final List<InspectionPointReportPhoto> photos = const []})
@@ -208,7 +208,7 @@ class _$InspectionPointReportImpl implements _InspectionPointReport {
   final int inspectionPointId;
   @override
   @JsonKey(name: 'inspection_id')
-  final int inspectionId;
+  final int? inspectionId;
   @override
   @JsonKey(name: 'meta_data')
   final dynamic metadata;
@@ -277,7 +277,7 @@ abstract class _InspectionPointReport implements InspectionPointReport {
           final InspectionPointReportStatus status,
           @JsonKey(name: 'inspection_point_id')
           required final int inspectionPointId,
-          @JsonKey(name: 'inspection_id') required final int inspectionId,
+          @JsonKey(name: 'inspection_id') final int? inspectionId,
           @JsonKey(name: 'meta_data') final dynamic metadata,
           final DateTime? date,
           final List<InspectionPointReportPhoto> photos}) =
@@ -295,7 +295,7 @@ abstract class _InspectionPointReport implements InspectionPointReport {
   int get inspectionPointId;
   @override
   @JsonKey(name: 'inspection_id')
-  int get inspectionId;
+  int? get inspectionId;
   @override
   @JsonKey(name: 'meta_data')
   dynamic get metadata;

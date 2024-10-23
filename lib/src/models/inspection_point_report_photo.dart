@@ -8,8 +8,9 @@ part 'inspection_point_report_photo.g.dart';
 @freezed
 class InspectionPointReportPhoto with _$InspectionPointReportPhoto {
   factory InspectionPointReportPhoto(
-      {@JsonKey(name: 'photo_link') required String url,
-      @JsonKey(name: 'photo_id') required int photoId,
+      {String? localPath,
+      @JsonKey(name: 'photo_link') String? url,
+      @JsonKey(name: 'photo_id') int? photoId,
       @JsonKey(name: 'photo_sequence_number') int? sequenceNumber,
       @JsonKey(name: 'report_id') int? reportId}) = _InspectionPointReportPhoto;
 
