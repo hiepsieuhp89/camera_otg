@@ -35,7 +35,6 @@ class BridgeInspectionEvaluationRoute
   BridgeInspectionEvaluationRoute({
     Key? key,
     required InspectionPoint point,
-    required PhotoInspectionResult photoInspectionResult,
     InspectionPointReport? createdReport,
     List<PageRouteInfo>? children,
   }) : super(
@@ -43,7 +42,6 @@ class BridgeInspectionEvaluationRoute
           args: BridgeInspectionEvaluationRouteArgs(
             key: key,
             point: point,
-            photoInspectionResult: photoInspectionResult,
             createdReport: createdReport,
           ),
           initialChildren: children,
@@ -58,7 +56,6 @@ class BridgeInspectionEvaluationRoute
       return BridgeInspectionEvaluationScreen(
         key: args.key,
         point: args.point,
-        photoInspectionResult: args.photoInspectionResult,
         createdReport: args.createdReport,
       );
     },
@@ -69,7 +66,6 @@ class BridgeInspectionEvaluationRouteArgs {
   const BridgeInspectionEvaluationRouteArgs({
     this.key,
     required this.point,
-    required this.photoInspectionResult,
     this.createdReport,
   });
 
@@ -77,34 +73,73 @@ class BridgeInspectionEvaluationRouteArgs {
 
   final InspectionPoint point;
 
-  final PhotoInspectionResult photoInspectionResult;
+  final InspectionPointReport? createdReport;
+
+  @override
+  String toString() {
+    return 'BridgeInspectionEvaluationRouteArgs{key: $key, point: $point, createdReport: $createdReport}';
+  }
+}
+
+/// generated route for
+/// [BridgeInspectionPhotoComparisonScreen]
+class BridgeInspectionPhotoComparisonRoute
+    extends PageRouteInfo<BridgeInspectionPhotoComparisonRouteArgs> {
+  BridgeInspectionPhotoComparisonRoute({
+    Key? key,
+    required InspectionPoint point,
+    InspectionPointReport? createdReport,
+    List<PageRouteInfo>? children,
+  }) : super(
+          BridgeInspectionPhotoComparisonRoute.name,
+          args: BridgeInspectionPhotoComparisonRouteArgs(
+            key: key,
+            point: point,
+            createdReport: createdReport,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'BridgeInspectionPhotoComparisonRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<BridgeInspectionPhotoComparisonRouteArgs>();
+      return BridgeInspectionPhotoComparisonScreen(
+        key: args.key,
+        point: args.point,
+        createdReport: args.createdReport,
+      );
+    },
+  );
+}
+
+class BridgeInspectionPhotoComparisonRouteArgs {
+  const BridgeInspectionPhotoComparisonRouteArgs({
+    this.key,
+    required this.point,
+    this.createdReport,
+  });
+
+  final Key? key;
+
+  final InspectionPoint point;
 
   final InspectionPointReport? createdReport;
 
   @override
   String toString() {
-    return 'BridgeInspectionEvaluationRouteArgs{key: $key, point: $point, photoInspectionResult: $photoInspectionResult, createdReport: $createdReport}';
+    return 'BridgeInspectionPhotoComparisonRouteArgs{key: $key, point: $point, createdReport: $createdReport}';
   }
 }
 
 /// generated route for
 /// [BridgeInspectionPhotoSelectionScreen]
-class BridgeInspectionPhotoSelectionRoute
-    extends PageRouteInfo<BridgeInspectionPhotoSelectionRouteArgs> {
-  BridgeInspectionPhotoSelectionRoute({
-    Key? key,
-    required PhotoInspectionResult photoInspectionResult,
-    required InspectionPoint point,
-    InspectionPointReport? createdReport,
-    List<PageRouteInfo>? children,
-  }) : super(
+class BridgeInspectionPhotoSelectionRoute extends PageRouteInfo<void> {
+  const BridgeInspectionPhotoSelectionRoute({List<PageRouteInfo>? children})
+      : super(
           BridgeInspectionPhotoSelectionRoute.name,
-          args: BridgeInspectionPhotoSelectionRouteArgs(
-            key: key,
-            photoInspectionResult: photoInspectionResult,
-            point: point,
-            createdReport: createdReport,
-          ),
           initialChildren: children,
         );
 
@@ -113,10 +148,38 @@ class BridgeInspectionPhotoSelectionRoute
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      final args = data.argsAs<BridgeInspectionPhotoSelectionRouteArgs>();
-      return BridgeInspectionPhotoSelectionScreen(
+      return const BridgeInspectionPhotoSelectionScreen();
+    },
+  );
+}
+
+/// generated route for
+/// [BridgeInspectionPhotosTabScreen]
+class BridgeInspectionPhotosTabRoute
+    extends PageRouteInfo<BridgeInspectionPhotosTabRouteArgs> {
+  BridgeInspectionPhotosTabRoute({
+    Key? key,
+    required InspectionPoint point,
+    InspectionPointReport? createdReport,
+    List<PageRouteInfo>? children,
+  }) : super(
+          BridgeInspectionPhotosTabRoute.name,
+          args: BridgeInspectionPhotosTabRouteArgs(
+            key: key,
+            point: point,
+            createdReport: createdReport,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'BridgeInspectionPhotosTabRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<BridgeInspectionPhotosTabRouteArgs>();
+      return BridgeInspectionPhotosTabScreen(
         key: args.key,
-        photoInspectionResult: args.photoInspectionResult,
         point: args.point,
         createdReport: args.createdReport,
       );
@@ -124,17 +187,14 @@ class BridgeInspectionPhotoSelectionRoute
   );
 }
 
-class BridgeInspectionPhotoSelectionRouteArgs {
-  const BridgeInspectionPhotoSelectionRouteArgs({
+class BridgeInspectionPhotosTabRouteArgs {
+  const BridgeInspectionPhotosTabRouteArgs({
     this.key,
-    required this.photoInspectionResult,
     required this.point,
     this.createdReport,
   });
 
   final Key? key;
-
-  final PhotoInspectionResult photoInspectionResult;
 
   final InspectionPoint point;
 
@@ -142,7 +202,7 @@ class BridgeInspectionPhotoSelectionRouteArgs {
 
   @override
   String toString() {
-    return 'BridgeInspectionPhotoSelectionRouteArgs{key: $key, photoInspectionResult: $photoInspectionResult, point: $point, createdReport: $createdReport}';
+    return 'BridgeInspectionPhotosTabRouteArgs{key: $key, point: $point, createdReport: $createdReport}';
   }
 }
 

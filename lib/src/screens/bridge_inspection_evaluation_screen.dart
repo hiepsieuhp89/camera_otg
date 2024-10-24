@@ -12,21 +12,20 @@ import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/models/inspection_point_report.dart';
 import 'package:kyoryo/src/models/photo_inspection_result.dart';
 import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
+import 'package:kyoryo/src/providers/current_photo_inspection_result.provider.dart';
 import 'package:kyoryo/src/providers/misc.provider.dart';
 import 'package:kyoryo/src/routing/router.dart';
-import 'package:kyoryo/src/ui/selected_photo_check_mark.dart';
+import 'package:kyoryo/src/ui/photo_sequence_number_mark.dart';
 import 'package:kyoryo/src/utilities/image_utils.dart';
 
 @RoutePage()
 class BridgeInspectionEvaluationScreen extends ConsumerStatefulWidget {
   final InspectionPoint point;
-  final PhotoInspectionResult photoInspectionResult;
   final InspectionPointReport? createdReport;
 
   const BridgeInspectionEvaluationScreen({
     super.key,
     required this.point,
-    required this.photoInspectionResult,
     this.createdReport,
   });
 
@@ -82,36 +81,37 @@ class BridgeInspectionEvaluationScreenState
     if (widget.createdReport == null) {
       throw Exception('Report is not created yet');
     }
-    await _compressCapturedPhotos(result.newPhotoLocalPaths);
+    await _compressCapturedPhotos(result.photosNotYetUploaded);
     await ref
         .read(bridgeInspectionProvider(widget.point.bridgeId!).notifier)
         .updateReport(
-            report: widget.createdReport!.copyWith(status: status, metadata: {
-              'damage_category': _selectedCategory ?? '',
-              'damage_type': _selectedDamageType ?? '',
-              'damage_level': _selectedHealthLevel ?? '',
-              'remark': _textEditingController.text,
-            }),
-            capturedPhotoPaths: result.newPhotoLocalPaths,
-            preferredPhotoPath: result.selectedPhotoPath,
-            uploadedPhotos: result.uploadedPhotos);
+          report: widget.createdReport!.copyWith(
+              status: status,
+              metadata: {
+                'damage_category': _selectedCategory ?? '',
+                'damage_type': _selectedDamageType ?? '',
+                'damage_level': _selectedHealthLevel ?? '',
+                'remark': _textEditingController.text,
+              },
+              photos: result.photos),
+        );
   }
 
   Future<void> _createReport(InspectionPointReportStatus status) async {
-    await _compressCapturedPhotos(result.newPhotoLocalPaths);
+    await _compressCapturedPhotos(result.photosNotYetUploaded);
     await ref
         .read(bridgeInspectionProvider(widget.point.bridgeId!).notifier)
         .createReport(
-            pointId: widget.point.id!,
-            capturedPhotoPaths: result.newPhotoLocalPaths,
-            preferredPhotoPath: result.selectedPhotoPath,
-            status: status,
-            metadata: {
-          'damage_category': _selectedCategory ?? '',
-          'damage_type': _selectedDamageType ?? '',
-          'damage_level': _selectedHealthLevel ?? '',
-          'remark': _textEditingController.text,
-        });
+            report: InspectionPointReport(
+                inspectionPointId: widget.point.id!,
+                status: status,
+                metadata: {
+                  'damage_category': _selectedCategory ?? '',
+                  'damage_type': _selectedDamageType ?? '',
+                  'damage_level': _selectedHealthLevel ?? '',
+                  'remark': _textEditingController.text,
+                },
+                photos: result.photos));
   }
 
   @override
@@ -121,7 +121,7 @@ class BridgeInspectionEvaluationScreenState
         .read(bridgeInspectionProvider(widget.point.bridgeId!).notifier)
         .findPreviousReportFromPoint(widget.point.id!);
 
-    result = widget.photoInspectionResult;
+    result = ref.read(currentPhotoInspectionResultProvider);
     _textEditingController = TextEditingController();
     _damageCategoryController = TextEditingController();
     _damageTypeController = TextEditingController();
@@ -153,51 +153,60 @@ class BridgeInspectionEvaluationScreenState
       canPop: false,
       onPopInvokedWithResult: (didPop, Object? result) =>
           didPop ? null : Navigator.pop(context, result),
-      child: Scaffold(
-          resizeToAvoidBottomInset: false,
-          appBar: MediaQuery.of(context).orientation == Orientation.portrait
-              ? AppBar(title: Text(widget.point.spanName ?? ''), actions: [
-                  buildGoToPhotoSelectionButton(context),
-                ])
-              : null,
-          body: OrientationBuilder(builder: ((context, orientation) {
-            if (orientation == Orientation.portrait) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  buildPhotosCarousel(context, orientation),
-                  buildEvaluationForm(context, damageTypes),
-                ],
-              );
-            } else {
-              return Row(
-                children: [
-                  buildPhotosCarousel(context, orientation),
-                  buildEvaluationForm(context, damageTypes),
-                ],
-              );
-            }
-          }))),
+      child: OrientationBuilder(
+        builder: (context, orientation) {
+          return Scaffold(
+              resizeToAvoidBottomInset: false,
+              appBar: orientation == Orientation.portrait
+                  ? AppBar(title: Text(widget.point.spanName ?? ''), actions: [
+                      buildGoToPhotoSelectionButton(context),
+                    ])
+                  : null,
+              body: orientation == Orientation.portrait
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: buildPhotosCarousel(context, orientation),
+                        ),
+                        Expanded(
+                            child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: buildEvaluationForm(
+                              context, damageTypes, orientation),
+                        )),
+                      ],
+                    )
+                  : Row(
+                      children: [
+                        Expanded(
+                          child: buildPhotosCarousel(context, orientation),
+                        ),
+                        Expanded(
+                            child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: buildEvaluationForm(
+                              context, damageTypes, orientation),
+                        )),
+                      ],
+                    ));
+        },
+      ),
     );
   }
 
   IconButton buildGoToPhotoSelectionButton(BuildContext context) {
     onButtonPressed() {
       context.router
-          .push<PhotoInspectionResult>(BridgeInspectionPhotoSelectionRoute(
-        photoInspectionResult: result,
-        point: widget.point,
-      ))
+          .push<PhotoInspectionResult>(BridgeInspectionPhotosTabRoute(
+              point: widget.point, createdReport: widget.createdReport))
           .then((data) {
         if (data == null) {
           return;
         }
 
         setState(() {
-          result = result.copyWith(
-              newPhotoLocalPaths: data.newPhotoLocalPaths,
-              uploadedPhotos: data.uploadedPhotos,
-              selectedPhotoPath: data.selectedPhotoPath);
+          result = result.copyWith();
         });
       });
     }
@@ -208,255 +217,227 @@ class BridgeInspectionEvaluationScreenState
         onPressed: !result.isSkipped ? onButtonPressed : null);
   }
 
-  Expanded buildEvaluationForm(
-      BuildContext context, AsyncValue<List<DamageType>> damageTypes) {
-    return Expanded(
-        flex: 1,
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
+  buildEvaluationForm(BuildContext context,
+      AsyncValue<List<DamageType>> damageTypes, Orientation orientation) {
+    return Column(
+      children: [
+        Expanded(
           child: Column(
             children: [
-              Expanded(
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                            child: DropdownMenu<String>(
-                          initialSelection: _selectedCategory,
-                          controller: _damageCategoryController,
-                          label: Text(AppLocalizations.of(context)!.damageType),
-                          expandedInsets: const EdgeInsets.all(0),
-                          onSelected: (category) {
-                            category == 'NON'
-                                ? setState(() {
-                                    _selectedCategory = category;
-                                    _selectedDamageType = 'NON';
-                                    _selectedHealthLevel = 'a';
-                                  })
-                                : setState(() {
-                                    _selectedCategory = category;
-                                    _selectedDamageType = null;
-                                    _damageTypeController.text = '';
-                                  });
-                          },
-                          dropdownMenuEntries: damageTypes.hasValue
-                              ? damageTypes.value!
-                                  .map((type) => type.category)
-                                  .toSet()
-                                  .map((category) {
-                                  return DropdownMenuEntry(
-                                    value: category,
-                                    label: category,
-                                  );
-                                }).toList()
-                              : const [],
-                        )),
-                        const SizedBox(width: 8),
-                        Expanded(
-                            child: DropdownMenu<String>(
-                          controller: _damageTypeController,
-                          initialSelection: _selectedDamageType,
-                          label:
-                              Text(AppLocalizations.of(context)!.damageDetails),
-                          enabled: _selectedCategory != null,
-                          expandedInsets: const EdgeInsets.all(0),
-                          onSelected: (value) {
-                            setState(() {
-                              _selectedDamageType = value;
-                            });
-                          },
-                          dropdownMenuEntries: damageTypes.hasValue
-                              ? damageTypes.value!
-                                  .where((type) =>
-                                      type.category == _selectedCategory)
-                                  .map((type) {
-                                  return DropdownMenuEntry(
-                                    value: type.nameJp,
-                                    label: type.nameJp,
-                                  );
-                                }).toList()
-                              : const [],
-                        )),
-                        const SizedBox(width: 8),
-                        DropdownMenu<String>(
-                          width: 80,
-                          initialSelection: _selectedHealthLevel,
-                          label: Text(AppLocalizations.of(context)!.damage),
-                          onSelected: (healthLevel) {
-                            setState(() {
-                              _selectedHealthLevel = healthLevel;
-                            });
-                          },
-                          dropdownMenuEntries: const [
-                            DropdownMenuEntry(value: 'a', label: 'a'),
-                            DropdownMenuEntry(value: 'b', label: 'b'),
-                            DropdownMenuEntry(value: 'c', label: 'c'),
-                            DropdownMenuEntry(value: 'd', label: 'd'),
-                            DropdownMenuEntry(value: 'e', label: 'e'),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Expanded(
-                      child: TextField(
-                          minLines: 7,
-                          maxLines: null,
-                          controller: _textEditingController,
-                          keyboardType: TextInputType.multiline,
-                          decoration: InputDecoration(
-                            labelText: AppLocalizations.of(context)!.remark,
-                            border: const OutlineInputBorder(),
-                            constraints: const BoxConstraints(
-                                minHeight: double.infinity,
-                                minWidth: double.infinity),
-                          )),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
               Row(
                 children: [
-                  if (MediaQuery.of(context).orientation ==
-                      Orientation.landscape)
-                    buildGoToPhotoSelectionButton(context),
-                  const Spacer(),
-                  FutureBuilder(
-                      future: _pendingSubmission,
-                      builder: ((context, snapshot) {
-                        final isLoading =
-                            snapshot.connectionState == ConnectionState.waiting;
-                        final inspectionStatus = result.isSkipped
-                            ? InspectionPointReportStatus.skipped
-                            : InspectionPointReportStatus.finished;
-
-                        return Row(
-                          children: [
-                            if (!result.isSkipped) ...[
-                              FilledButton.icon(
-                                icon: isLoading &&
-                                        _submissionType ==
-                                            InspectionPointReportStatus.pending
-                                    ? Container(
-                                        width: 24,
-                                        height: 24,
-                                        padding: const EdgeInsets.all(2.0),
-                                        child: const CircularProgressIndicator(
-                                          strokeWidth: 3,
-                                        ),
-                                      )
-                                    : const Icon(Icons.timer),
-                                label: Text(
-                                    AppLocalizations.of(context)!.holdButton),
-                                onPressed: isLoading
-                                    ? null
-                                    : () {
-                                        submitInspection(
-                                            InspectionPointReportStatus
-                                                .pending);
-                                      },
-                                style: FilledButton.styleFrom(
-                                    backgroundColor: Colors.orange),
-                              ),
-                              const SizedBox(width: 16),
-                            ],
-                            FilledButton.icon(
-                                onPressed: isLoading
-                                    ? null
-                                    : () {
-                                        submitInspection(inspectionStatus);
-                                      },
-                                // style: FilledButton.styleFrom(
-                                //     minimumSize: const Size.fromHeight(55)),
-                                icon: isLoading &&
-                                        _submissionType == inspectionStatus
-                                    ? Container(
-                                        width: 24,
-                                        height: 24,
-                                        padding: const EdgeInsets.all(2.0),
-                                        child: const CircularProgressIndicator(
-                                          strokeWidth: 3,
-                                        ),
-                                      )
-                                    : inspectionStatus ==
-                                            InspectionPointReportStatus.finished
-                                        ? const Icon(Icons.check)
-                                        : const Icon(Icons.do_not_disturb),
-                                label: result.isSkipped
-                                    ? Text(AppLocalizations.of(context)!
-                                        .skipEvaluation)
-                                    : Text(AppLocalizations.of(context)!
-                                        .finishEvaluation))
-                          ],
-                        );
-                      }))
+                  Expanded(
+                      child: DropdownMenu<String>(
+                    initialSelection: _selectedCategory,
+                    controller: _damageCategoryController,
+                    label: Text(AppLocalizations.of(context)!.damageType),
+                    expandedInsets: const EdgeInsets.all(0),
+                    onSelected: (category) {
+                      category == 'NON'
+                          ? setState(() {
+                              _selectedCategory = category;
+                              _selectedDamageType = 'NON';
+                              _selectedHealthLevel = 'a';
+                            })
+                          : setState(() {
+                              _selectedCategory = category;
+                              _selectedDamageType = null;
+                              _damageTypeController.text = '';
+                            });
+                    },
+                    dropdownMenuEntries: damageTypes.hasValue
+                        ? damageTypes.value!
+                            .map((type) => type.category)
+                            .toSet()
+                            .map((category) {
+                            return DropdownMenuEntry(
+                              value: category,
+                              label: category,
+                            );
+                          }).toList()
+                        : const [],
+                  )),
+                  const SizedBox(width: 8),
+                  Expanded(
+                      child: DropdownMenu<String>(
+                    controller: _damageTypeController,
+                    initialSelection: _selectedDamageType,
+                    label: Text(AppLocalizations.of(context)!.damageDetails),
+                    enabled: _selectedCategory != null,
+                    expandedInsets: const EdgeInsets.all(0),
+                    onSelected: (value) {
+                      setState(() {
+                        _selectedDamageType = value;
+                      });
+                    },
+                    dropdownMenuEntries: damageTypes.hasValue
+                        ? damageTypes.value!
+                            .where((type) => type.category == _selectedCategory)
+                            .map((type) {
+                            return DropdownMenuEntry(
+                              value: type.nameJp,
+                              label: type.nameJp,
+                            );
+                          }).toList()
+                        : const [],
+                  )),
+                  const SizedBox(width: 8),
+                  DropdownMenu<String>(
+                    width: 80,
+                    initialSelection: _selectedHealthLevel,
+                    label: Text(AppLocalizations.of(context)!.damage),
+                    onSelected: (healthLevel) {
+                      setState(() {
+                        _selectedHealthLevel = healthLevel;
+                      });
+                    },
+                    dropdownMenuEntries: const [
+                      DropdownMenuEntry(value: 'a', label: 'a'),
+                      DropdownMenuEntry(value: 'b', label: 'b'),
+                      DropdownMenuEntry(value: 'c', label: 'c'),
+                      DropdownMenuEntry(value: 'd', label: 'd'),
+                      DropdownMenuEntry(value: 'e', label: 'e'),
+                    ],
+                  ),
                 ],
-              )
+              ),
+              const SizedBox(height: 8),
+              Expanded(
+                child: TextField(
+                    minLines: 7,
+                    maxLines: null,
+                    controller: _textEditingController,
+                    keyboardType: TextInputType.multiline,
+                    decoration: InputDecoration(
+                      labelText: AppLocalizations.of(context)!.remark,
+                      border: const OutlineInputBorder(),
+                      constraints: const BoxConstraints(
+                          minHeight: double.infinity,
+                          minWidth: double.infinity),
+                    )),
+              ),
             ],
           ),
-        ));
-  }
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            if (orientation == Orientation.landscape)
+              buildGoToPhotoSelectionButton(context),
+            const Spacer(),
+            FutureBuilder(
+                future: _pendingSubmission,
+                builder: ((context, snapshot) {
+                  final isLoading =
+                      snapshot.connectionState == ConnectionState.waiting;
+                  final inspectionStatus = result.isSkipped
+                      ? InspectionPointReportStatus.skipped
+                      : InspectionPointReportStatus.finished;
 
-  bool isPhotoSelected(dynamic photo) {
-    if (photo is String) {
-      return photo == result.selectedPhotoPath;
-    } else {
-      return photo.photoLink == result.selectedPhotoPath;
-    }
-  }
-
-  Expanded buildPhotosCarousel(BuildContext context, Orientation orientation) {
-    List<dynamic> combinedList = [
-      ...result.uploadedPhotos,
-      ...result.newPhotoLocalPaths,
-    ];
-
-    return Expanded(
-      flex: 1,
-      child: Column(children: [
-        if (MediaQuery.of(context).orientation == Orientation.landscape)
-          AppBar(title: Text(widget.point.spanName ?? '')),
-        Padding(
-          padding: const EdgeInsets.only(bottom: 8.0),
-          child: Expanded(
-              child: CarouselSlider(
-            options: CarouselOptions(
-              viewportFraction: 0.8,
-              initialPage: 0,
-              enableInfiniteScroll: false,
-              reverse: false,
-              enlargeCenterPage: true,
-              scrollDirection: Axis.horizontal,
-            ),
-            items: combinedList.mapIndexed((index, photo) {
-              return Builder(
-                builder: (BuildContext context) {
-                  return Stack(
+                  return Row(
                     children: [
-                      combinedList[index] is String
-                          ? Image.file(
-                              File(combinedList[index]),
-                              fit: BoxFit.fill,
-                            )
-                          : CachedNetworkImage(
-                              imageUrl: combinedList[index].photoLink,
-                              fit: BoxFit.fill),
-                      Positioned(
-                          top: 2,
-                          right: 2,
-                          child: SelectedPhotoCheckMark(
-                              isSelected:
-                                  isPhotoSelected(combinedList[index]))),
+                      if (!result.isSkipped) ...[
+                        FilledButton.icon(
+                          icon: isLoading &&
+                                  _submissionType ==
+                                      InspectionPointReportStatus.pending
+                              ? Container(
+                                  width: 24,
+                                  height: 24,
+                                  padding: const EdgeInsets.all(2.0),
+                                  child: const CircularProgressIndicator(
+                                    strokeWidth: 3,
+                                  ),
+                                )
+                              : const Icon(Icons.timer),
+                          label: Text(AppLocalizations.of(context)!.holdButton),
+                          onPressed: isLoading
+                              ? null
+                              : () {
+                                  submitInspection(
+                                      InspectionPointReportStatus.pending);
+                                },
+                          style: FilledButton.styleFrom(
+                              backgroundColor: Colors.orange),
+                        ),
+                        const SizedBox(width: 16),
+                      ],
+                      FilledButton.icon(
+                          onPressed: isLoading
+                              ? null
+                              : () {
+                                  submitInspection(inspectionStatus);
+                                },
+                          // style: FilledButton.styleFrom(
+                          //     minimumSize: const Size.fromHeight(55)),
+                          icon: isLoading && _submissionType == inspectionStatus
+                              ? Container(
+                                  width: 24,
+                                  height: 24,
+                                  padding: const EdgeInsets.all(2.0),
+                                  child: const CircularProgressIndicator(
+                                    strokeWidth: 3,
+                                  ),
+                                )
+                              : inspectionStatus ==
+                                      InspectionPointReportStatus.finished
+                                  ? const Icon(Icons.check)
+                                  : const Icon(Icons.do_not_disturb),
+                          label: result.isSkipped
+                              ? Text(
+                                  AppLocalizations.of(context)!.skipEvaluation)
+                              : Text(AppLocalizations.of(context)!
+                                  .finishEvaluation))
                     ],
                   );
-                },
-              );
-            }).toList(),
-          )),
-        ),
-      ]),
+                }))
+          ],
+        )
+      ],
     );
+  }
+
+  buildPhotosCarousel(BuildContext context, Orientation orientation) {
+    return Column(children: [
+      if (MediaQuery.of(context).orientation == Orientation.landscape)
+        AppBar(title: Text(widget.point.spanName ?? '')),
+      Expanded(
+          child: Padding(
+        padding: const EdgeInsets.only(bottom: 8.0),
+        child: CarouselSlider(
+          options: CarouselOptions(
+            viewportFraction: 0.8,
+            initialPage: 0,
+            enableInfiniteScroll: false,
+            reverse: false,
+            enlargeCenterPage: true,
+            scrollDirection: Axis.horizontal,
+          ),
+          items: result.photos.mapIndexed((index, photo) {
+            return Builder(
+              builder: (BuildContext context) {
+                return Stack(
+                  children: [
+                    photo.url != null
+                        ? CachedNetworkImage(
+                            imageUrl: photo.url!, fit: BoxFit.fill)
+                        : Image.file(
+                            File(photo.localPath!),
+                            fit: BoxFit.fill,
+                          ),
+                    Positioned(
+                      top: 2,
+                      right: 2,
+                      child:
+                          PhotoSequenceNumberMark(number: photo.sequenceNumber),
+                    )
+                  ],
+                );
+              },
+            );
+          }).toList(),
+        ),
+      )),
+    ]);
   }
 }

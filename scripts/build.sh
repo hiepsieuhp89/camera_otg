@@ -52,3 +52,33 @@ if [ -f "$TEMP_FOLDER/$ENV_FILE" ]; then
 fi
 
 echo "APKs built and moved to $TEMP_FOLDER"
+
+read -p "Install the APKs on a connected device? (y/n): " INSTALL_APK
+
+if [ "$INSTALL_APK" = "y" ]; then
+
+    read -p "Install dev or stg APK? (dev/stg): " TYPE
+
+    if [ "$TYPE" = "dev" ]; then
+        adb install -r "$TEMP_FOLDER/app-release-dev-$COMMIT_HASH.apk"
+    elif [ "$TYPE" = "stg" ]; then
+        adb install -r "$TEMP_FOLDER/app-release-stg-$COMMIT_HASH.apk"
+    else
+        echo "Invalid option. Exiting..."
+        exit 1
+    fi
+
+    echo "APKs installed on the connected device."
+
+    read -p "Remove temp folder? (y/n): " REMOVE_TEMP
+
+    if [ "$REMOVE_TEMP" = "y" ]; then
+        rm -rf "$TEMP_FOLDER"
+        echo "Temp folder removed."
+    else
+        echo "Temp folder not removed."
+    fi
+
+else
+    echo "APKs not installed."
+fi

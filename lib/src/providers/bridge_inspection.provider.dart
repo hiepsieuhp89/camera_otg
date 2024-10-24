@@ -4,6 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:kyoryo/src/models/inspection.dart';
 import 'package:kyoryo/src/models/inspection_point_report.dart';
+import 'package:kyoryo/src/models/inspection_point_report_photo.dart';
 import 'package:kyoryo/src/models/photo.dart';
 import 'package:kyoryo/src/providers/api.provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -59,55 +60,44 @@ class BridgeInspection extends _$BridgeInspection {
     return inspectionsToReturn;
   }
 
-  Future<void> createReport(
-      {required int pointId,
-      required List<String> capturedPhotoPaths,
-      Map<String, dynamic>? metadata,
-      String? preferredPhotoPath,
-      InspectionPointReportStatus status =
-          InspectionPointReportStatus.finished}) async {
+  Future<void> createReport({required InspectionPointReport report}) async {
     final currentState = await future;
 
     if (currentState[1] == null) {
       throw Exception('No active inspection found');
     }
 
-    List<Photo> uploadedPhotos = [];
-    int? preferredPhotoId;
+    List<InspectionPointReportPhoto> reportPhotos = [];
 
-    for (int i = 0; i < capturedPhotoPaths.length; i++) {
-      String path = capturedPhotoPaths[i];
-      Photo photo = await ref.read(apiServiceProvider).uploadPhoto(path);
-      if (path == preferredPhotoPath) {
-        preferredPhotoId = photo.id;
+    for (int i = 0; i < report.photos.length; i++) {
+      if (report.photos[i].photoId == null &&
+          report.photos[i].localPath != null) {
+        Photo photo = await ref
+            .read(apiServiceProvider)
+            .uploadPhoto(report.photos[i].localPath!);
+
+        reportPhotos.add(report.photos[i].copyWith(
+          photoId: photo.id,
+          url: photo.photoLink,
+        ));
+      } else {
+        reportPhotos.add(report.photos[i]);
       }
-      uploadedPhotos.add(photo);
     }
 
-    final report = await ref
-        .read(apiServiceProvider)
-        .createReport(
-            report: InspectionPointReport(
-                inspectionPointId: pointId,
-                inspectionId: currentState[1]!.id!,
-                preferredPhotoId: preferredPhotoId,
-                metadata: metadata,
-                status: status),
-            photoIds: uploadedPhotos.map((photo) => photo.id!).toList())
-        .then((report) => report.copyWith(photos: uploadedPhotos));
+    final created = await ref.read(apiServiceProvider).createReport(
+          report: report.copyWith(
+              photos: reportPhotos, inspectionId: currentState[1]!.id!),
+        );
 
     final currentActiveInspection = currentState[1]!.copyWith(reports: [
       ...currentState[1]!.reports,
-      report,
+      created,
     ]);
     state = AsyncData([currentState[0], currentActiveInspection]);
   }
 
-  Future<void> updateReport(
-      {required InspectionPointReport report,
-      required List<String> capturedPhotoPaths,
-      required List<Photo> uploadedPhotos,
-      String? preferredPhotoPath}) async {
+  Future<void> updateReport({required InspectionPointReport report}) async {
     final currentState = await future;
 
     if (currentState[1] == null) {
@@ -119,29 +109,22 @@ class BridgeInspection extends _$BridgeInspection {
       return;
     }
 
-    int? preferredPhotoId;
-    List<Photo> newPhotos = [];
+    List<InspectionPointReportPhoto> photos = List.from(report.photos);
 
-    for (int i = 0; i < capturedPhotoPaths.length; i++) {
-      String path = capturedPhotoPaths[i];
-      Photo photo = await ref.read(apiServiceProvider).uploadPhoto(path);
-      if (path == preferredPhotoPath) {
-        preferredPhotoId = photo.id;
-      }
-      newPhotos.add(photo);
-    }
+    for (int i = 0; i < photos.length; i++) {
+      if (photos[i].photoId == null && photos[i].localPath != null) {
+        Photo photo = await ref
+            .read(apiServiceProvider)
+            .uploadPhoto(photos[i].localPath!);
 
-    for (Photo photo in uploadedPhotos) {
-      if (photo.photoLink == preferredPhotoPath) {
-        preferredPhotoId = photo.id;
-        break;
+        photos[i] = photos[i].copyWith(photoId: photo.id, url: photo.photoLink);
       }
     }
 
-    final updatedReport = await ref.read(apiServiceProvider).updateReport(report
-        .copyWith(
-            photos: [...uploadedPhotos, ...newPhotos],
-            preferredPhotoId: preferredPhotoId));
+    final updatedReport =
+        await ref.read(apiServiceProvider).updateReport(report.copyWith(
+              photos: photos,
+            ));
 
     final currentActiveInspection = currentState[1]!.copyWith(
       reports: [
@@ -201,4 +184,16 @@ bool isInspectionInProgress(IsInspectionInProgressRef ref, int bridgeId) {
       ref.watch(bridgeInspectionProvider(bridgeId)).value?[1];
 
   return activeInspection != null ? !activeInspection.isFinished : false;
+}
+
+@riverpod
+int numberOfPendingReports(NumberOfPendingReportsRef ref, int bridgeId) {
+  final activeInspection =
+      ref.watch(bridgeInspectionProvider(bridgeId)).value?[1];
+
+  return activeInspection?.reports
+          .where(
+              (report) => report.status == InspectionPointReportStatus.pending)
+          .length ??
+      0;
 }
