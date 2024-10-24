@@ -110,50 +110,50 @@ class BridgeInspectionPhotosTabScreen extends ConsumerWidget {
               Navigator.pop(context, photoInspectionResult);
             }
           },
-          child: Scaffold(
-            appBar: MediaQuery.of(context).orientation == Orientation.portrait
-                ? AppBar(
-                    title: tabsRouter.activeIndex == 0
-                        ? Text(AppLocalizations.of(context)!.comparePhotos)
-                        : Text(AppLocalizations.of(context)!.selectPhoto),
-                  )
-                : null,
-            floatingActionButton: MediaQuery.of(context).orientation ==
-                    Orientation.portrait
-                ? FloatingActionButton(
-                    heroTag: 'bottom_button',
-                    elevation: 0,
-                    onPressed: () {
-                      context.router.replace(BridgeInspectionEvaluationRoute(
-                          point: point, createdReport: createdReport));
-                    },
-                    child: const Icon(Icons.check),
-                  )
-                : null,
-            bottomNavigationBar:
-                MediaQuery.of(context).orientation == Orientation.portrait
-                    ? buildBottomNavigationBar(tabsRouter)
-                    : null,
-            body: OrientationBuilder(builder: ((context, orientation) {
-              if (orientation == Orientation.portrait) {
-                return Column(
-                  children: [
-                    Expanded(
-                      child: child,
-                    ),
-                  ],
-                );
-              } else {
-                return Row(
-                  children: [
-                    navigationRail(tabsRouter),
-                    const VerticalDivider(thickness: 1, width: 1),
-                    Expanded(child: child),
-                  ],
-                );
-              }
-            })),
-          ),
+          child: OrientationBuilder(builder: (context, orientation) {
+            return Scaffold(
+              appBar: orientation == Orientation.portrait
+                  ? AppBar(
+                      title: tabsRouter.activeIndex == 0
+                          ? Text(AppLocalizations.of(context)!.comparePhotos)
+                          : Text(AppLocalizations.of(context)!.selectPhoto),
+                    )
+                  : null,
+              floatingActionButton: orientation == Orientation.portrait
+                  ? FloatingActionButton(
+                      heroTag: 'bottom_button',
+                      elevation: 0,
+                      onPressed: () {
+                        context.router.replace(BridgeInspectionEvaluationRoute(
+                            point: point, createdReport: createdReport));
+                      },
+                      child: const Icon(Icons.check),
+                    )
+                  : null,
+              bottomNavigationBar: orientation == Orientation.portrait
+                  ? buildBottomNavigationBar(tabsRouter)
+                  : null,
+              body: OrientationBuilder(builder: ((context, orientation) {
+                if (orientation == Orientation.portrait) {
+                  return Column(
+                    children: [
+                      Expanded(
+                        child: child,
+                      ),
+                    ],
+                  );
+                } else {
+                  return Row(
+                    children: [
+                      navigationRail(tabsRouter),
+                      const VerticalDivider(thickness: 1, width: 1),
+                      Expanded(child: child),
+                    ],
+                  );
+                }
+              })),
+            );
+          }),
         );
       },
     );
