@@ -160,9 +160,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get damageMarking => '損傷箇所マーキング';
 
   @override
-  String get pleaseTapOnWhereTheDamageLocates => '損傷箇所をタップしてください';
-
-  @override
   String get newDamage => '新規損傷';
 
   @override

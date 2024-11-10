@@ -387,12 +387,6 @@ abstract class AppLocalizations {
   /// **'損傷箇所マーキング'**
   String get damageMarking;
 
-  /// No description provided for @pleaseTapOnWhereTheDamageLocates.
-  ///
-  /// In ja, this message translates to:
-  /// **'損傷箇所をタップしてください'**
-  String get pleaseTapOnWhereTheDamageLocates;
-
   /// No description provided for @newDamage.
   ///
   /// In ja, this message translates to:

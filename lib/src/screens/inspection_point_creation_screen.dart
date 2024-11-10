@@ -1,13 +1,16 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kyoryo/src/models/diagram.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
+import 'package:kyoryo/src/models/marking.dart';
 import 'package:kyoryo/src/providers/current_bridge.provider.dart';
 import 'package:kyoryo/src/providers/inspection_points.provider.dart';
 import 'package:kyoryo/src/routing/router.dart';
+import 'package:kyoryo/src/ui/image_marking_view_overlay.dart';
 
 @RoutePage()
 class InspectionPointCreationScreen extends ConsumerStatefulWidget {
@@ -27,16 +30,13 @@ class InspectionPointCreationScreenState
   late TextEditingController _nameController;
   late TextEditingController _spanNumberController;
   late TextEditingController _elementNumberController;
-  double _top = 0;
-  double _left = 0;
-  int _imageWidth = 0;
-  int _imageHeight = 0;
+  Marking _marking = const Marking(x: 0, y: 0);
+  int _imageWidth = 1;
+  int _imageHeight = 1;
   String _spanName = '';
   String _spanNumber = '';
   String _elementNumber = '';
   Future<void>? _pendingSubmission;
-
-  final GlobalKey _imageKey = GlobalKey();
 
   @override
   void initState() {
@@ -55,18 +55,6 @@ class InspectionPointCreationScreenState
     final inspectionPointsNotiffier =
         ref.read(inspectionPointsProvider(currentBridge!.id).notifier);
 
-    int? markCoordinateX;
-    int? markCoordinateY;
-
-    if (widget.diagram != null && _imageWidth != 0 && _imageHeight != 0) {
-      markCoordinateX =
-          ((_left + 10) / _imageKey.currentContext!.size!.width * _imageWidth)
-              .round();
-      markCoordinateY =
-          ((_top + 10) / _imageKey.currentContext!.size!.height * _imageHeight)
-              .round();
-    }
-
     setState(() {
       _pendingSubmission = inspectionPointsNotiffier
           .createInspectionPoint(InspectionPoint(
@@ -75,8 +63,8 @@ class InspectionPointCreationScreenState
               bridgeId: currentBridge.id,
               spanNumber: _spanNumber,
               elementNumber: _elementNumber,
-              diagramMarkingX: markCoordinateX,
-              diagramMarkingY: markCoordinateY,
+              diagramMarkingX: _marking.x,
+              diagramMarkingY: _marking.y,
               diagramId: widget.diagram?.id))
           .then(goToTakePictureScreen);
     });
@@ -84,13 +72,13 @@ class InspectionPointCreationScreenState
 
   @override
   Widget build(BuildContext context) {
-    Image? imageWidget;
+    CachedNetworkImageProvider? imageProvider;
 
     if (widget.diagram != null) {
-      imageWidget =
-          Image.network(widget.diagram!.photo!.photoLink, key: _imageKey);
+      imageProvider =
+          CachedNetworkImageProvider(widget.diagram!.photo!.photoLink);
 
-      imageWidget.image
+      imageProvider
           .resolve(const ImageConfiguration())
           .addListener(ImageStreamListener((info, synchronousCall) {
         setState(() {
@@ -185,8 +173,7 @@ class InspectionPointCreationScreenState
                   ),
                 ],
               ),
-              const SizedBox(height: 10.0),
-              if (imageWidget != null) ...[
+              if (imageProvider != null) ...[
                 const SizedBox(height: 16),
                 Row(
                   children: [
@@ -197,34 +184,46 @@ class InspectionPointCreationScreenState
                 ),
                 GestureDetector(
                   onTapDown: (details) {
-                    _top = details.localPosition.dy - 10;
-                    _left = details.localPosition.dx - 10;
-
-                    setState(() {});
+                    Navigator.push(
+                            context,
+                            ImageMarkingViewOverlay(
+                                imageProvider: imageProvider!,
+                                originalMarking: _marking))
+                        .then((Marking? marking) {
+                      if (marking != null) {
+                        setState(() {
+                          _marking = marking;
+                        });
+                      }
+                    });
                   },
                   child: Stack(
                     children: [
-                      imageWidget,
-                      Positioned(
-                        top: _top,
-                        left: _left,
-                        child: const Icon(
-                          Icons.circle,
-                          color: Colors.red,
-                          size: 20,
-                        ),
+                      Image(
+                        image: imageProvider,
+                      ),
+                      Positioned.fill(
+                        child: LayoutBuilder(builder: (context, constraints) {
+                          return Stack(
+                            children: [
+                              Positioned(
+                                top: _marking.y /
+                                    _imageHeight *
+                                    constraints.maxHeight,
+                                left: _marking.x /
+                                    _imageWidth *
+                                    constraints.maxWidth,
+                                child: const Icon(
+                                  Icons.circle,
+                                  color: Colors.red,
+                                  size: 20,
+                                ),
+                              )
+                            ],
+                          );
+                        }),
                       ),
                     ],
-                  ),
-                ),
-                SizedBox(
-                  height: 50,
-                  child: Center(
-                    child: Text(
-                      AppLocalizations.of(context)!
-                          .pleaseTapOnWhereTheDamageLocates,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
                   ),
                 ),
               ],

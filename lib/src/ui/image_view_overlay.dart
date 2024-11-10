@@ -51,15 +51,20 @@ class ImageViewOverlay extends ModalRoute<void> {
           marking: marking,
         ),
         Positioned(
-          top: 4,
-          left: 4,
-          child: IconButton(
-            icon: const Icon(Icons.close, color: Colors.white),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          ),
-        ),
+            left: 4,
+            top: 4,
+            child: Container(
+              height: 48,
+              width: 48,
+              decoration: const BoxDecoration(
+                  shape: BoxShape.circle, color: Colors.black26),
+              child: IconButton(
+                icon: const Icon(Icons.close, color: Colors.white),
+                onPressed: () {
+                  Navigator.pop(context, marking);
+                },
+              ),
+            ))
       ],
     );
   }
