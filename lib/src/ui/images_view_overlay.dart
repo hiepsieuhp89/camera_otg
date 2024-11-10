@@ -45,9 +45,11 @@ class ImagesViewOverlay extends ModalRoute<void> {
   Widget _buildOverlayContent(BuildContext context) {
     // final controller = PageController(initialPage: initialPage);
     final height = MediaQuery.of(context).size.height;
+    final controller = CarouselSliderController();
     return Stack(
       children: <Widget>[
         CarouselSlider(
+            carouselController: controller,
             items: imageUrls
                 .mapIndexed((index, url) => PhotoViewWithMarking(
                       imageProvider: NetworkImage(url),
@@ -57,11 +59,11 @@ class ImagesViewOverlay extends ModalRoute<void> {
                     ))
                 .toList(),
             options: CarouselOptions(
-              initialPage: initialPage,
-              height: height,
-              viewportFraction: 1.0,
-              enlargeCenterPage: false,
-            )),
+                initialPage: initialPage,
+                height: height,
+                viewportFraction: 1.0,
+                enlargeCenterPage: false,
+                scrollPhysics: const NeverScrollableScrollPhysics())),
         Positioned(
           top: 4,
           left: 4,
@@ -70,6 +72,42 @@ class ImagesViewOverlay extends ModalRoute<void> {
             onPressed: () {
               Navigator.pop(context);
             },
+          ),
+        ),
+        Positioned(
+          left: 16,
+          top: height / 2 - 24,
+          child: Container(
+            height: 48,
+            width: 48,
+            decoration: const BoxDecoration(
+                shape: BoxShape.circle, color: Colors.black26),
+            child: IconButton(
+                icon: const Icon(
+                  Icons.arrow_back,
+                  color: Colors.white,
+                ),
+                onPressed: () {
+                  controller.previousPage();
+                }),
+          ),
+        ),
+        Positioned(
+          right: 16,
+          top: height / 2 - 24,
+          child: Container(
+            height: 48,
+            width: 48,
+            decoration: const BoxDecoration(
+                shape: BoxShape.circle, color: Colors.black26),
+            child: IconButton(
+                icon: const Icon(
+                  Icons.arrow_forward,
+                  color: Colors.white,
+                ),
+                onPressed: () {
+                  controller.nextPage();
+                }),
           ),
         ),
       ],
