@@ -33,9 +33,6 @@ class InspectionPointCreationScreenState
   Marking _marking = const Marking(x: 0, y: 0);
   int _imageWidth = 1;
   int _imageHeight = 1;
-  String _spanName = '';
-  String _spanNumber = '';
-  String _elementNumber = '';
   Future<void>? _pendingSubmission;
 
   @override
@@ -58,11 +55,11 @@ class InspectionPointCreationScreenState
     setState(() {
       _pendingSubmission = inspectionPointsNotiffier
           .createInspectionPoint(InspectionPoint(
-              spanName: _spanName,
               type: widget.pointType,
               bridgeId: currentBridge.id,
-              spanNumber: _spanNumber,
-              elementNumber: _elementNumber,
+              spanName: _nameController.text,
+              spanNumber: _spanNumberController.text,
+              elementNumber: _elementNumberController.text,
               diagramMarkingX: _marking.x,
               diagramMarkingY: _marking.y,
               diagramId: widget.diagram?.id))
@@ -121,11 +118,6 @@ class InspectionPointCreationScreenState
                   Expanded(
                     child: TextField(
                       controller: _nameController,
-                      onSubmitted: (value) {
-                        setState(() {
-                          _spanName = value;
-                        });
-                      },
                       decoration: InputDecoration(
                         label: Text(AppLocalizations.of(context)!.name),
                         border: const OutlineInputBorder(),
@@ -136,11 +128,6 @@ class InspectionPointCreationScreenState
                   Expanded(
                     child: TextField(
                       controller: _spanNumberController,
-                      onSubmitted: (value) {
-                        setState(() {
-                          _spanNumber = value;
-                        });
-                      },
                       decoration: InputDecoration(
                         label: Text(AppLocalizations.of(context)!.spanNumber),
                         border: const OutlineInputBorder(),
@@ -155,11 +142,6 @@ class InspectionPointCreationScreenState
                   Expanded(
                     child: TextField(
                       controller: _elementNumberController,
-                      onSubmitted: (value) {
-                        setState(() {
-                          _elementNumber = value;
-                        });
-                      },
                       decoration: InputDecoration(
                         label:
                             Text(AppLocalizations.of(context)!.elementNumber),
