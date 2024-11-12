@@ -171,11 +171,16 @@ int numberOfCreatedReports(NumberOfCreatedReportsRef ref, int bridgeId) {
   final activeInspection =
       ref.watch(bridgeInspectionProvider(bridgeId)).value?[1];
 
-  return activeInspection?.reports
-          .where(
-              (report) => report.status == InspectionPointReportStatus.finished)
-          .length ??
-      0;
+  int count = 0;
+
+  for (var report in activeInspection?.reports ?? []) {
+    if (report.status == InspectionPointReportStatus.finished ||
+        report.status == InspectionPointReportStatus.skipped) {
+      count++;
+    }
+  }
+
+  return count;
 }
 
 @riverpod
@@ -191,9 +196,13 @@ int numberOfPendingReports(NumberOfPendingReportsRef ref, int bridgeId) {
   final activeInspection =
       ref.watch(bridgeInspectionProvider(bridgeId)).value?[1];
 
-  return activeInspection?.reports
-          .where(
-              (report) => report.status == InspectionPointReportStatus.pending)
-          .length ??
-      0;
+  int pendingCount = 0;
+
+  for (var report in activeInspection?.reports ?? []) {
+    if (report.status == InspectionPointReportStatus.pending) {
+      pendingCount++;
+    }
+  }
+
+  return pendingCount;
 }

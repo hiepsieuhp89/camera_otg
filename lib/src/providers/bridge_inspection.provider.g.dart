@@ -7,7 +7,7 @@ part of 'bridge_inspection.provider.dart';
 // **************************************************************************
 
 String _$numberOfCreatedReportsHash() =>
-    r'960ccb849aaa5eb76720b3dbc4a86af7d15db263';
+    r'8f494ca5a66b8a950749739ff08e7c1289aeb1bb';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -288,7 +288,7 @@ class _IsInspectionInProgressProviderElement
 }
 
 String _$numberOfPendingReportsHash() =>
-    r'3bcd8bbdd4db3cf668a0483d7522a84def4f9534';
+    r'287929aa3fa38c8dc6ce012c00eae192b3416e69';
 
 /// See also [numberOfPendingReports].
 @ProviderFor(numberOfPendingReports)
