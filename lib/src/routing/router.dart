@@ -5,6 +5,11 @@ import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/models/inspection_point_report.dart';
 import 'package:kyoryo/src/routing/auth_guard.dart';
 import 'package:kyoryo/src/screens/app_update_screen.dart';
+import 'package:kyoryo/src/screens/bridge_inspection/all_screen.dart';
+import 'package:kyoryo/src/screens/bridge_inspection/damage_screen.dart';
+import 'package:kyoryo/src/screens/bridge_inspection/present_condition_screen.dart';
+import 'package:kyoryo/src/screens/bridge_inspection/tab_screen.dart';
+import 'package:kyoryo/src/screens/diagram_inspection_screen.dart';
 import 'package:kyoryo/src/screens/inspection_point_diagram_select_screen.dart';
 import 'package:kyoryo/src/screens/splash_screen.dart';
 import 'package:kyoryo/src/screens/bridge_filters_screen.dart';
@@ -55,6 +60,17 @@ class KyoryoAppRouter extends RootStackRouter {
               page: BridgeInspectionPhotoSelectionRoute.page,
               guards: [_authGuard]),
         ]),
+        CustomRoute(page: BridgeInspectionTabRoute.page, guards: [
+          _authGuard
+        ], children: [
+          AutoRoute(page: BridgeInspectionAllRoute.page, guards: [_authGuard]),
+          AutoRoute(
+              page: BridgeInspectionDamageRoute.page, guards: [_authGuard]),
+          AutoRoute(
+              page: BridgeInspectionPresentConditionRoute.page,
+              guards: [_authGuard]),
+        ]),
+        AutoRoute(page: DiagramInspectionRoute.page, guards: [_authGuard]),
         AutoRoute(page: BridgeInspectionRoute.page, guards: [_authGuard]),
         AutoRoute(
             page: InspectionPointCreationRoute.page, guards: [_authGuard]),

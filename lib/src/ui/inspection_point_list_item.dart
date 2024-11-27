@@ -10,6 +10,7 @@ import 'package:kyoryo/src/models/marking.dart';
 import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
 import 'package:kyoryo/src/services/inspection_point_report.service.dart';
 import 'package:kyoryo/src/utilities/datetime.dart';
+import 'package:kyoryo/src/ui/inspection_point_label.dart';
 import 'package:kyoryo/src/utilities/image_utils.dart';
 
 class InpsectionPointListItem extends ConsumerWidget {
@@ -42,18 +43,6 @@ class InpsectionPointListItem extends ConsumerWidget {
               fontSize:
                   (Theme.of(context).textTheme.bodySmall?.fontSize ?? 12.0) - 2,
             );
-
-    String labelText;
-
-    if (point.type == InspectionPointType.damage) {
-      labelText =
-          '${point.spanNumber ?? ''} - ${point.photoRefNumber ?? ''} : ${point.spanName ?? ''} / ${point.elementNumber ?? ''}';
-    } else {
-      String photoRefNumberWithLabel = point.photoRefNumber != null
-          ? '${AppLocalizations.of(context)!.photoRefNumber(point.photoRefNumber.toString())}：'
-          : '';
-      labelText = '$photoRefNumberWithLabel${point.spanName ?? ''}';
-    }
 
     Column buildDetailsColumn(report) {
       return Column(
@@ -188,8 +177,8 @@ class InpsectionPointListItem extends ConsumerWidget {
                         color: Theme.of(context).primaryColor),
                 const SizedBox(width: 8.0),
                 Expanded(
-                  child: Text(
-                    labelText,
+                  child: InspectionPointLabel(
+                    point: point,
                     style: Theme.of(context).textTheme.titleMedium,
                     textAlign: TextAlign.left,
                     overflow: TextOverflow.ellipsis,

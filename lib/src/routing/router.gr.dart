@@ -48,6 +48,44 @@ class BridgeFiltersRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [BridgeInspectionAllScreen]
+class BridgeInspectionAllRoute extends PageRouteInfo<void> {
+  const BridgeInspectionAllRoute({List<PageRouteInfo>? children})
+      : super(
+          BridgeInspectionAllRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'BridgeInspectionAllRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const BridgeInspectionAllScreen();
+    },
+  );
+}
+
+/// generated route for
+/// [BridgeInspectionDamageScreen]
+class BridgeInspectionDamageRoute extends PageRouteInfo<void> {
+  const BridgeInspectionDamageRoute({List<PageRouteInfo>? children})
+      : super(
+          BridgeInspectionDamageRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'BridgeInspectionDamageRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const BridgeInspectionDamageScreen();
+    },
+  );
+}
+
+/// generated route for
 /// [BridgeInspectionEvaluationScreen]
 class BridgeInspectionEvaluationRoute
     extends PageRouteInfo<BridgeInspectionEvaluationRouteArgs> {
@@ -226,6 +264,25 @@ class BridgeInspectionPhotosTabRouteArgs {
 }
 
 /// generated route for
+/// [BridgeInspectionPresentConditionScreen]
+class BridgeInspectionPresentConditionRoute extends PageRouteInfo<void> {
+  const BridgeInspectionPresentConditionRoute({List<PageRouteInfo>? children})
+      : super(
+          BridgeInspectionPresentConditionRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'BridgeInspectionPresentConditionRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const BridgeInspectionPresentConditionScreen();
+    },
+  );
+}
+
+/// generated route for
 /// [BridgeInspectionScreen]
 class BridgeInspectionRoute extends PageRouteInfo<void> {
   const BridgeInspectionRoute({List<PageRouteInfo>? children})
@@ -240,6 +297,25 @@ class BridgeInspectionRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const BridgeInspectionScreen();
+    },
+  );
+}
+
+/// generated route for
+/// [BridgeInspectionTabScreen]
+class BridgeInspectionTabRoute extends PageRouteInfo<void> {
+  const BridgeInspectionTabRoute({List<PageRouteInfo>? children})
+      : super(
+          BridgeInspectionTabRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'BridgeInspectionTabRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const BridgeInspectionTabScreen();
     },
   );
 }
@@ -261,6 +337,52 @@ class BridgeListRoute extends PageRouteInfo<void> {
       return const BridgeListScreen();
     },
   );
+}
+
+/// generated route for
+/// [DiagramInspectionScreen]
+class DiagramInspectionRoute extends PageRouteInfo<DiagramInspectionRouteArgs> {
+  DiagramInspectionRoute({
+    Key? key,
+    required Diagram diagram,
+    List<PageRouteInfo>? children,
+  }) : super(
+          DiagramInspectionRoute.name,
+          args: DiagramInspectionRouteArgs(
+            key: key,
+            diagram: diagram,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'DiagramInspectionRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<DiagramInspectionRouteArgs>();
+      return DiagramInspectionScreen(
+        key: args.key,
+        diagram: args.diagram,
+      );
+    },
+  );
+}
+
+class DiagramInspectionRouteArgs {
+  const DiagramInspectionRouteArgs({
+    this.key,
+    required this.diagram,
+  });
+
+  final Key? key;
+
+  final Diagram diagram;
+
+  @override
+  String toString() {
+    return 'DiagramInspectionRouteArgs{key: $key, diagram: $diagram}';
+  }
 }
 
 /// generated route for

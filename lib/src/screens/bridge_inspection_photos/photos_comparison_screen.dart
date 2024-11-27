@@ -25,7 +25,6 @@ class BridgeInspectionPhotoComparisonScreen extends ConsumerWidget {
   });
 
   @override
-  @override
   Widget build(BuildContext context, WidgetRef ref) {
     final photoInspectionResult =
         ref.watch(currentPhotoInspectionResultProvider);

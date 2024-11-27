@@ -147,7 +147,7 @@ abstract class AppLocalizations {
   /// **'損傷なし'**
   String get noDamageFound;
 
-  /// The number of tasks finished out of total
+  /// The number of points finished out of total
   ///
   /// In ja, this message translates to:
   /// **'{finished}/{total} 完了'**
@@ -650,6 +650,24 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'インストール'**
   String get install;
+
+  /// Span number
+  ///
+  /// In ja, this message translates to:
+  /// **'{number}径間'**
+  String span(Object number);
+
+  /// No description provided for @noSpan.
+  ///
+  /// In ja, this message translates to:
+  /// **'径間無し'**
+  String get noSpan;
+
+  /// No description provided for @pressAndHoldForMarking.
+  ///
+  /// In ja, this message translates to:
+  /// **'長押ししてマークを追加'**
+  String get pressAndHoldForMarking;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
