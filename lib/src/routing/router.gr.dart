@@ -283,25 +283,6 @@ class BridgeInspectionPresentConditionRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [BridgeInspectionScreen]
-class BridgeInspectionRoute extends PageRouteInfo<void> {
-  const BridgeInspectionRoute({List<PageRouteInfo>? children})
-      : super(
-          BridgeInspectionRoute.name,
-          initialChildren: children,
-        );
-
-  static const String name = 'BridgeInspectionRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const BridgeInspectionScreen();
-    },
-  );
-}
-
-/// generated route for
 /// [BridgeInspectionTabScreen]
 class BridgeInspectionTabRoute extends PageRouteInfo<void> {
   const BridgeInspectionTabRoute({List<PageRouteInfo>? children})
