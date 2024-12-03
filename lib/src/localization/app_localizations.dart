@@ -666,7 +666,7 @@ abstract class AppLocalizations {
   /// No description provided for @pressAndHoldForMarking.
   ///
   /// In ja, this message translates to:
-  /// **'長押ししてマークを追加'**
+  /// **'長押しでマーク位置を移動'**
   String get pressAndHoldForMarking;
 }
 

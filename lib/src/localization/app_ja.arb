@@ -233,6 +233,6 @@
   },
   "noSpan": "径間無し",
   "@noSpan": {},
-  "pressAndHoldForMarking": "長押ししてマークを追加",
+  "pressAndHoldForMarking": "長押しでマーク位置を移動",
   "@pressAndHoldForMarking": {}
 }

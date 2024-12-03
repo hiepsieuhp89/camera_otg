@@ -334,7 +334,10 @@ class DiagramBottomAppBarState extends ConsumerState<DiagramBottomAppBar> {
           textAlign: TextAlign.center,
         ),
         Container(child: state.whenOrNull(data: (data) {
-          nameController.text = data.spanName;
+          if (data.spanName.isNotEmpty && nameController.text.isEmpty) {
+            nameController.text = data.spanName;
+          }
+
           spanNumberController.text = data.spanNumber;
 
           return Row(
@@ -343,10 +346,10 @@ class DiagramBottomAppBarState extends ConsumerState<DiagramBottomAppBar> {
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: TextField(
-                    controller: nameController,
-                    enabled: data.spanName.isEmpty,
+                    controller: spanNumberController,
+                    enabled: data.spanNumber.isEmpty,
                     decoration: InputDecoration(
-                        labelText: AppLocalizations.of(context)!.name,
+                        labelText: AppLocalizations.of(context)!.spanNumber,
                         border: const OutlineInputBorder()),
                   ),
                 ),
@@ -356,10 +359,9 @@ class DiagramBottomAppBarState extends ConsumerState<DiagramBottomAppBar> {
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: TextField(
-                    controller: spanNumberController,
-                    enabled: data.spanNumber.isEmpty,
+                    controller: nameController,
                     decoration: InputDecoration(
-                        labelText: AppLocalizations.of(context)!.spanNumber,
+                        labelText: AppLocalizations.of(context)!.name,
                         border: const OutlineInputBorder()),
                   ),
                 ),

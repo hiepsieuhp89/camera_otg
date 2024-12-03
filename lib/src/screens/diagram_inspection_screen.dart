@@ -59,6 +59,7 @@ class DiagramInspectionScreenState
               diagramId: widget.diagram.id))
           .then((_) {
         newMarkingMode = false;
+        bottomAppBarKey.currentState!.elementNumberController.clear();
         bottomAppBarKey.currentState!.setShowNewPointForm(false);
       });
     });

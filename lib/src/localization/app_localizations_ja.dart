@@ -308,5 +308,5 @@ class AppLocalizationsJa extends AppLocalizations {
   String get noSpan => '径間無し';
 
   @override
-  String get pressAndHoldForMarking => '長押ししてマークを追加';
+  String get pressAndHoldForMarking => '長押しでマーク位置を移動';
 }
