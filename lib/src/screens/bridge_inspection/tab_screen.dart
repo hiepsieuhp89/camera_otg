@@ -166,6 +166,56 @@ class BridgeInspectionTabScreenState
     AsyncValue<(List<InspectionPoint>, List<Inspection?>)> requiredData =
         (filteredInspectionPoints, bridgeInspection).watch;
 
+    void createNewInspectionPoint(InspectionPointType type) {
+      if (type == InspectionPointType.presentCondition) {
+        context.pushRoute(InspectionPointCreationRoute(pointType: type));
+      } else {
+        context.pushRoute(const InspectionPointDiagramSelectRoute());
+      }
+    }
+
+    newPointMenuButton() {
+      return MenuAnchor(
+          builder:
+              (BuildContext context, MenuController controller, Widget? child) {
+            return IconButton(
+              onPressed: () {
+                if (controller.isOpen) {
+                  controller.close();
+                } else {
+                  controller.open();
+                }
+              },
+              icon: const Icon(Icons.add_circle),
+            );
+          },
+          menuChildren: [
+            MenuItemButton(
+                onPressed: () =>
+                    createNewInspectionPoint(presentConditionPointUI.type!),
+                child: Row(
+                  children: [
+                    Icon(presentConditionPointUI.icon),
+                    const SizedBox(
+                      width: 4,
+                    ),
+                    Text(presentConditionPointUI.label)
+                  ],
+                )),
+            MenuItemButton(
+                onPressed: () => createNewInspectionPoint(damagePointUI.type!),
+                child: Row(
+                  children: [
+                    Icon(damagePointUI.icon),
+                    const SizedBox(
+                      width: 4,
+                    ),
+                    Text(damagePointUI.label)
+                  ],
+                ))
+          ]);
+    }
+
     return AutoTabsRouter(
       routes: const [
         BridgeInspectionAllRoute(),
@@ -258,7 +308,9 @@ class BridgeInspectionTabScreenState
               ],
             ),
             actions: [
-              if (tabsRouter.current.name != BridgeInspectionDamageRoute.name)
+              if (isInspectionInProgress && tabsRouter.activeIndex != 2)
+                newPointMenuButton(),
+              if (tabsRouter.activeIndex != 2)
                 IconButton(
                     onPressed: () {
                       showSideSheet(context,
