@@ -439,6 +439,52 @@ class InspectionPointDiagramSelectRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [PointsInspectionScreen]
+class PointsInspectionRoute extends PageRouteInfo<PointsInspectionRouteArgs> {
+  PointsInspectionRoute({
+    Key? key,
+    required List<InspectionPoint> points,
+    List<PageRouteInfo>? children,
+  }) : super(
+          PointsInspectionRoute.name,
+          args: PointsInspectionRouteArgs(
+            key: key,
+            points: points,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'PointsInspectionRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<PointsInspectionRouteArgs>();
+      return PointsInspectionScreen(
+        key: args.key,
+        points: args.points,
+      );
+    },
+  );
+}
+
+class PointsInspectionRouteArgs {
+  const PointsInspectionRouteArgs({
+    this.key,
+    required this.points,
+  });
+
+  final Key? key;
+
+  final List<InspectionPoint> points;
+
+  @override
+  String toString() {
+    return 'PointsInspectionRouteArgs{key: $key, points: $points}';
+  }
+}
+
+/// generated route for
 /// [SplashScreen]
 class SplashRoute extends PageRouteInfo<void> {
   const SplashRoute({List<PageRouteInfo>? children})

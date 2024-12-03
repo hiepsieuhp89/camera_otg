@@ -11,6 +11,7 @@ import 'package:kyoryo/src/screens/bridge_inspection/present_condition_screen.da
 import 'package:kyoryo/src/screens/bridge_inspection/tab_screen.dart';
 import 'package:kyoryo/src/screens/diagram_inspection_screen.dart';
 import 'package:kyoryo/src/screens/inspection_point_diagram_select_screen.dart';
+import 'package:kyoryo/src/screens/points_inspection_screen.dart';
 import 'package:kyoryo/src/screens/splash_screen.dart';
 import 'package:kyoryo/src/screens/bridge_filters_screen.dart';
 import 'package:kyoryo/src/screens/bridge_list_screen.dart';
@@ -69,6 +70,7 @@ class KyoryoAppRouter extends RootStackRouter {
               page: BridgeInspectionPresentConditionRoute.page,
               guards: [_authGuard]),
         ]),
+        AutoRoute(page: PointsInspectionRoute.page, guards: [_authGuard]),
         AutoRoute(page: DiagramInspectionRoute.page, guards: [_authGuard]),
         AutoRoute(
             page: InspectionPointCreationRoute.page, guards: [_authGuard]),

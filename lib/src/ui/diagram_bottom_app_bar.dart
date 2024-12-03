@@ -126,6 +126,7 @@ class DiagramBottomAppBarState extends ConsumerState<DiagramBottomAppBar> {
                 ),
               ),
             ),
+            const SizedBox(width: 8),
             Expanded(
               child: SizedBox(
                 height: 80,
@@ -288,7 +289,14 @@ class DiagramBottomAppBarState extends ConsumerState<DiagramBottomAppBar> {
                                     ],
                                   )),
                                   IconButton(
-                                      onPressed: () {},
+                                      onPressed: state.maybeWhen(
+                                          orElse: () => null,
+                                          data: (data) => () {
+                                                context.pushRoute(
+                                                    PointsInspectionRoute(
+                                                        points: data
+                                                            .selectedPoints));
+                                              }),
                                       icon: const Icon(
                                           Icons.manage_search_rounded)),
                                 ],

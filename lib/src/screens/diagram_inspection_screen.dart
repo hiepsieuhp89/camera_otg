@@ -129,7 +129,6 @@ class DiagramInspectionScreenState
                               }
                             });
                           },
-                    child: const Icon(Icons.cancel),
                   );
                 }),
           const SizedBox(

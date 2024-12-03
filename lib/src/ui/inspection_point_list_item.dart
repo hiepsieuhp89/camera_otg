@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:kyoryo/src/localization/app_localizations.dart';
@@ -8,6 +9,7 @@ import 'package:kyoryo/src/models/inspection_point_report.dart';
 import 'package:kyoryo/src/models/inspection_point_report_photo.dart';
 import 'package:kyoryo/src/models/marking.dart';
 import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
+import 'package:kyoryo/src/routing/router.dart';
 import 'package:kyoryo/src/services/inspection_point_report.service.dart';
 import 'package:kyoryo/src/utilities/datetime.dart';
 import 'package:kyoryo/src/ui/inspection_point_label.dart';
@@ -15,11 +17,8 @@ import 'package:kyoryo/src/utilities/image_utils.dart';
 
 class InpsectionPointListItem extends ConsumerWidget {
   final InspectionPoint point;
-  final Function(InspectionPoint, {InspectionPointReport? createdReport})
-      startInspect;
 
-  const InpsectionPointListItem(
-      {super.key, required this.point, required this.startInspect});
+  const InpsectionPointListItem({super.key, required this.point});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -43,6 +42,38 @@ class InpsectionPointListItem extends ConsumerWidget {
               fontSize:
                   (Theme.of(context).textTheme.bodySmall?.fontSize ?? 12.0) - 2,
             );
+
+    void startInspection() {
+      context.pushRoute(TakePictureRoute(
+          inspectionPoint: point, createdReport: activeReport));
+    }
+
+    Future<dynamic> confirmForReinspection(BuildContext context) {
+      return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            content: Text(AppLocalizations.of(context)!
+                .confirmationForReinspection(point.photoRefNumber.toString())),
+            actions: [
+              TextButton(
+                child: Text(AppLocalizations.of(context)!.noOption),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              TextButton(
+                child: Text(AppLocalizations.of(context)!.yesOption),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  startInspection();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
 
     Column buildDetailsColumn(report) {
       return Column(
@@ -117,7 +148,7 @@ class InpsectionPointListItem extends ConsumerWidget {
         return IconButton.filled(
           onPressed: isInspectionInProgress
               ? () {
-                  startInspect(point);
+                  startInspection();
                 }
               : null,
           icon: const Icon(Icons.manage_search_outlined),
@@ -130,7 +161,7 @@ class InpsectionPointListItem extends ConsumerWidget {
           return FilledButton.icon(
               label: Text(AppLocalizations.of(context)!.skip),
               onPressed: isInspectionInProgress
-                  ? () => confirmForReinspection(context, activeReport)
+                  ? () => confirmForReinspection(context)
                   : null,
               icon: const Icon(Icons.do_not_disturb));
 
@@ -138,7 +169,7 @@ class InpsectionPointListItem extends ConsumerWidget {
           return FilledButton.icon(
               onPressed: isInspectionInProgress
                   ? () {
-                      startInspect(point, createdReport: activeReport);
+                      startInspection();
                     }
                   : null,
               icon: const Icon(Icons.edit),
@@ -148,7 +179,7 @@ class InpsectionPointListItem extends ConsumerWidget {
           return FilledButton.icon(
             onPressed: isInspectionInProgress
                 ? () {
-                    startInspect(point, createdReport: activeReport);
+                    startInspection();
                   }
                 : null,
             icon: const Icon(Icons.timer),
@@ -305,34 +336,6 @@ class InpsectionPointListItem extends ConsumerWidget {
           ],
         ),
       ),
-    );
-  }
-
-  Future<dynamic> confirmForReinspection(
-      BuildContext context, InspectionPointReport? activeReport) {
-    return showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          content: Text(AppLocalizations.of(context)!
-              .confirmationForReinspection(point.photoRefNumber.toString())),
-          actions: [
-            TextButton(
-              child: Text(AppLocalizations.of(context)!.noOption),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: Text(AppLocalizations.of(context)!.yesOption),
-              onPressed: () {
-                Navigator.of(context).pop();
-                startInspect(point, createdReport: activeReport);
-              },
-            ),
-          ],
-        );
-      },
     );
   }
 
