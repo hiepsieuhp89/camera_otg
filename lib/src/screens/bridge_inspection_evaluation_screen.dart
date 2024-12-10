@@ -61,11 +61,8 @@ class BridgeInspectionEvaluationScreenState
             : _createReport(status))
         .then((_) {
       router.popUntil((route) {
-        return [
-          BridgeInspectionPresentConditionRoute.name,
-          BridgeInspectionDamageRoute.name,
-          DiagramInspectionRoute.name
-        ].contains(route.settings.name);
+        return [BridgeInspectionTabRoute.name, DiagramInspectionRoute.name]
+            .contains(route.settings.name);
       });
     }).catchError((_) {
       showMessageFailure();
