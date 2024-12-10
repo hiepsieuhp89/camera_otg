@@ -9,6 +9,7 @@ import 'package:kyoryo/src/models/inspection_point_report_photo.dart';
 import 'package:kyoryo/src/models/marking.dart';
 import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
 import 'package:kyoryo/src/services/inspection_point_report.service.dart';
+import 'package:kyoryo/src/utilities/datetime.dart';
 import 'package:kyoryo/src/utilities/image_utils.dart';
 
 class InpsectionPointListItem extends ConsumerWidget {
@@ -210,10 +211,12 @@ class InpsectionPointListItem extends ConsumerWidget {
                             (activeReport?.date ?? previousReport?.date) == null
                                 ? ''
                                 : (activeReport?.date != null
-                                    ? DateFormat('yy年MM月dd日 HH:mm')
-                                        .format(activeReport!.date!)
-                                    : DateFormat('yy年MM月dd日')
-                                        .format(previousReport!.date!))),
+                                    ? DateFormat('yy年MM月dd日 HH:mm').format(
+                                        getLocalDateTimeFromUTC(
+                                            activeReport!.date!))
+                                    : DateFormat('yy年MM月dd日').format(
+                                        getLocalDateTimeFromUTC(
+                                            previousReport!.date!)))),
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                       Row(
