@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +11,7 @@ import 'package:kyoryo/src/providers/bridges.provider.dart';
 import 'package:kyoryo/src/providers/current_municipalitiy.provider.dart';
 import 'package:kyoryo/src/routing/router.dart';
 import 'package:kyoryo/src/ui/bridge_list_item.dart';
+import 'package:kyoryo/src/utilities/update.dart';
 
 @RoutePage()
 class BridgeListScreen extends ConsumerWidget {
@@ -20,7 +23,9 @@ class BridgeListScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final municipality = ref.watch(currentMunicipalityProvider);
     final bridges = ref.watch(bridgesProvider);
-
+    if (Platform.isAndroid) {
+      UpdateService().checkAndUpdateApp(ref);
+    }
     Widget buildProfileIndicator() {
       final user = ref.watch(authenticationProvider).user;
 
