@@ -11,7 +11,11 @@ on:
     secrets:
       apiURL:
         required: true
+      BUILD_ENV:
+        required: true
 
+env:
+  CURRENT_VERSION=$(date +%s)
 
 jobs:
   build:
@@ -36,7 +40,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: "stable"
-          flutter-version: "3.22.0"
+          flutter-version: "3.24.4"
           cache: true
 
       - name: Get Packages
@@ -45,6 +49,11 @@ jobs:
       - name: Generate .env file
         run: |
           echo "API_URL=${{ secrets.apiURL }}" > .env
+          echo "AUTH0_DOMAIN=${{ secrets.AUTH0_DOMAIN }}" >> .env
+          echo "AUTH0_CLIENT_ID=${{ secrets.AUTH0_CLIENT_ID }}" >> .env
+          echo "AUTH0_AUDIENCE=${{ secrets.AUTH0_AUDIENCE }}" >> .env
+          echo "CURRENT_VERSION=${{ env.CURRENT_VERSION }}" >> .env
+          echo "BUILD_ENV=${{ secrets.BUILD_ENV }}" >> .env
 
       - name: Build Android App Bundle
         run: |
@@ -56,3 +65,30 @@ jobs:
         with:
           name: release-apk
           path: build/app/outputs/flutter-apk/*.apk
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-1
+
+      - name: Upload to S3
+        run: |
+          FILE_LIST=$(ls build/app/outputs/flutter-apk/*.apk)
+          echo "$FILE_LIST"
+          if [[ ${{ github.event_name }} == 'workflow_call' ]]; then
+            PARENT_WORKFLOW=$(echo ${{ github.event.workflow_call.name }})
+            if [[ $PARENT_WORKFLOW == 'build-android-dev' ]]; then
+              S3_PATH='s3://tsunagu-apk/dev'
+            elif [[ $PARENT_WORKFLOW == 'build-android-stg' ]]; then
+              S3_PATH='s3://tsunagu-apk/stg'
+            else
+              echo "Unknown parent workflow: $PARENT_WORKFLOW"
+              exit 1
+            fi
+            aws s3 cp build/app/outputs/flutter-apk/app-release.apk "$S3_PATH/${{ env.CURRENT_VERSION }}.apk"
+          else
+            echo "This workflow should be called by another workflow."
+            exit 1
+          fi

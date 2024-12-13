@@ -10,3 +10,4 @@ jobs:
       ref: ${{ github.event.inputs.ref }}
     secrets:
       apiURL: ${{ secrets.API_URL_STG }}
+      BUILD_ENV: stg
