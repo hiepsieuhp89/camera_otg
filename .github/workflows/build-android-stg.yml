@@ -8,6 +8,6 @@ jobs:
     uses: ./.github/workflows/build-android.yml
     with:
       ref: ${{ github.event.inputs.ref }}
+      build_env: stg
     secrets:
       apiURL: ${{ secrets.API_URL_STG }}
-      BUILD_ENV: stg
