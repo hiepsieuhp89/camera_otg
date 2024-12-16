@@ -15,10 +15,6 @@ on:
       apiURL:
         required: true
 
-permissions:
-      id-token: write
-      contents: read
-
 jobs:
   build:
     runs-on: macos-14
@@ -70,8 +66,8 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ secrets.aws-access-key-id }}
+          aws-secret-access-key: ${{ secrets.aws-secret-access-key }}
           aws-region: ap-northeast-1
 
       - name: Upload to S3
