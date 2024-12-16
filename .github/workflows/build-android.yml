@@ -50,8 +50,12 @@ jobs:
 
       - name: Generate .env file
         run: |
-          TIMESTAMP=$(date -d "${{ github.event.workflow_run.head_commit.timestamp }}" +%s)
-
+          COMMIT_TIMESTAMP="${{ github.event.workflow_run.head_commit.timestamp }}"
+          if [[ "$OSTYPE" == "darwin"* ]]; then
+            TIMESTAMP=$(date -j -f "%Y-%m-%dT%H:%M:%SZ" "$COMMIT_TIMESTAMP" "+%s")
+          else
+            TIMESTAMP=$(date -d "$COMMIT_TIMESTAMP" "+%s")
+          fi
           echo "API_URL=${{ secrets.apiURL }}" > .env
           echo "AUTH0_DOMAIN=${{ secrets.AUTH0_DOMAIN }}" >> .env
           echo "AUTH0_CLIENT_ID=${{ secrets.AUTH0_CLIENT_ID }}" >> .env
@@ -75,5 +79,10 @@ jobs:
         run: |
           FILE_LIST=$(ls build/app/outputs/flutter-apk/*.apk)
           echo "$FILE_LIST"
-          TIMESTAMP=$(date -d "${{ github.event.workflow_run.head_commit.timestamp }}" +%s)
+          COMMIT_TIMESTAMP="${{ github.event.workflow_run.head_commit.timestamp }}"
+          if [[ "$OSTYPE" == "darwin"* ]]; then
+            TIMESTAMP=$(date -j -f "%Y-%m-%dT%H:%M:%SZ" "$COMMIT_TIMESTAMP" "+%s")
+          else
+            TIMESTAMP=$(date -d "$COMMIT_TIMESTAMP" "+%s")
+          fi
           aws s3 cp build/app/outputs/flutter-apk/app-release.apk s3://tsunagu-apk/${{ inputs.build_env }}/$TIMESTAMP.apk
