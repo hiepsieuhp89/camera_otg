@@ -14,9 +14,15 @@ on:
     secrets:
       apiURL:
         required: true
-      aws-access-key-id:
+      AWS_ACCESS_KEY_ID:
         required: true
-      aws-secret-access-key:
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      AUTH0_DOMAIN:
+        required: true
+      AUTH0_CLIENT_ID:
+        required: true
+      AUTH0_AUDIENCE:
         required: true
 
 
