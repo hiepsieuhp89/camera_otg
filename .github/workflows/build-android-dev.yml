@@ -11,5 +11,6 @@ jobs:
     uses: ./.github/workflows/build-android.yml
     with:
       ref: ${{ github.event.inputs.ref }}
+      build_env: dev
     secrets:
       apiURL: ${{ secrets.API_URL_DEV }}
