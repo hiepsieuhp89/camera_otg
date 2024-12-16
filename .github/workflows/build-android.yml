@@ -15,9 +15,6 @@ on:
       apiURL:
         required: true
 
-permissions:
-  secrets: read
-
 jobs:
   build:
     runs-on: macos-14
