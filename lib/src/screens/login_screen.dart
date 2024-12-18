@@ -17,7 +17,7 @@ class LoginScreen extends ConsumerWidget {
           onPressed: () {
             ref.read(authenticationProvider.notifier).login().then((_) {
               if (context.mounted) {
-                context.replaceRoute(const BridgeListRoute());
+                context.replaceRoute(const SplashRoute());
               }
             }).catchError((error, stackTrace) {
               if (context.mounted) {

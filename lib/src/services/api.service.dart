@@ -10,7 +10,7 @@ import 'package:kyoryo/src/models/photo.dart';
 import 'package:kyoryo/src/models/user.dart';
 import 'package:kyoryo/src/services/api_client.service.dart';
 import 'package:logging/logging.dart';
-import 'package:kyoryo/src/models/update_response.dart';
+import 'package:kyoryo/src/models/version.dart';
 
 class ApiService {
   final ApiClient apiClient = ApiClient();
@@ -198,12 +198,10 @@ class ApiService {
     return Photo.fromJson(jsonResponse);
   }
 
-  Future<UpdateResponse> fetchLatestVersion() async {
-    final jsonResponse =
-    await apiClient.get(
-        'api/mobile/get_latest_apk', headerParams: getAuthorizationHeader());
-    
-    return UpdateResponse.fromJson(jsonResponse);
+  Future<VersionByEnvironment> fetchVersions() async {
+    final jsonResponse = await apiClient.get('api/mobile/versions',
+        headerParams: getAuthorizationHeader());
+
+    return VersionByEnvironment.fromJson(jsonResponse);
   }
-  
 }

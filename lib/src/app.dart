@@ -3,6 +3,7 @@ import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kyoryo/src/providers/app_start_up.provider.dart';
+import 'package:kyoryo/src/providers/app_state.provider.dart';
 import 'package:kyoryo/src/routing/router.dart';
 
 class KyoryoApp extends ConsumerWidget {
@@ -64,13 +65,47 @@ class Error extends StatelessWidget {
   }
 }
 
-class MainApp extends ConsumerWidget {
+class MainApp extends ConsumerStatefulWidget {
   const MainApp({
     super.key,
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ConsumerStatefulWidget> createState() => MainAppState();
+}
+
+class MainAppState extends ConsumerState<MainApp> with WidgetsBindingObserver {
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    debugPrint('AppLifecycleState: $state');
+    switch (state) {
+      case AppLifecycleState.resumed:
+        ref.read(appStateProvider.notifier).handleAppResume();
+        break;
+      case AppLifecycleState.detached:
+        ref.read(appStateProvider.notifier).handleAppDetached();
+        break;
+      case AppLifecycleState.hidden:
+        ref.read(appStateProvider.notifier).handleAppHidden();
+        break;
+      case AppLifecycleState.paused:
+        ref.read(appStateProvider.notifier).handleAppPause();
+        break;
+      case AppLifecycleState.inactive:
+        ref.read(appStateProvider.notifier).handleAppInactivity();
+        break;
+    }
+  }
+
+  @override
+  initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     var router = ref.watch(appRouterProvider);
 
     return MaterialApp.router(

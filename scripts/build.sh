@@ -1,10 +1,12 @@
 #!/bin/bash
 
-DEV_API_URL="https://dev-api.smartbuddy.toyota"
+# DEV_API_URL="https://dev-api.smartbuddy.toyota"
+DEV_API_URL="http://192.168.1.222:8000"
 STG_API_URL="https://stg-api.smartbuddy.toyota"
 AUTH0_DOMAIN=smartbuddy.jp.auth0.com
 AUTH0_CLIENT_ID=6kdGobeAWTbqO9m6e0v6CfePu93jdsVb
 AUTH0_AUDIENCE=https://smartbuddy.jp.auth0.com/api/v2/
+CURRENT_VERSION=1730000000
 
 TEMP_FOLDER=$(mktemp -d)
 mkdir -p "$TEMP_FOLDER"

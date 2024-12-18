@@ -7,6 +7,7 @@ import 'package:kyoryo/src/models/inspection_point_report.dart';
 import 'package:kyoryo/src/providers/api.provider.dart';
 import 'package:kyoryo/src/providers/shared_preferences.provider.dart';
 import 'package:kyoryo/src/routing/auth_guard.dart';
+import 'package:kyoryo/src/screens/app_update_screen.dart';
 import 'package:kyoryo/src/screens/inspection_point_diagram_select_screen.dart';
 import 'package:kyoryo/src/screens/splash_screen.dart';
 import 'package:kyoryo/src/screens/login_screen.dart';
@@ -62,6 +63,7 @@ class AppRouter extends RootStackRouter {
         AutoRoute(
             page: InspectionPointDiagramSelectRoute.page, guards: [_authGuard]),
         AutoRoute(page: TakePictureRoute.page, guards: [_authGuard]),
+        AutoRoute(page: AppUpdateRoute.page, guards: [_authGuard]),
       ];
 }
 

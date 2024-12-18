@@ -1,25 +1,24 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'update.provider.dart';
+part of 'app_state.provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$updateApkHash() => r'3998c14ab4d673208433400417f4cca4adf24f06';
+String _$appStateHash() => r'78397c57ecc5fd622dd218df9c427d928e902b89';
 
-/// See also [UpdateApk].
-@ProviderFor(UpdateApk)
-final updateApkProvider =
-    AutoDisposeAsyncNotifierProvider<UpdateApk, UpdateResponse>.internal(
-  UpdateApk.new,
-  name: r'updateApkProvider',
+/// See also [AppState].
+@ProviderFor(AppState)
+final appStateProvider = NotifierProvider<AppState, AppLifecycleState>.internal(
+  AppState.new,
+  name: r'appStateProvider',
   debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$updateApkHash,
+      const bool.fromEnvironment('dart.vm.product') ? null : _$appStateHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
-typedef _$UpdateApk = AutoDisposeAsyncNotifier<UpdateResponse>;
+typedef _$AppState = Notifier<AppLifecycleState>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

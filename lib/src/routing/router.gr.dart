@@ -10,6 +10,25 @@
 part of 'router.dart';
 
 /// generated route for
+/// [AppUpdateScreen]
+class AppUpdateRoute extends PageRouteInfo<void> {
+  const AppUpdateRoute({List<PageRouteInfo>? children})
+      : super(
+          AppUpdateRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'AppUpdateRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const AppUpdateScreen();
+    },
+  );
+}
+
+/// generated route for
 /// [BridgeFiltersScreen]
 class BridgeFiltersRoute extends PageRouteInfo<void> {
   const BridgeFiltersRoute({List<PageRouteInfo>? children})
