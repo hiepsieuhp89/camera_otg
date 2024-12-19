@@ -22,6 +22,12 @@ if (flutterVersionName == null) {
     flutterVersionName = '1.0'
 }
 
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
+if (keystorePropertiesFile.exists()) {
+    keystorePropertiesFile.withInputStream { keystoreProperties.load(it) }
+}
+
 android {
     namespace "com.delqui.kyoryo"
     compileSdkVersion flutter.compileSdkVersion
@@ -52,12 +58,22 @@ android {
         minSdkVersion 21
         manifestPlaceholders += [auth0Domain: "smartbuddy.jp.auth0.com", auth0Scheme: "kyoryoapp"]
     }
+    signingConfigs {
+       release {
+            def keyAliasVal = System.getenv("ALIAS")
+            def keyPasswordVal = System.getenv("ANDROID_KEY_PASSWORD")
+            def storePasswordVal = System.getenv("ANDROID_STORE_PASSWORD")
+
+            keyAlias keyAliasVal ? keyAliasVal : keystoreProperties['keyAlias']
+            keyPassword keyPasswordVal ? keyPasswordVal : keystoreProperties['keyPassword']
+            storeFile file("../key.jks") ? file("../key.jks") : file(keystoreProperties['storeFile'])
+            storePassword storePasswordVal ? storePasswordVal : keystoreProperties['storePassword']
+       }
+   }
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
         }
     }
 }
