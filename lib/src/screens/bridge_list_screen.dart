@@ -20,7 +20,6 @@ class BridgeListScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final municipality = ref.watch(currentMunicipalityProvider);
     final bridges = ref.watch(bridgesProvider);
-
     Widget buildProfileIndicator() {
       final user = ref.watch(authenticationProvider).user;
 
@@ -60,7 +59,7 @@ class BridgeListScreen extends ConsumerWidget {
                 onPressed: () {
                   ref.read(authenticationProvider.notifier).logout().then((_) {
                     if (context.mounted) {
-                      context.pushRoute(const LoginRoute());
+                      context.pushRoute(const SplashRoute());
                     }
                   });
                 },

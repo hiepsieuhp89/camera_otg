@@ -264,4 +264,38 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get pendingReportsWarning => '保留点検が存在しておりますので、点検完了ができません。';
+
+  @override
+  String get splashScreenCheckingForAuthenticated => '認証情報を確認中';
+
+  @override
+  String get splashScreenLoadingData => 'データをロード中';
+
+  @override
+  String get splashScreenCheckingForUpdates => 'アップデートを確認中';
+
+  @override
+  String get appUpdate => 'アプリ更新';
+
+  @override
+  String get appUpdateTitle => '新しいバージョンが利用可能';
+
+  @override
+  String get appUpdateMessage => '新しいバージョンが利用可能です。アプリを更新する必要があります';
+
+  @override
+  String currentVersion(Object version) {
+    return '現在のバージョン: $version';
+  }
+
+  @override
+  String updateVersion(Object version) {
+    return '更新バージョン: $version';
+  }
+
+  @override
+  String get appUpdateInstallPermissionRequired => 'アプリの更新をインストールするためには、インストールの許可が必要です';
+
+  @override
+  String get install => 'インストール';
 }

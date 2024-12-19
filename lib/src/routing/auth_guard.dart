@@ -18,7 +18,7 @@ class AuthGuard extends AutoRouteGuard {
 
     if (accessToken == null) {
       _log.info("No access token, User is not authenticated");
-      router.replaceAll([const LoginRoute()]);
+      router.replaceAll([const SplashRoute()]);
       return;
     }
 
@@ -29,7 +29,7 @@ class AuthGuard extends AutoRouteGuard {
       _log.info("User is authenticated");
     } else {
       _log.info("User is not authenticated");
-      router.replaceAll([const LoginRoute()]);
+      router.replaceAll([const SplashRoute()]);
     }
   }
 }

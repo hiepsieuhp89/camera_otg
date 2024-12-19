@@ -590,6 +590,66 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'保留点検が存在しておりますので、点検完了ができません。'**
   String get pendingReportsWarning;
+
+  /// No description provided for @splashScreenCheckingForAuthenticated.
+  ///
+  /// In ja, this message translates to:
+  /// **'認証情報を確認中'**
+  String get splashScreenCheckingForAuthenticated;
+
+  /// No description provided for @splashScreenLoadingData.
+  ///
+  /// In ja, this message translates to:
+  /// **'データをロード中'**
+  String get splashScreenLoadingData;
+
+  /// No description provided for @splashScreenCheckingForUpdates.
+  ///
+  /// In ja, this message translates to:
+  /// **'アップデートを確認中'**
+  String get splashScreenCheckingForUpdates;
+
+  /// No description provided for @appUpdate.
+  ///
+  /// In ja, this message translates to:
+  /// **'アプリ更新'**
+  String get appUpdate;
+
+  /// No description provided for @appUpdateTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'新しいバージョンが利用可能'**
+  String get appUpdateTitle;
+
+  /// No description provided for @appUpdateMessage.
+  ///
+  /// In ja, this message translates to:
+  /// **'新しいバージョンが利用可能です。アプリを更新する必要があります'**
+  String get appUpdateMessage;
+
+  /// Current version of the app
+  ///
+  /// In ja, this message translates to:
+  /// **'現在のバージョン: {version}'**
+  String currentVersion(Object version);
+
+  /// New version of the app
+  ///
+  /// In ja, this message translates to:
+  /// **'更新バージョン: {version}'**
+  String updateVersion(Object version);
+
+  /// No description provided for @appUpdateInstallPermissionRequired.
+  ///
+  /// In ja, this message translates to:
+  /// **'アプリの更新をインストールするためには、インストールの許可が必要です'**
+  String get appUpdateInstallPermissionRequired;
+
+  /// No description provided for @install.
+  ///
+  /// In ja, this message translates to:
+  /// **'インストール'**
+  String get install;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

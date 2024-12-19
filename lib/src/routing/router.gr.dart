@@ -10,6 +10,25 @@
 part of 'router.dart';
 
 /// generated route for
+/// [AppUpdateScreen]
+class AppUpdateRoute extends PageRouteInfo<void> {
+  const AppUpdateRoute({List<PageRouteInfo>? children})
+      : super(
+          AppUpdateRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'AppUpdateRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const AppUpdateScreen();
+    },
+  );
+}
+
+/// generated route for
 /// [BridgeFiltersScreen]
 class BridgeFiltersRoute extends PageRouteInfo<void> {
   const BridgeFiltersRoute({List<PageRouteInfo>? children})
@@ -312,25 +331,6 @@ class InspectionPointDiagramSelectRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const InspectionPointDiagramSelectScreen();
-    },
-  );
-}
-
-/// generated route for
-/// [LoginScreen]
-class LoginRoute extends PageRouteInfo<void> {
-  const LoginRoute({List<PageRouteInfo>? children})
-      : super(
-          LoginRoute.name,
-          initialChildren: children,
-        );
-
-  static const String name = 'LoginRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const LoginScreen();
     },
   );
 }

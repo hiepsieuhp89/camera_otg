@@ -193,5 +193,35 @@
   "errorFinishingInspection": "点検終了時にエラーが発生しました",
   "@errorFinishingInspection": {},
   "pendingReportsWarning": "保留点検が存在しておりますので、点検完了ができません。",
-  "@pendingReportsWarning": {}
+  "@pendingReportsWarning": {},
+  "splashScreenCheckingForAuthenticated": "認証情報を確認中",
+  "@splashScreenCheckingForAuthenticated": {},
+  "splashScreenLoadingData": "データをロード中",
+  "@splashScreenLoadingData": {},
+  "splashScreenCheckingForUpdates": "アップデートを確認中",
+  "@splashScreenCheckingForUpdates": {},
+  "appUpdate": "アプリ更新",
+  "@appUpdate": {},
+  "appUpdateTitle": "新しいバージョンが利用可能",
+  "@appUpdateTitle": {},
+  "appUpdateMessage": "新しいバージョンが利用可能です。アプリを更新する必要があります",
+  "@appUpdateMessage": {},
+  "currentVersion": "現在のバージョン: {version}",
+  "@currentVersion": {
+    "description": "Current version of the app",
+    "placeholders": {
+      "version": {}
+    }
+  },
+  "updateVersion": "更新バージョン: {version}",
+  "@updateVersion": {
+    "description": "New version of the app",
+    "placeholders": {
+      "version": {}
+    }
+  },
+  "appUpdateInstallPermissionRequired": "アプリの更新をインストールするためには、インストールの許可が必要です",
+  "@appUpdateInstallPermissionRequired": {},
+  "install": "インストール",
+  "@install": {}
 }
