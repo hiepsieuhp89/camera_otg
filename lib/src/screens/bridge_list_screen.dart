@@ -77,6 +77,7 @@ class BridgeListScreen extends ConsumerWidget {
 
     return Scaffold(
         appBar: AppBar(
+          automaticallyImplyLeading: false,
           title: Text(AppLocalizations.of(context)!.bridgeListTitle),
           actions: [
             TextButton.icon(
