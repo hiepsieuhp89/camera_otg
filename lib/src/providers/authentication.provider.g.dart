@@ -20,7 +20,7 @@ final auth0Provider = Provider<Auth0>.internal(
 );
 
 typedef Auth0Ref = ProviderRef<Auth0>;
-String _$authenticationHash() => r'beaece1a08eb3959103a50083025edfdeb2f3221';
+String _$authenticationHash() => r'bf1724a1650013c123d949f598980f756bb6245c';
 
 /// See also [Authentication].
 @ProviderFor(Authentication)

@@ -10,7 +10,6 @@ import 'package:kyoryo/src/routing/auth_guard.dart';
 import 'package:kyoryo/src/screens/app_update_screen.dart';
 import 'package:kyoryo/src/screens/inspection_point_diagram_select_screen.dart';
 import 'package:kyoryo/src/screens/splash_screen.dart';
-import 'package:kyoryo/src/screens/login_screen.dart';
 import 'package:kyoryo/src/screens/bridge_filters_screen.dart';
 import 'package:kyoryo/src/screens/bridge_list_screen.dart';
 import 'package:kyoryo/src/screens/bridge_inspection_evaluation_screen.dart';
@@ -42,7 +41,6 @@ class AppRouter extends RootStackRouter {
   @override
   List<AutoRoute> get routes => [
         AutoRoute(page: SplashRoute.page, initial: true),
-        AutoRoute(page: LoginRoute.page),
         AutoRoute(page: BridgeFiltersRoute.page, guards: [_authGuard]),
         AutoRoute(page: BridgeListRoute.page, guards: [_authGuard]),
         AutoRoute(

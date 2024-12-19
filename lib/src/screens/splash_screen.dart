@@ -28,10 +28,6 @@ class _SplashScreenPageState extends ConsumerState<SplashScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) => performHydration());
   }
 
-  void goToLogin() {
-    context.replaceRoute(const LoginRoute());
-  }
-
   void goToBridgeList() {
     context.replaceRoute(const BridgeListRoute());
   }
@@ -92,9 +88,7 @@ class _SplashScreenPageState extends ConsumerState<SplashScreen> {
   Future<bool> checkForUpdate() async {
     await ref.read(appUpdateProvider.notifier).getLatestVersion();
 
-    final appUpdate = ref.watch(appUpdateProvider);
-
-    return appUpdate.shoudUpdate;
+    return ref.watch(appUpdateProvider).shoudUpdate;
   }
 
   Future<void> checkForAuthenticated() async {

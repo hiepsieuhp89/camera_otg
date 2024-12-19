@@ -14,12 +14,19 @@ class AppUpdateState {
     this.latestVersion,
   });
 
-  get isOutdated =>
-      latestVersion != null &&
-      currentVersion != null &&
-      int.parse(latestVersion!.version) > int.parse(currentVersion!);
+  bool get isOutdated {
+    if (latestVersion == null ||
+        currentVersion == null ||
+        latestVersion!.version.isEmpty ||
+        currentVersion!.isEmpty) {
+      return false;
+    }
 
-  get shoudUpdate => buildEnv != null && currentVersion != null && isOutdated;
+    return int.parse(latestVersion!.version) > int.parse(currentVersion!);
+  }
+
+  bool get shoudUpdate =>
+      buildEnv != null && currentVersion != null && isOutdated;
 
   AppUpdateState copyWith({
     Version? latestVersion,

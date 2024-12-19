@@ -17,35 +17,31 @@ class AppState extends _$AppState {
   }
 
   void handleAppResume() async {
-    log.info('App resumed');
     state = AppLifecycleState.resumed;
 
     final isAuthenticated = ref.read(authenticationProvider).isAuthenticated;
+    final appRouter = ref.read(appRouterProvider);
 
-    if (isAuthenticated) {
+    if (isAuthenticated &&
+        appRouter.current.name != AppUpdateRoute.name &&
+        appRouter.current.name != SplashRoute.name) {
       await ref.read(appUpdateProvider.notifier).getLatestVersion();
 
-      final appRouter = ref.read(appRouterProvider);
-
-      if (ref.read(appUpdateProvider).shoudUpdate &&
-          appRouter.current.name != AppUpdateRoute.name) {
+      if (ref.read(appUpdateProvider).shoudUpdate) {
         ref.read(appRouterProvider).pushNamed(AppUpdateRoute.name);
       }
     }
   }
 
   void handleAppInactivity() {
-    log.info('App inactive');
     state = AppLifecycleState.inactive;
   }
 
   void handleAppPause() {
-    log.info('App paused');
     state = AppLifecycleState.paused;
   }
 
   void handleAppDetached() {
-    log.info('App detached');
     state = AppLifecycleState.detached;
   }
 
