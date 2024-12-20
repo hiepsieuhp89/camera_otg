@@ -618,7 +618,7 @@ abstract class AppLocalizations {
   /// No description provided for @appUpdateTitle.
   ///
   /// In ja, this message translates to:
-  /// **'新しいバージョンが利用可能'**
+  /// **'新しいバージョンがあります'**
   String get appUpdateTitle;
 
   /// No description provided for @appUpdateMessage.
@@ -630,13 +630,13 @@ abstract class AppLocalizations {
   /// Current version of the app
   ///
   /// In ja, this message translates to:
-  /// **'現在のバージョン: {version}'**
+  /// **'現在バージョン: {version}'**
   String currentVersion(Object version);
 
   /// New version of the app
   ///
   /// In ja, this message translates to:
-  /// **'更新バージョン: {version}'**
+  /// **'最新バージョン: {version}'**
   String updateVersion(Object version);
 
   /// No description provided for @appUpdateInstallPermissionRequired.

@@ -202,18 +202,18 @@
   "@splashScreenCheckingForUpdates": {},
   "appUpdate": "アプリ更新",
   "@appUpdate": {},
-  "appUpdateTitle": "新しいバージョンが利用可能",
+  "appUpdateTitle": "新しいバージョンがあります",
   "@appUpdateTitle": {},
   "appUpdateMessage": "新しいバージョンが利用可能です。アプリを更新する必要があります",
   "@appUpdateMessage": {},
-  "currentVersion": "現在のバージョン: {version}",
+  "currentVersion": "現在バージョン: {version}",
   "@currentVersion": {
     "description": "Current version of the app",
     "placeholders": {
       "version": {}
     }
   },
-  "updateVersion": "更新バージョン: {version}",
+  "updateVersion": "最新バージョン: {version}",
   "@updateVersion": {
     "description": "New version of the app",
     "placeholders": {
