@@ -278,19 +278,19 @@ class AppLocalizationsJa extends AppLocalizations {
   String get appUpdate => 'アプリ更新';
 
   @override
-  String get appUpdateTitle => '新しいバージョンが利用可能';
+  String get appUpdateTitle => '新しいバージョンがあります';
 
   @override
   String get appUpdateMessage => '新しいバージョンが利用可能です。アプリを更新する必要があります';
 
   @override
   String currentVersion(Object version) {
-    return '現在のバージョン: $version';
+    return '現在バージョン: $version';
   }
 
   @override
   String updateVersion(Object version) {
-    return '更新バージョン: $version';
+    return '最新バージョン: $version';
   }
 
   @override
