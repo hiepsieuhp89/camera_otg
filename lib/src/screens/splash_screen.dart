@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:kyoryo/src/providers/app_update.provider.dart';
@@ -9,6 +10,14 @@ import 'package:kyoryo/src/providers/authentication.provider.dart';
 import 'package:kyoryo/src/providers/current_municipalitiy.provider.dart';
 import 'package:kyoryo/src/providers/misc.provider.dart';
 import 'package:kyoryo/src/routing/router.dart';
+
+enum SplashScreenStateEnum {
+  authError,
+  checkingAuth,
+  checkingForUpdate,
+  loadingData,
+  finished,
+}
 
 @RoutePage()
 class SplashScreen extends ConsumerStatefulWidget {
@@ -20,12 +29,12 @@ class SplashScreen extends ConsumerStatefulWidget {
 }
 
 class _SplashScreenPageState extends ConsumerState<SplashScreen> {
-  String message = '';
+  SplashScreenStateEnum state = SplashScreenStateEnum.finished;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => performHydration());
+    SchedulerBinding.instance.addPostFrameCallback((_) => performHydration());
   }
 
   void goToBridgeList() {
@@ -45,37 +54,31 @@ class _SplashScreenPageState extends ConsumerState<SplashScreen> {
   }
 
   Future<void> performHydration() async {
-    final loadingDataMessage =
-        AppLocalizations.of(context)!.splashScreenLoadingData;
-    final checkingAuthMessage =
-        AppLocalizations.of(context)!.splashScreenCheckingForAuthenticated;
-    final checkingForUpdateMessage =
-        AppLocalizations.of(context)!.splashScreenCheckingForUpdates;
-
-    setMessage(checkingAuthMessage);
+    setState(() {
+      state = SplashScreenStateEnum.checkingAuth;
+    });
 
     await checkForAuthenticated();
 
-    setMessage(checkingForUpdateMessage);
+    if (state == SplashScreenStateEnum.authError) return;
 
-    final shouldUpdate = await checkForUpdate();
+    setState(() {
+      state = SplashScreenStateEnum.checkingForUpdate;
+    });
 
-    if (shouldUpdate) {
-      goToAppUpdate();
-      return;
-    }
+    await checkForUpdate();
 
-    setMessage(loadingDataMessage);
+    setState(() {
+      state = SplashScreenStateEnum.loadingData;
+    });
 
     await loadData();
 
-    goToBridgeList();
-  }
-
-  void setMessage(string) {
     setState(() {
-      message = string;
+      state = SplashScreenStateEnum.finished;
     });
+
+    goToBridgeList();
   }
 
   Future<void> loadData() async {
@@ -85,10 +88,13 @@ class _SplashScreenPageState extends ConsumerState<SplashScreen> {
     ]);
   }
 
-  Future<bool> checkForUpdate() async {
+  Future<void> checkForUpdate() async {
     await ref.read(appUpdateProvider.notifier).getLatestVersion();
 
-    return ref.watch(appUpdateProvider).shoudUpdate;
+    if (ref.watch(appUpdateProvider).shoudUpdate) {
+      goToAppUpdate();
+      return;
+    }
   }
 
   Future<void> checkForAuthenticated() async {
@@ -96,10 +102,13 @@ class _SplashScreenPageState extends ConsumerState<SplashScreen> {
         await ref.read(authenticationProvider.notifier).checkAuthenticated();
 
     if (!isAuthenticated) {
-      setMessage('');
-      return ref.read(authenticationProvider.notifier).login().then((_) {
-        return performHydration();
-      }).catchError((error, stackTrace) {
+      return ref
+          .read(authenticationProvider.notifier)
+          .login()
+          .catchError((error, stackTrace) {
+        setState(() {
+          state = SplashScreenStateEnum.authError;
+        });
         showErrorMessage(error.toString());
       });
     }
@@ -118,10 +127,24 @@ class _SplashScreenPageState extends ConsumerState<SplashScreen> {
           filterQuality: FilterQuality.high,
         ),
         const SizedBox(height: 20),
-        const CircularProgressIndicator(),
+        if (state == SplashScreenStateEnum.authError)
+          IconButton(
+              onPressed: () {
+                performHydration();
+              },
+              icon: Icon(Icons.refresh))
+        else
+          const CircularProgressIndicator(),
         const SizedBox(height: 20),
         Text(
-          message,
+          state == SplashScreenStateEnum.checkingAuth
+              ? AppLocalizations.of(context)!
+                  .splashScreenCheckingForAuthenticated
+              : state == SplashScreenStateEnum.checkingForUpdate
+                  ? AppLocalizations.of(context)!.splashScreenCheckingForUpdates
+                  : state == SplashScreenStateEnum.loadingData
+                      ? AppLocalizations.of(context)!.splashScreenLoadingData
+                      : '',
           style: const TextStyle(fontSize: 16),
         ),
       ],
