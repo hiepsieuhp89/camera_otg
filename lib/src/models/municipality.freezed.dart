@@ -39,8 +39,12 @@ mixin _$Municipality {
   @JsonKey(name: 'lon')
   num? get longitude => throw _privateConstructorUsedError;
 
+  /// Serializes this Municipality to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of Municipality
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $MunicipalityCopyWith<Municipality> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -74,6 +78,8 @@ class _$MunicipalityCopyWithImpl<$Res, $Val extends Municipality>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of Municipality
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -162,6 +168,8 @@ class __$$MunicipalityImplCopyWithImpl<$Res>
       _$MunicipalityImpl _value, $Res Function(_$MunicipalityImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of Municipality
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -298,7 +306,7 @@ class _$MunicipalityImpl implements _Municipality {
                 other.longitude == longitude));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
       runtimeType,
@@ -313,7 +321,9 @@ class _$MunicipalityImpl implements _Municipality {
       latitude,
       longitude);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of Municipality
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$MunicipalityImplCopyWith<_$MunicipalityImpl> get copyWith =>
@@ -371,8 +381,11 @@ abstract class _Municipality implements Municipality {
   @override
   @JsonKey(name: 'lon')
   num? get longitude;
+
+  /// Create a copy of Municipality
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$MunicipalityImplCopyWith<_$MunicipalityImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

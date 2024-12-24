@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kyoryo/src/providers/app_router.provider.dart';
 import 'package:kyoryo/src/providers/app_update.provider.dart';
 import 'package:kyoryo/src/providers/authentication.provider.dart';
 import 'package:kyoryo/src/routing/router.dart';

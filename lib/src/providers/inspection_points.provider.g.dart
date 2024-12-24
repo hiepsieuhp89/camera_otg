@@ -7,7 +7,7 @@ part of 'inspection_points.provider.dart';
 // **************************************************************************
 
 String _$filteredInspectionPointsHash() =>
-    r'59f162225f6c9d1068ac6d010dda183afe7d3955';
+    r'15471cadaf364168b80b90fe898f9b6732dfde49';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -148,6 +148,8 @@ class FilteredInspectionPointsProvider
   }
 }
 
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
 mixin FilteredInspectionPointsRef
     on AutoDisposeFutureProviderRef<List<InspectionPoint>> {
   /// The parameter `bridgeId` of this provider.
@@ -293,6 +295,8 @@ class InspectionPointsProvider extends AutoDisposeAsyncNotifierProviderImpl<
   }
 }
 
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
 mixin InspectionPointsRef
     on AutoDisposeAsyncNotifierProviderRef<List<InspectionPoint>> {
   /// The parameter `bridgeId` of this provider.
@@ -308,4 +312,4 @@ class _InspectionPointsProviderElement
   int get bridgeId => (origin as InspectionPointsProvider).bridgeId;
 }
 // ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

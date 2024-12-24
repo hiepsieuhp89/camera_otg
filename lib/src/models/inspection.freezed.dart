@@ -33,8 +33,12 @@ mixin _$Inspection {
   DateTime? get endDate => throw _privateConstructorUsedError;
   List<InspectionPointReport> get reports => throw _privateConstructorUsedError;
 
+  /// Serializes this Inspection to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of Inspection
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $InspectionCopyWith<Inspection> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -65,6 +69,8 @@ class _$InspectionCopyWithImpl<$Res, $Val extends Inspection>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of Inspection
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -135,6 +141,8 @@ class __$$InspectionImplCopyWithImpl<$Res>
       _$InspectionImpl _value, $Res Function(_$InspectionImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of Inspection
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -244,7 +252,7 @@ class _$InspectionImpl implements _Inspection {
             const DeepCollectionEquality().equals(other._reports, _reports));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
       runtimeType,
@@ -256,7 +264,9 @@ class _$InspectionImpl implements _Inspection {
       endDate,
       const DeepCollectionEquality().hash(_reports));
 
-  @JsonKey(ignore: true)
+  /// Create a copy of Inspection
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$InspectionImplCopyWith<_$InspectionImpl> get copyWith =>
@@ -302,8 +312,11 @@ abstract class _Inspection implements Inspection {
   DateTime? get endDate;
   @override
   List<InspectionPointReport> get reports;
+
+  /// Create a copy of Inspection
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$InspectionImplCopyWith<_$InspectionImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

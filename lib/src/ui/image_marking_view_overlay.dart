@@ -18,7 +18,7 @@ class ImageMarkingViewOverlay extends ModalRoute<Marking> {
   bool get barrierDismissible => false;
 
   @override
-  Color get barrierColor => Colors.black.withOpacity(0.5);
+  Color get barrierColor => Colors.black.withValues(alpha: 0.5);
 
   @override
   String get barrierLabel => '';

@@ -1,11 +1,8 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kyoryo/src/models/diagram.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/models/inspection_point_report.dart';
-import 'package:kyoryo/src/providers/api.provider.dart';
-import 'package:kyoryo/src/providers/shared_preferences.provider.dart';
 import 'package:kyoryo/src/routing/auth_guard.dart';
 import 'package:kyoryo/src/screens/app_update_screen.dart';
 import 'package:kyoryo/src/screens/inspection_point_diagram_select_screen.dart';
@@ -25,10 +22,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 part 'router.gr.dart';
 
 @AutoRouterConfig()
-class AppRouter extends RootStackRouter {
+class KyoryoAppRouter extends RootStackRouter {
   late final AuthGuard _authGuard;
 
-  AppRouter(
+  KyoryoAppRouter(
     ApiService apiService,
     SharedPreferences sharedPreferences,
   ) {
@@ -42,7 +39,10 @@ class AppRouter extends RootStackRouter {
   List<AutoRoute> get routes => [
         AutoRoute(page: SplashRoute.page, initial: true),
         AutoRoute(page: BridgeFiltersRoute.page, guards: [_authGuard]),
-        AutoRoute(page: BridgeListRoute.page, guards: [_authGuard]),
+        AutoRoute(
+          page: BridgeListRoute.page,
+          guards: [_authGuard],
+        ),
         AutoRoute(
             page: BridgeInspectionEvaluationRoute.page, guards: [_authGuard]),
         CustomRoute(page: BridgeInspectionPhotosTabRoute.page, guards: [
@@ -64,8 +64,3 @@ class AppRouter extends RootStackRouter {
         AutoRoute(page: AppUpdateRoute.page, guards: [_authGuard]),
       ];
 }
-
-final appRouterProvider = Provider((ref) => AppRouter(
-      ref.watch(apiServiceProvider),
-      ref.watch(sharedPreferencesProvider).requireValue,
-    ));

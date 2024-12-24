@@ -7,7 +7,7 @@ Future<void> showSideSheet(BuildContext context,
     barrierDismissible: true,
     barrierLabel: 'Side sheet',
     transitionDuration: const Duration(milliseconds: 500),
-    barrierColor: Theme.of(context).colorScheme.scrim.withOpacity(0.3),
+    barrierColor: Theme.of(context).colorScheme.scrim.withValues(alpha: 0.3),
     transitionBuilder: (context, animation, secondaryAnimation, child) {
       return SlideTransition(
         position:

@@ -7,7 +7,7 @@ part of 'bridge_inspection.provider.dart';
 // **************************************************************************
 
 String _$numberOfCreatedReportsHash() =>
-    r'8f494ca5a66b8a950749739ff08e7c1289aeb1bb';
+    r'f9dc761e09a49e3d48d1b2aaf146e6e38ec03d42';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -144,6 +144,8 @@ class NumberOfCreatedReportsProvider extends AutoDisposeProvider<int> {
   }
 }
 
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
 mixin NumberOfCreatedReportsRef on AutoDisposeProviderRef<int> {
   /// The parameter `bridgeId` of this provider.
   int get bridgeId;
@@ -158,7 +160,7 @@ class _NumberOfCreatedReportsProviderElement
 }
 
 String _$isInspectionInProgressHash() =>
-    r'6b58529be0ddb10686f5a60d1465a45a7848456f';
+    r'354cca298af66a9be99e41f867a5e70e5a4a7c0e';
 
 /// See also [isInspectionInProgress].
 @ProviderFor(isInspectionInProgress)
@@ -274,6 +276,8 @@ class IsInspectionInProgressProvider extends AutoDisposeProvider<bool> {
   }
 }
 
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
 mixin IsInspectionInProgressRef on AutoDisposeProviderRef<bool> {
   /// The parameter `bridgeId` of this provider.
   int get bridgeId;
@@ -288,7 +292,7 @@ class _IsInspectionInProgressProviderElement
 }
 
 String _$numberOfPendingReportsHash() =>
-    r'287929aa3fa38c8dc6ce012c00eae192b3416e69';
+    r'b5fdaefee25482004d63e367335ab7eb24fbe474';
 
 /// See also [numberOfPendingReports].
 @ProviderFor(numberOfPendingReports)
@@ -404,6 +408,8 @@ class NumberOfPendingReportsProvider extends AutoDisposeProvider<int> {
   }
 }
 
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
 mixin NumberOfPendingReportsRef on AutoDisposeProviderRef<int> {
   /// The parameter `bridgeId` of this provider.
   int get bridgeId;
@@ -547,6 +553,8 @@ class BridgeInspectionProvider extends AutoDisposeAsyncNotifierProviderImpl<
   }
 }
 
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
 mixin BridgeInspectionRef
     on AutoDisposeAsyncNotifierProviderRef<List<Inspection?>> {
   /// The parameter `bridgeId` of this provider.
@@ -562,4 +570,4 @@ class _BridgeInspectionProviderElement
   int get bridgeId => (origin as BridgeInspectionProvider).bridgeId;
 }
 // ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

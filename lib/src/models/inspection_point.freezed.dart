@@ -46,8 +46,12 @@ mixin _$InspectionPoint {
   @JsonKey(name: 'last_inspection_date')
   DateTime? get lastInspectionDate => throw _privateConstructorUsedError;
 
+  /// Serializes this InspectionPoint to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of InspectionPoint
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $InspectionPointCopyWith<InspectionPoint> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -88,6 +92,8 @@ class _$InspectionPointCopyWithImpl<$Res, $Val extends InspectionPoint>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of InspectionPoint
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -166,6 +172,8 @@ class _$InspectionPointCopyWithImpl<$Res, $Val extends InspectionPoint>
     ) as $Val);
   }
 
+  /// Create a copy of InspectionPoint
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $DiagramCopyWith<$Res>? get diagram {
@@ -216,6 +224,8 @@ class __$$InpsectionPointImplCopyWithImpl<$Res>
       _$InpsectionPointImpl _value, $Res Function(_$InpsectionPointImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of InspectionPoint
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -394,7 +404,7 @@ class _$InpsectionPointImpl implements _InpsectionPoint {
                 other.lastInspectionDate == lastInspectionDate));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
       runtimeType,
@@ -413,7 +423,9 @@ class _$InpsectionPointImpl implements _InpsectionPoint {
       diagramMarkedPhotoLink,
       lastInspectionDate);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of InspectionPoint
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$InpsectionPointImplCopyWith<_$InpsectionPointImpl> get copyWith =>
@@ -489,8 +501,11 @@ abstract class _InpsectionPoint implements InspectionPoint {
   @override
   @JsonKey(name: 'last_inspection_date')
   DateTime? get lastInspectionDate;
+
+  /// Create a copy of InspectionPoint
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$InpsectionPointImplCopyWith<_$InpsectionPointImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

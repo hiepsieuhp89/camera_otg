@@ -26,8 +26,12 @@ mixin _$Contractor {
   @JsonKey(name: 'name_en')
   String get nameEn => throw _privateConstructorUsedError;
 
+  /// Serializes this Contractor to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of Contractor
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $ContractorCopyWith<Contractor> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -54,6 +58,8 @@ class _$ContractorCopyWithImpl<$Res, $Val extends Contractor>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of Contractor
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -100,6 +106,8 @@ class __$$ContractorImplCopyWithImpl<$Res>
       _$ContractorImpl _value, $Res Function(_$ContractorImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of Contractor
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -159,11 +167,13 @@ class _$ContractorImpl implements _Contractor {
             (identical(other.nameEn, nameEn) || other.nameEn == nameEn));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, id, nameJp, nameEn);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of Contractor
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$ContractorImplCopyWith<_$ContractorImpl> get copyWith =>
@@ -195,8 +205,11 @@ abstract class _Contractor implements Contractor {
   @override
   @JsonKey(name: 'name_en')
   String get nameEn;
+
+  /// Create a copy of Contractor
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ContractorImplCopyWith<_$ContractorImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

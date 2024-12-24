@@ -1,5 +1,6 @@
 import 'package:auth0_flutter/auth0_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kyoryo/src/models/user.dart';
 import 'package:kyoryo/src/providers/api.provider.dart';
 import 'package:kyoryo/src/providers/shared_preferences.provider.dart';
@@ -10,7 +11,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'authentication.provider.g.dart';
 
 @Riverpod(keepAlive: true)
-Auth0 auth0(Auth0Ref ref) {
+Auth0 auth0(Ref ref) {
   return Auth0(
     dotenv.env['AUTH0_DOMAIN']!,
     dotenv.env['AUTH0_CLIENT_ID']!,

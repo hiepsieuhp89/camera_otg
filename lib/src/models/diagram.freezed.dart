@@ -27,8 +27,12 @@ mixin _$Diagram {
   int get photoId => throw _privateConstructorUsedError;
   Photo? get photo => throw _privateConstructorUsedError;
 
+  /// Serializes this Diagram to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of Diagram
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $DiagramCopyWith<Diagram> get copyWith => throw _privateConstructorUsedError;
 }
 
@@ -56,6 +60,8 @@ class _$DiagramCopyWithImpl<$Res, $Val extends Diagram>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of Diagram
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -84,6 +90,8 @@ class _$DiagramCopyWithImpl<$Res, $Val extends Diagram>
     ) as $Val);
   }
 
+  /// Create a copy of Diagram
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $PhotoCopyWith<$Res>? get photo {
@@ -122,6 +130,8 @@ class __$$DiagramImplCopyWithImpl<$Res>
       _$DiagramImpl _value, $Res Function(_$DiagramImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of Diagram
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -191,11 +201,13 @@ class _$DiagramImpl implements _Diagram {
             (identical(other.photo, photo) || other.photo == photo));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, id, bridgeId, photoId, photo);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of Diagram
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$DiagramImplCopyWith<_$DiagramImpl> get copyWith =>
@@ -228,8 +240,11 @@ abstract class _Diagram implements Diagram {
   int get photoId;
   @override
   Photo? get photo;
+
+  /// Create a copy of Diagram
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$DiagramImplCopyWith<_$DiagramImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

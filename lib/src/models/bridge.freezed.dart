@@ -35,8 +35,12 @@ mixin _$Bridge {
   @JsonKey(name: 'last_inspection_date')
   DateTime? get lastInspectionDate => throw _privateConstructorUsedError;
 
+  /// Serializes this Bridge to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of Bridge
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $BridgeCopyWith<Bridge> get copyWith => throw _privateConstructorUsedError;
 }
 
@@ -66,6 +70,8 @@ class _$BridgeCopyWithImpl<$Res, $Val extends Bridge>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of Bridge
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -141,6 +147,8 @@ class __$$BridgeImplCopyWithImpl<$Res>
       _$BridgeImpl _value, $Res Function(_$BridgeImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of Bridge
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -256,12 +264,14 @@ class _$BridgeImpl implements _Bridge {
                 other.lastInspectionDate == lastInspectionDate));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, id, condition, bridgeNo,
       managementNo, nameKana, photoLink, nameKanji, lastInspectionDate);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of Bridge
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$BridgeImplCopyWith<_$BridgeImpl> get copyWith =>
@@ -311,8 +321,11 @@ abstract class _Bridge implements Bridge {
   @override
   @JsonKey(name: 'last_inspection_date')
   DateTime? get lastInspectionDate;
+
+  /// Create a copy of Bridge
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$BridgeImplCopyWith<_$BridgeImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

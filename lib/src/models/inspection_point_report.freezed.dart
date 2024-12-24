@@ -33,8 +33,12 @@ mixin _$InspectionPointReport {
   List<InspectionPointReportPhoto> get photos =>
       throw _privateConstructorUsedError;
 
+  /// Serializes this InspectionPointReport to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of InspectionPointReport
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $InspectionPointReportCopyWith<InspectionPointReport> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -66,6 +70,8 @@ class _$InspectionPointReportCopyWithImpl<$Res,
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of InspectionPointReport
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -138,6 +144,8 @@ class __$$InspectionPointReportImplCopyWithImpl<$Res>
       $Res Function(_$InspectionPointReportImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of InspectionPointReport
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -244,7 +252,7 @@ class _$InspectionPointReportImpl implements _InspectionPointReport {
             const DeepCollectionEquality().equals(other._photos, _photos));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
       runtimeType,
@@ -256,7 +264,9 @@ class _$InspectionPointReportImpl implements _InspectionPointReport {
       date,
       const DeepCollectionEquality().hash(_photos));
 
-  @JsonKey(ignore: true)
+  /// Create a copy of InspectionPointReport
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$InspectionPointReportImplCopyWith<_$InspectionPointReportImpl>
@@ -303,8 +313,11 @@ abstract class _InspectionPointReport implements InspectionPointReport {
   DateTime? get date;
   @override
   List<InspectionPointReportPhoto> get photos;
+
+  /// Create a copy of InspectionPointReport
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$InspectionPointReportImplCopyWith<_$InspectionPointReportImpl>
       get copyWith => throw _privateConstructorUsedError;
 }
