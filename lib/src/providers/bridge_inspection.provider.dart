@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kyoryo/src/models/inspection.dart';
 import 'package:kyoryo/src/models/inspection_point_report.dart';
 import 'package:kyoryo/src/models/inspection_point_report_photo.dart';
@@ -167,7 +168,7 @@ class BridgeInspection extends _$BridgeInspection {
 }
 
 @riverpod
-int numberOfCreatedReports(NumberOfCreatedReportsRef ref, int bridgeId) {
+int numberOfCreatedReports(Ref ref, int bridgeId) {
   final activeInspection =
       ref.watch(bridgeInspectionProvider(bridgeId)).value?[1];
 
@@ -184,7 +185,7 @@ int numberOfCreatedReports(NumberOfCreatedReportsRef ref, int bridgeId) {
 }
 
 @riverpod
-bool isInspectionInProgress(IsInspectionInProgressRef ref, int bridgeId) {
+bool isInspectionInProgress(Ref ref, int bridgeId) {
   Inspection? activeInspection =
       ref.watch(bridgeInspectionProvider(bridgeId)).value?[1];
 
@@ -192,7 +193,7 @@ bool isInspectionInProgress(IsInspectionInProgressRef ref, int bridgeId) {
 }
 
 @riverpod
-int numberOfPendingReports(NumberOfPendingReportsRef ref, int bridgeId) {
+int numberOfPendingReports(Ref ref, int bridgeId) {
   final activeInspection =
       ref.watch(bridgeInspectionProvider(bridgeId)).value?[1];
 

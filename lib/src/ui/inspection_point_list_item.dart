@@ -405,7 +405,7 @@ class InpsectionPointListItem extends ConsumerWidget {
                 width: 120,
                 height: 120,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withOpacity(0.15),
+                  color: Theme.of(context).primaryColor.withValues(alpha: 0.15),
                   border: Border.all(
                     color: Colors.black12,
                     width: 1,
@@ -414,7 +414,8 @@ class InpsectionPointListItem extends ConsumerWidget {
                 ),
                 child: Center(
                   child: Icon(Icons.do_not_disturb,
-                      color: Theme.of(context).primaryColor.withOpacity(0.2),
+                      color:
+                          Theme.of(context).primaryColor.withValues(alpha: 0.2),
                       size: 40.0),
                 ),
               );

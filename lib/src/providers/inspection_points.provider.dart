@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/models/inspection_point_report.dart';
 import 'package:kyoryo/src/providers/api.provider.dart';
@@ -29,7 +30,7 @@ class InspectionPoints extends _$InspectionPoints {
 
 @riverpod
 Future<List<InspectionPoint>> filteredInspectionPoints(
-    FilteredInspectionPointsRef ref, int bridgeId) async {
+    Ref ref, int bridgeId) async {
   InspectionPointFilters filters =
       ref.watch(bridgeInspectionPointFiltersProvider(bridgeId));
   final activeInspection =

@@ -23,8 +23,12 @@ mixin _$VersionByEnvironment {
   Version? get dev => throw _privateConstructorUsedError;
   Version? get stg => throw _privateConstructorUsedError;
 
+  /// Serializes this VersionByEnvironment to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of VersionByEnvironment
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $VersionByEnvironmentCopyWith<VersionByEnvironment> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -52,6 +56,8 @@ class _$VersionByEnvironmentCopyWithImpl<$Res,
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of VersionByEnvironment
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -70,6 +76,8 @@ class _$VersionByEnvironmentCopyWithImpl<$Res,
     ) as $Val);
   }
 
+  /// Create a copy of VersionByEnvironment
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $VersionCopyWith<$Res>? get dev {
@@ -82,6 +90,8 @@ class _$VersionByEnvironmentCopyWithImpl<$Res,
     });
   }
 
+  /// Create a copy of VersionByEnvironment
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $VersionCopyWith<$Res>? get stg {
@@ -119,6 +129,8 @@ class __$$VersionByEnvironmentImplCopyWithImpl<$Res>
       $Res Function(_$VersionByEnvironmentImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of VersionByEnvironment
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -165,11 +177,13 @@ class _$VersionByEnvironmentImpl implements _VersionByEnvironment {
             (identical(other.stg, stg) || other.stg == stg));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, dev, stg);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of VersionByEnvironment
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$VersionByEnvironmentImplCopyWith<_$VersionByEnvironmentImpl>
@@ -196,8 +210,11 @@ abstract class _VersionByEnvironment implements VersionByEnvironment {
   Version? get dev;
   @override
   Version? get stg;
+
+  /// Create a copy of VersionByEnvironment
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$VersionByEnvironmentImplCopyWith<_$VersionByEnvironmentImpl>
       get copyWith => throw _privateConstructorUsedError;
 }
@@ -214,8 +231,12 @@ mixin _$Version {
   DateTime get builtAt => throw _privateConstructorUsedError;
   String get version => throw _privateConstructorUsedError;
 
+  /// Serializes this Version to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of Version
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $VersionCopyWith<Version> get copyWith => throw _privateConstructorUsedError;
 }
 
@@ -240,6 +261,8 @@ class _$VersionCopyWithImpl<$Res, $Val extends Version>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of Version
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -285,6 +308,8 @@ class __$$VersionImplCopyWithImpl<$Res>
       _$VersionImpl _value, $Res Function(_$VersionImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of Version
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -345,11 +370,13 @@ class _$VersionImpl implements _Version {
             (identical(other.version, version) || other.version == version));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, downloadUrl, builtAt, version);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of Version
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$VersionImplCopyWith<_$VersionImpl> get copyWith =>
@@ -379,8 +406,11 @@ abstract class _Version implements Version {
   DateTime get builtAt;
   @override
   String get version;
+
+  /// Create a copy of Version
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$VersionImplCopyWith<_$VersionImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

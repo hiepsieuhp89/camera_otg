@@ -6,13 +6,13 @@ publish_to: "none"
 version: 1.0.0+1
 
 environment:
-  sdk: ">=3.2.5 <4.0.0"
+  sdk: ">=3.6.0 <4.0.0"
 
 dependencies:
   cached_network_image: ^3.3.1
   camera: ^0.11.0
   carousel_slider: ^5.0.0
-  collection: ^1.18.0
+  collection: ^1.19.0
   flutter:
     sdk: flutter
   flutter_dotenv: ^5.1.0
@@ -30,7 +30,7 @@ dependencies:
   riverpod_annotation: ^2.3.4
   shared_preferences: ^2.2.2
   audioplayers: ^6.0.0
-  auth0_flutter: ^1.1.0
+  auth0_flutter: ^1.7.2
   auto_route: ^9.2.2
   logging: ^1.2.0
   dio: ^5.7.0
@@ -41,10 +41,10 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^4.0.0
+  flutter_lints: ^5.0.0
   riverpod_generator: ^2.3.11
   build_runner: ^2.4.8
-  custom_lint: ^0.6.0
+  custom_lint: ^0.7.0
   riverpod_lint: ^2.3.9
   freezed: ^2.4.7
   json_serializable: ^6.8.0

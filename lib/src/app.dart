@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kyoryo/src/providers/app_router.provider.dart';
 import 'package:kyoryo/src/providers/app_start_up.provider.dart';
 import 'package:kyoryo/src/providers/app_state.provider.dart';
-import 'package:kyoryo/src/routing/router.dart';
 
 class KyoryoApp extends ConsumerWidget {
   const KyoryoApp({super.key});

@@ -156,6 +156,8 @@ class DiagramsProvider
   }
 }
 
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
 mixin DiagramsRef on AutoDisposeAsyncNotifierProviderRef<List<Diagram>> {
   /// The parameter `bridgeId` of this provider.
   int get bridgeId;
@@ -170,4 +172,4 @@ class _DiagramsProviderElement
   int get bridgeId => (origin as DiagramsProvider).bridgeId;
 }
 // ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

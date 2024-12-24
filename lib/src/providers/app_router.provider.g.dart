@@ -1,26 +1,26 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'app_start_up.provider.dart';
+part of 'app_router.provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$appStartupHash() => r'21cacd938bf59f4a177d84854a31845f78f2770d';
+String _$appRouterHash() => r'0dcf03e6667d79cec636f479c182246cd4afc078';
 
-/// See also [appStartup].
-@ProviderFor(appStartup)
-final appStartupProvider = FutureProvider<void>.internal(
-  appStartup,
-  name: r'appStartupProvider',
+/// See also [appRouter].
+@ProviderFor(appRouter)
+final appRouterProvider = Provider<Raw<KyoryoAppRouter>>.internal(
+  appRouter,
+  name: r'appRouterProvider',
   debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$appStartupHash,
+      const bool.fromEnvironment('dart.vm.product') ? null : _$appRouterHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-typedef AppStartupRef = FutureProviderRef<void>;
+typedef AppRouterRef = ProviderRef<Raw<KyoryoAppRouter>>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

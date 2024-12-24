@@ -69,7 +69,7 @@ android {
             storeFile(file("../key.jks").exists() ? file("../key.jks") : file(keystoreProperties["storeFile"]))
             storePassword storePasswordVal ? storePasswordVal : keystoreProperties["storePassword"]
        }
-   }
+    }
 
     buildTypes {
         debug {
