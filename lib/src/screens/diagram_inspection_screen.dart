@@ -129,6 +129,7 @@ class DiagramInspectionScreenState
                               }
                             });
                           },
+                    child: Icon(Icons.cancel),
                   );
                 }),
           const SizedBox(
@@ -162,8 +163,10 @@ class DiagramInspectionScreenState
                   setState(() {
                     newMarkingMode = true;
 
+                    // Update the new marking position to be in the center of the screen
+                    // Offset +40 is to account for bottom app bar
                     final adjustedX =
-                        imageWidth / 2 - position.dx / scale + 20 / scale;
+                        imageWidth / 2 - position.dx / scale + 40 / scale;
                     final adjustedY = imageHeight / 2 - position.dy / scale;
 
                     newMarking =
@@ -214,7 +217,8 @@ class DiagramInspectionScreenState
                   32,
               left: (newMarking.x * scale) +
                   (screenWidth - scale * imageWidth) / 2 +
-                  position.dx,
+                  position.dx -
+                  32,
               child: const Icon(
                 Icons.location_on,
                 color: Colors.red,
