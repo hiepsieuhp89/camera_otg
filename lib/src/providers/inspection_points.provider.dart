@@ -66,3 +66,25 @@ Future<List<InspectionPoint>> filteredInspectionPoints(
 
   return data;
 }
+
+@riverpod
+Future<List<InspectionPoint>> presentConditionInspectionPoints(
+    Ref ref, int bridgeId) async {
+  return ref
+      .watch(inspectionPointsProvider(bridgeId).selectAsync((points) => points
+          .where(
+            (element) => element.type == InspectionPointType.presentCondition,
+          )
+          .toList()));
+}
+
+@riverpod
+Future<List<InspectionPoint>> damageInspectionPoints(
+    Ref ref, int bridgeId) async {
+  return ref
+      .watch(inspectionPointsProvider(bridgeId).selectAsync((points) => points
+          .where(
+            (element) => element.type == InspectionPointType.damage,
+          )
+          .toList()));
+}

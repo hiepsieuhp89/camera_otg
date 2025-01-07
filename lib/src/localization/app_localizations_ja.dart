@@ -298,4 +298,15 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get install => 'インストール';
+
+  @override
+  String span(Object number) {
+    return '$number径間';
+  }
+
+  @override
+  String get noSpan => '径間無し';
+
+  @override
+  String get pressAndHoldForMarking => '長押しでマーク位置を移動';
 }

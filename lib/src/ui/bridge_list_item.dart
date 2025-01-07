@@ -84,7 +84,7 @@ class BridgeListItem extends ConsumerWidget {
                       onPressed: () {
                         ref.watch(currentBridgeProvider.notifier).set(bridge);
 
-                        context.pushRoute(const BridgeInspectionRoute());
+                        context.pushRoute(const BridgeInspectionTabRoute());
                       })
                 ])
           ],

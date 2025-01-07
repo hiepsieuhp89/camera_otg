@@ -22,7 +22,7 @@
   "@noDamageFound": {},
   "finishedTasks": "{finished}/{total} 完了",
   "@finishedTasks": {
-    "description": "The number of tasks finished out of total",
+    "description": "The number of points finished out of total",
     "placeholders": {
       "finished": {},
       "total": {}
@@ -223,5 +223,16 @@
   "appUpdateInstallPermissionRequired": "アプリの更新をインストールするためには、インストールの許可が必要です",
   "@appUpdateInstallPermissionRequired": {},
   "install": "インストール",
-  "@install": {}
+  "@install": {},
+  "span": "{number}径間",
+  "@span": {
+    "description": "Span number",
+    "placeholders": {
+      "number": {}
+    }
+  },
+  "noSpan": "径間無し",
+  "@noSpan": {},
+  "pressAndHoldForMarking": "長押しでマーク位置を移動",
+  "@pressAndHoldForMarking": {}
 }
