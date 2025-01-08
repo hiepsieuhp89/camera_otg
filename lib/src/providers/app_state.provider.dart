@@ -25,10 +25,11 @@ class AppState extends _$AppState {
 
     if (isAuthenticated &&
         appRouter.current.name != AppUpdateRoute.name &&
-        appRouter.current.name != SplashRoute.name) {
+        appRouter.current.name != SplashRoute.name &&
+        ref.read(appUpdateProvider).shouldCheckForUpdate) {
       await ref.read(appUpdateProvider.notifier).getLatestVersion();
 
-      if (ref.read(appUpdateProvider).shoudUpdate) {
+      if (ref.read(appUpdateProvider).isOutdated) {
         ref.read(appRouterProvider).pushNamed(AppUpdateRoute.name);
       }
     }
