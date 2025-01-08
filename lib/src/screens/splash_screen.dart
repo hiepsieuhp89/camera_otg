@@ -17,6 +17,7 @@ enum SplashScreenStateEnum {
   checkingForUpdate,
   loadingData,
   finished,
+  isOutdated,
 }
 
 @RoutePage()
@@ -68,6 +69,10 @@ class _SplashScreenPageState extends ConsumerState<SplashScreen> {
 
     await checkForUpdate();
 
+    if (state == SplashScreenStateEnum.isOutdated) {
+      return goToAppUpdate();
+    }
+
     setState(() {
       state = SplashScreenStateEnum.loadingData;
     });
@@ -96,8 +101,9 @@ class _SplashScreenPageState extends ConsumerState<SplashScreen> {
     await ref.read(appUpdateProvider.notifier).getLatestVersion();
 
     if (ref.read(appUpdateProvider).isOutdated) {
-      goToAppUpdate();
-      return;
+      setState(() {
+        state = SplashScreenStateEnum.isOutdated;
+      });
     }
   }
 
