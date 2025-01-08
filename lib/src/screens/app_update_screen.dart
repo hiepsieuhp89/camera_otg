@@ -27,7 +27,7 @@ class AppUpdateScreenState extends ConsumerState<AppUpdateScreen> {
     final appUpdate = ref.read(appUpdateProvider);
     final tempDir = await getTemporaryDirectory();
 
-    if (!appUpdate.shoudUpdate) {
+    if (!appUpdate.isOutdated) {
       return;
     }
 

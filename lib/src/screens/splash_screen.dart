@@ -89,9 +89,13 @@ class _SplashScreenPageState extends ConsumerState<SplashScreen> {
   }
 
   Future<void> checkForUpdate() async {
+    if (!ref.read(appUpdateProvider).shouldCheckForUpdate) {
+      return;
+    }
+
     await ref.read(appUpdateProvider.notifier).getLatestVersion();
 
-    if (ref.watch(appUpdateProvider).shoudUpdate) {
+    if (ref.read(appUpdateProvider).isOutdated) {
       goToAppUpdate();
       return;
     }
