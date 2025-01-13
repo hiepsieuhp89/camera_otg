@@ -48,6 +48,12 @@ Future<List<InspectionPoint>> filteredInspectionPoints(
               return false;
             }
 
+            if (filters.elementNumberFilters.isNotEmpty &&
+                !filters.elementNumberFilters
+                    .contains(point.elementNumber ?? '')) {
+              return false;
+            }
+
             InspectionPointReport? report = activeInspection?.reports
                 .firstWhereOrNull(
                     (report) => report.inspectionPointId == point.id);

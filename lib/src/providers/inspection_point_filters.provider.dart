@@ -23,6 +23,19 @@ class BridgeInspectionPointFilters extends _$BridgeInspectionPointFilters {
     }
   }
 
+  void setElementNumberFilter(String elementNumber, bool toAdd) {
+    if (toAdd) {
+      state = state.copyWith(
+          elementNumberFilters:
+              {...state.elementNumberFilters, elementNumber}.toList());
+    } else {
+      state = state.copyWith(
+          elementNumberFilters: state.elementNumberFilters
+              .where((n) => n != elementNumber)
+              .toList());
+    }
+  }
+
   void setStatusFilter(InspectionPointReportStatus status, bool value) {
     state = state.copyWith(
         reportStatusFilters: {...state.reportStatusFilters, status: value});
@@ -39,11 +52,16 @@ class BridgeInspectionPointFilters extends _$BridgeInspectionPointFilters {
   void clearNameFilters() {
     state = state.copyWith(nameFilters: []);
   }
+
+  void clearElementNumberFilters() {
+    state = state.copyWith(elementNumberFilters: []);
+  }
 }
 
 class InspectionPointFilters {
   InspectionPointType? typeFilter;
   List<String> nameFilters;
+  List<String> elementNumberFilters;
   Map<InspectionPointReportStatus, bool> reportStatusFilters;
   bool includeNoReport;
 
@@ -55,17 +73,20 @@ class InspectionPointFilters {
   InspectionPointFilters(
       {this.typeFilter,
       this.nameFilters = const [],
+      this.elementNumberFilters = const [],
       this.reportStatusFilters = const {},
       this.includeNoReport = true});
 
   InspectionPointFilters copyWith(
       {InspectionPointType? typeFilter,
       List<String>? nameFilters,
+      List<String>? elementNumberFilters,
       Map<InspectionPointReportStatus, bool>? reportStatusFilters,
       bool? includeNoReport}) {
     return InspectionPointFilters(
         typeFilter: typeFilter,
         nameFilters: nameFilters ?? this.nameFilters,
+        elementNumberFilters: elementNumberFilters ?? this.elementNumberFilters,
         reportStatusFilters: reportStatusFilters ?? this.reportStatusFilters,
         includeNoReport: includeNoReport ?? this.includeNoReport);
   }
