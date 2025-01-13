@@ -67,6 +67,7 @@ class InspectionPointFilters {
 
   bool get hasActiveFilters =>
       nameFilters.isNotEmpty ||
+      elementNumberFilters.isNotEmpty ||
       reportStatusFilters.values.any((v) => v == false) ||
       !includeNoReport;
 
