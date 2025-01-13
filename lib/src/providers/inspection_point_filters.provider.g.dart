@@ -7,7 +7,7 @@ part of 'inspection_point_filters.provider.dart';
 // **************************************************************************
 
 String _$bridgeInspectionPointFiltersHash() =>
-    r'30b9e13d2a8aece5cbcc3f4adbeef1b4ca656b6d';
+    r'f77bfc3351c273135ec50eb18211437551280e2d';
 
 /// Copied from Dart SDK
 class _SystemHash {

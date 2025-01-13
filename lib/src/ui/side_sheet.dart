@@ -89,7 +89,9 @@ class SideSheetContent extends StatelessWidget {
                 ),
               ),
               Expanded(
-                child: body,
+                child: SingleChildScrollView(
+                  child: body,
+                ),
               ),
             ],
           ),
