@@ -22,6 +22,8 @@ class InpsectionPointListItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    var orientation = MediaQuery.of(context).orientation;
+
     final activeReport = ref
         .read(bridgeInspectionProvider(point.bridgeId!).notifier)
         .findActiveReportFromPoint(point.id!);
@@ -198,26 +200,38 @@ class InpsectionPointListItem extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
         child: Column(
+          spacing: 12,
           children: [
             Row(
               children: [
-                point.type == InspectionPointType.damage
-                    ? Icon(Icons.broken_image_outlined,
-                        color: Theme.of(context).primaryColor)
-                    : Icon(Icons.image_search_outlined,
-                        color: Theme.of(context).primaryColor),
-                const SizedBox(width: 8.0),
                 Expanded(
-                  child: InspectionPointLabel(
-                    point: point,
-                    style: Theme.of(context).textTheme.titleMedium,
-                    textAlign: TextAlign.left,
-                    overflow: TextOverflow.ellipsis,
+                  child: Row(
+                    children: [
+                      point.type == InspectionPointType.damage
+                          ? Icon(Icons.broken_image_outlined,
+                              color: Theme.of(context).primaryColor)
+                          : Icon(Icons.image_search_outlined,
+                              color: Theme.of(context).primaryColor),
+                      const SizedBox(width: 8.0),
+                      Expanded(
+                        child: InspectionPointLabel(
+                          point: point,
+                          style: Theme.of(context).textTheme.titleMedium,
+                          textAlign: TextAlign.left,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
+                if (orientation == Orientation.portrait)
+                  IconButton(
+                      onPressed: () => showDetailsListPopUp(),
+                      icon: Icon(Icons.info_outline)),
               ],
             ),
             Row(
+              spacing: 10,
               children: [
                 Expanded(
                   child: Column(
@@ -240,13 +254,8 @@ class InpsectionPointListItem extends ConsumerWidget {
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                       Row(
-                        mainAxisAlignment: MediaQuery.of(context).orientation !=
-                                Orientation.portrait
-                            ? MainAxisAlignment.spaceEvenly
-                            : MainAxisAlignment.end,
                         children: [
-                          if (MediaQuery.of(context).orientation ==
-                              Orientation.portrait)
+                          if (orientation == Orientation.portrait)
                             Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -264,19 +273,12 @@ class InpsectionPointListItem extends ConsumerWidget {
                                         Theme.of(context).textTheme.bodySmall,
                                   ),
                                 ]),
-                          const Spacer(),
-                          if (MediaQuery.of(context).orientation ==
-                              Orientation.portrait)
-                            showDetailsButton(),
-                          const SizedBox(width: 8),
-                          buildActionButton()
                         ],
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 20.0),
-                if (MediaQuery.of(context).orientation == Orientation.landscape)
+                if (orientation == Orientation.landscape)
                   Expanded(
                     child: Container(
                       constraints: const BoxConstraints(maxHeight: 200),
@@ -333,6 +335,30 @@ class InpsectionPointListItem extends ConsumerWidget {
                   ),
               ],
             ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: orientation == Orientation.portrait
+                  ? [
+                      IconButton(
+                        icon: Icon(Icons.edit),
+                        onPressed: () {
+                          context.pushRoute(
+                              InspectionPointRoute(initialPoint: point));
+                        },
+                      ),
+                      buildActionButton(),
+                    ]
+                  : [
+                      buildActionButton(),
+                      IconButton(
+                        icon: Icon(Icons.edit),
+                        onPressed: () {
+                          context.pushRoute(
+                              InspectionPointRoute(initialPoint: point));
+                        },
+                      ),
+                    ],
+            )
           ],
         ),
       ),

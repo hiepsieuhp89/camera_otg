@@ -14,7 +14,7 @@ _$InpsectionPointImpl _$$InpsectionPointImplFromJson(
       diagram: json['diagram'] == null
           ? null
           : Diagram.fromJson(json['diagram'] as Map<String, dynamic>),
-      bridgeId: (json['bridge_id'] as num?)?.toInt(),
+      bridgeId: (json['bridge_id'] as num).toInt(),
       diagramUrl: json['diagram_url'] as String?,
       diagramId: (json['diagram_id'] as num?)?.toInt(),
       diagramMarkingX: (json['diagram_marking_x'] as num?)?.toInt(),

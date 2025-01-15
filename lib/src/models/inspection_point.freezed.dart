@@ -24,7 +24,7 @@ mixin _$InspectionPoint {
   InspectionPointType get type => throw _privateConstructorUsedError;
   Diagram? get diagram => throw _privateConstructorUsedError;
   @JsonKey(name: 'bridge_id')
-  int? get bridgeId => throw _privateConstructorUsedError;
+  int get bridgeId => throw _privateConstructorUsedError;
   @JsonKey(name: 'diagram_url')
   String? get diagramUrl => throw _privateConstructorUsedError;
   @JsonKey(name: 'diagram_id')
@@ -66,7 +66,7 @@ abstract class $InspectionPointCopyWith<$Res> {
       {int? id,
       InspectionPointType type,
       Diagram? diagram,
-      @JsonKey(name: 'bridge_id') int? bridgeId,
+      @JsonKey(name: 'bridge_id') int bridgeId,
       @JsonKey(name: 'diagram_url') String? diagramUrl,
       @JsonKey(name: 'diagram_id') int? diagramId,
       @JsonKey(name: 'diagram_marking_x') int? diagramMarkingX,
@@ -100,7 +100,7 @@ class _$InspectionPointCopyWithImpl<$Res, $Val extends InspectionPoint>
     Object? id = freezed,
     Object? type = null,
     Object? diagram = freezed,
-    Object? bridgeId = freezed,
+    Object? bridgeId = null,
     Object? diagramUrl = freezed,
     Object? diagramId = freezed,
     Object? diagramMarkingX = freezed,
@@ -125,10 +125,10 @@ class _$InspectionPointCopyWithImpl<$Res, $Val extends InspectionPoint>
           ? _value.diagram
           : diagram // ignore: cast_nullable_to_non_nullable
               as Diagram?,
-      bridgeId: freezed == bridgeId
+      bridgeId: null == bridgeId
           ? _value.bridgeId
           : bridgeId // ignore: cast_nullable_to_non_nullable
-              as int?,
+              as int,
       diagramUrl: freezed == diagramUrl
           ? _value.diagramUrl
           : diagramUrl // ignore: cast_nullable_to_non_nullable
@@ -199,7 +199,7 @@ abstract class _$$InpsectionPointImplCopyWith<$Res>
       {int? id,
       InspectionPointType type,
       Diagram? diagram,
-      @JsonKey(name: 'bridge_id') int? bridgeId,
+      @JsonKey(name: 'bridge_id') int bridgeId,
       @JsonKey(name: 'diagram_url') String? diagramUrl,
       @JsonKey(name: 'diagram_id') int? diagramId,
       @JsonKey(name: 'diagram_marking_x') int? diagramMarkingX,
@@ -232,7 +232,7 @@ class __$$InpsectionPointImplCopyWithImpl<$Res>
     Object? id = freezed,
     Object? type = null,
     Object? diagram = freezed,
-    Object? bridgeId = freezed,
+    Object? bridgeId = null,
     Object? diagramUrl = freezed,
     Object? diagramId = freezed,
     Object? diagramMarkingX = freezed,
@@ -257,10 +257,10 @@ class __$$InpsectionPointImplCopyWithImpl<$Res>
           ? _value.diagram
           : diagram // ignore: cast_nullable_to_non_nullable
               as Diagram?,
-      bridgeId: freezed == bridgeId
+      bridgeId: null == bridgeId
           ? _value.bridgeId
           : bridgeId // ignore: cast_nullable_to_non_nullable
-              as int?,
+              as int,
       diagramUrl: freezed == diagramUrl
           ? _value.diagramUrl
           : diagramUrl // ignore: cast_nullable_to_non_nullable
@@ -312,7 +312,7 @@ class _$InpsectionPointImpl implements _InpsectionPoint {
       {this.id,
       required this.type,
       this.diagram,
-      @JsonKey(name: 'bridge_id') this.bridgeId,
+      @JsonKey(name: 'bridge_id') required this.bridgeId,
       @JsonKey(name: 'diagram_url') this.diagramUrl,
       @JsonKey(name: 'diagram_id') this.diagramId,
       @JsonKey(name: 'diagram_marking_x') this.diagramMarkingX,
@@ -335,7 +335,7 @@ class _$InpsectionPointImpl implements _InpsectionPoint {
   final Diagram? diagram;
   @override
   @JsonKey(name: 'bridge_id')
-  final int? bridgeId;
+  final int bridgeId;
   @override
   @JsonKey(name: 'diagram_url')
   final String? diagramUrl;
@@ -445,7 +445,7 @@ abstract class _InpsectionPoint implements InspectionPoint {
       {final int? id,
       required final InspectionPointType type,
       final Diagram? diagram,
-      @JsonKey(name: 'bridge_id') final int? bridgeId,
+      @JsonKey(name: 'bridge_id') required final int bridgeId,
       @JsonKey(name: 'diagram_url') final String? diagramUrl,
       @JsonKey(name: 'diagram_id') final int? diagramId,
       @JsonKey(name: 'diagram_marking_x') final int? diagramMarkingX,
@@ -470,7 +470,7 @@ abstract class _InpsectionPoint implements InspectionPoint {
   Diagram? get diagram;
   @override
   @JsonKey(name: 'bridge_id')
-  int? get bridgeId;
+  int get bridgeId;
   @override
   @JsonKey(name: 'diagram_url')
   String? get diagramUrl;

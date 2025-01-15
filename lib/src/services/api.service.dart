@@ -204,4 +204,14 @@ class ApiService {
 
     return VersionByEnvironment.fromJson(jsonResponse);
   }
+
+  Future<InspectionPoint> updateInspectionPoint(
+      InspectionPoint inspectionPoint) async {
+    final jsonResponse = await apiClient.put(
+        'api/mobile/inspection_points/${inspectionPoint.id}',
+        body: inspectionPoint.toJson(),
+        headerParams: getAuthorizationHeader());
+
+    return InspectionPoint.fromJson(jsonResponse);
+  }
 }

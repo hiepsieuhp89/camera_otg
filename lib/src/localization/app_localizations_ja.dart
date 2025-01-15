@@ -309,4 +309,19 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get pressAndHoldForMarking => '長押しでマーク位置を移動';
+
+  @override
+  String get emptyDamageDiagramWarning => '損傷検査ポイントには図面が必要';
+
+  @override
+  String get selectDiagramButton => '図面選択';
+
+  @override
+  String get changeDiagramButton => '図面変更';
+
+  @override
+  String get updateInspectionPoints => '点検ポイント更新';
+
+  @override
+  String get selectDiagramWarning => '図面を選択してください';
 }

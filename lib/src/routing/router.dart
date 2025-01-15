@@ -19,10 +19,10 @@ import 'package:kyoryo/src/screens/bridge_inspection_evaluation_screen.dart';
 import 'package:kyoryo/src/screens/bridge_inspection_photos/tab_screen.dart';
 import 'package:kyoryo/src/screens/bridge_inspection_photos/photos_selection_screen.dart';
 import 'package:kyoryo/src/screens/bridge_inspection_photos/photos_comparison_screen.dart';
-import 'package:kyoryo/src/screens/inspection_point_creation_screen.dart';
 import 'package:kyoryo/src/screens/take_picture_screen.dart';
 import 'package:kyoryo/src/services/api.service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:kyoryo/src/screens/inspection_point_screen.dart';
 
 part 'router.gr.dart';
 
@@ -73,10 +73,9 @@ class KyoryoAppRouter extends RootStackRouter {
         AutoRoute(page: PointsInspectionRoute.page, guards: [_authGuard]),
         AutoRoute(page: DiagramInspectionRoute.page, guards: [_authGuard]),
         AutoRoute(
-            page: InspectionPointCreationRoute.page, guards: [_authGuard]),
-        AutoRoute(
             page: InspectionPointDiagramSelectRoute.page, guards: [_authGuard]),
         AutoRoute(page: TakePictureRoute.page, guards: [_authGuard]),
         AutoRoute(page: AppUpdateRoute.page, guards: [_authGuard]),
+        AutoRoute(page: InspectionPointRoute.page, guards: [_authGuard]),
       ];
 }

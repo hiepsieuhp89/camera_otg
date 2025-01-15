@@ -367,59 +367,6 @@ class DiagramInspectionRouteArgs {
 }
 
 /// generated route for
-/// [InspectionPointCreationScreen]
-class InspectionPointCreationRoute
-    extends PageRouteInfo<InspectionPointCreationRouteArgs> {
-  InspectionPointCreationRoute({
-    Key? key,
-    Diagram? diagram,
-    required InspectionPointType pointType,
-    List<PageRouteInfo>? children,
-  }) : super(
-          InspectionPointCreationRoute.name,
-          args: InspectionPointCreationRouteArgs(
-            key: key,
-            diagram: diagram,
-            pointType: pointType,
-          ),
-          initialChildren: children,
-        );
-
-  static const String name = 'InspectionPointCreationRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      final args = data.argsAs<InspectionPointCreationRouteArgs>();
-      return InspectionPointCreationScreen(
-        key: args.key,
-        diagram: args.diagram,
-        pointType: args.pointType,
-      );
-    },
-  );
-}
-
-class InspectionPointCreationRouteArgs {
-  const InspectionPointCreationRouteArgs({
-    this.key,
-    this.diagram,
-    required this.pointType,
-  });
-
-  final Key? key;
-
-  final Diagram? diagram;
-
-  final InspectionPointType pointType;
-
-  @override
-  String toString() {
-    return 'InspectionPointCreationRouteArgs{key: $key, diagram: $diagram, pointType: $pointType}';
-  }
-}
-
-/// generated route for
 /// [InspectionPointDiagramSelectScreen]
 class InspectionPointDiagramSelectRoute extends PageRouteInfo<void> {
   const InspectionPointDiagramSelectRoute({List<PageRouteInfo>? children})
@@ -436,6 +383,52 @@ class InspectionPointDiagramSelectRoute extends PageRouteInfo<void> {
       return const InspectionPointDiagramSelectScreen();
     },
   );
+}
+
+/// generated route for
+/// [InspectionPointScreen]
+class InspectionPointRoute extends PageRouteInfo<InspectionPointRouteArgs> {
+  InspectionPointRoute({
+    Key? key,
+    required InspectionPoint initialPoint,
+    List<PageRouteInfo>? children,
+  }) : super(
+          InspectionPointRoute.name,
+          args: InspectionPointRouteArgs(
+            key: key,
+            initialPoint: initialPoint,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'InspectionPointRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<InspectionPointRouteArgs>();
+      return InspectionPointScreen(
+        key: args.key,
+        initialPoint: args.initialPoint,
+      );
+    },
+  );
+}
+
+class InspectionPointRouteArgs {
+  const InspectionPointRouteArgs({
+    this.key,
+    required this.initialPoint,
+  });
+
+  final Key? key;
+
+  final InspectionPoint initialPoint;
+
+  @override
+  String toString() {
+    return 'InspectionPointRouteArgs{key: $key, initialPoint: $initialPoint}';
+  }
 }
 
 /// generated route for

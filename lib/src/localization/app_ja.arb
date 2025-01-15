@@ -234,5 +234,15 @@
   "noSpan": "径間無し",
   "@noSpan": {},
   "pressAndHoldForMarking": "長押しでマーク位置を移動",
-  "@pressAndHoldForMarking": {}
+  "@pressAndHoldForMarking": {},
+  "emptyDamageDiagramWarning": "図面を選択してください",
+  "@emptyDamageDiagramWarning": {},
+  "selectDiagramButton": "図面を選択",
+  "@selectDiagramButton": {},
+  "changeDiagramButton": "図面を変更",
+  "@changeDiagramButton": {},
+  "updateInspectionPoints": "点検ポイントを更新",
+  "@updateInspectionPoints": {},
+  "selectDiagramWarning": "図面を選択してください",
+  "@selectDiagramWarning": {}
 }

@@ -26,6 +26,25 @@ class InspectionPoints extends _$InspectionPoints {
 
     return inspectionPoint;
   }
+
+  Future<InspectionPoint> updateInspectionPoint(InspectionPoint point) async {
+    final inspectionPoint =
+        await ref.watch(apiServiceProvider).updateInspectionPoint(point);
+
+    final previousState = await future;
+
+    state = AsyncData([
+      ...previousState.map((element) {
+        if (element.id == inspectionPoint.id) {
+          return inspectionPoint;
+        }
+
+        return element;
+      })
+    ]);
+
+    return inspectionPoint;
+  }
 }
 
 @riverpod
