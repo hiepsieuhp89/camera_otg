@@ -18,7 +18,7 @@ class InspectionPoint with _$InspectionPoint {
       {int? id,
       required InspectionPointType type,
       Diagram? diagram,
-      @JsonKey(name: 'bridge_id') int? bridgeId,
+      @JsonKey(name: 'bridge_id') required int bridgeId,
       @JsonKey(name: 'diagram_url') String? diagramUrl,
       @JsonKey(name: 'diagram_id') int? diagramId,
       @JsonKey(name: 'diagram_marking_x') int? diagramMarkingX,

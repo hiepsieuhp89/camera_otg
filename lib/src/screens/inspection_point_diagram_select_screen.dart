@@ -8,10 +8,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:kyoryo/src/models/diagram.dart';
-import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/providers/current_bridge.provider.dart';
 import 'package:kyoryo/src/providers/diagrams.provider.dart';
-import 'package:kyoryo/src/routing/router.dart';
 import 'package:kyoryo/src/utilities/image_utils.dart';
 
 @RoutePage()
@@ -25,8 +23,9 @@ class InspectionPointDiagramSelectScreen extends ConsumerStatefulWidget {
 
 class InspectionPointDiagramSelectScreenState
     extends ConsumerState<InspectionPointDiagramSelectScreen> {
-  String? _selectedDiagramPath;
-  Diagram? _selectedDiagram;
+  String? _selectedNewDiagramPhotoPath;
+  Diagram? _selectedExistingDiagram;
+  Diagram? _finalDiagram;
   Future<void>? _diagramFuture;
   final List<String> _newPhotoPaths = [];
   final ImagePicker _picker = ImagePicker();
@@ -37,7 +36,7 @@ class InspectionPointDiagramSelectScreenState
     if (pickedImage != null) {
       setState(() {
         _newPhotoPaths.add(pickedImage.path);
-        _selectedDiagramPath ??= pickedImage.path;
+        _selectedNewDiagramPhotoPath ??= pickedImage.path;
       });
     }
   }
@@ -49,99 +48,107 @@ class InspectionPointDiagramSelectScreenState
       setState(() {
         _newPhotoPaths.add(pickedImage.path);
 
-        _selectedDiagramPath ??= pickedImage.path;
+        _selectedNewDiagramPhotoPath ??= pickedImage.path;
       });
     }
-  }
-
-  void _createDamageInspectionPoint(Diagram? selected) {
-    context.pushRoute(InspectionPointCreationRoute(
-        diagram: selected, pointType: InspectionPointType.damage));
   }
 
   void _proceedWithSelectedDiagram() {
     final bridgeId = ref.watch(currentBridgeProvider)!.id;
 
-    if (_selectedDiagramPath != null) {
+    print('selectedNewDiagramPhotoPath: $_selectedNewDiagramPhotoPath');
+    print('selected existing diagram: $_selectedExistingDiagram');
+
+    if (_selectedNewDiagramPhotoPath != null) {
       _diagramFuture = ref
           .watch(diagramsProvider(bridgeId).notifier)
-          .createDiagram(bridgeId, _selectedDiagramPath!,
+          .createDiagram(bridgeId, _selectedNewDiagramPhotoPath!,
               MediaQuery.of(context).orientation)
-          .then((value) {
-        _createDamageInspectionPoint(value);
+          .then((newDiagram) {
+        popWithSelectedDiagram(newDiagram);
       });
       setState(() {});
+
       return;
     }
 
-    _createDamageInspectionPoint(_selectedDiagram);
+    if (_selectedExistingDiagram != null) {
+      context.maybePop<Diagram?>(_selectedExistingDiagram);
+    }
+  }
+
+  void popWithSelectedDiagram(Diagram diagram) {
+    context.maybePop<Diagram?>(diagram);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      floatingActionButton: FutureBuilder(
-          future: _diagramFuture,
-          builder: (context, snapshot) {
-            final isLoading =
-                snapshot.connectionState == ConnectionState.waiting;
+    return PopScope(
+      canPop: true,
+      child: Scaffold(
+        floatingActionButton: FutureBuilder(
+            future: _diagramFuture,
+            builder: (context, snapshot) {
+              final isLoading =
+                  snapshot.connectionState == ConnectionState.waiting;
 
-            return FloatingActionButton(
-                onPressed: isLoading ? null : _proceedWithSelectedDiagram,
-                child: isLoading
-                    ? Container(
-                        width: 24,
-                        height: 24,
-                        padding: const EdgeInsets.all(2.0),
-                        child: const CircularProgressIndicator(
-                          strokeWidth: 3,
-                        ))
-                    : const Icon(Icons.arrow_forward));
-          }),
-      appBar: AppBar(
-          title: Text(AppLocalizations.of(context)!.diagramSelection),
-          actions: MediaQuery.of(context).orientation == Orientation.landscape
-              ? [
-                  ActionChip(
-                      avatar: const Icon(Icons.add_a_photo_outlined),
-                      label: Text(AppLocalizations.of(context)!.takePhoto),
-                      onPressed: _takePhoto),
-                  const SizedBox(width: 16),
-                  ActionChip(
-                    avatar: const Icon(Icons.add_photo_alternate_outlined),
-                    label: Text(AppLocalizations.of(context)!.selectPhoto),
-                    onPressed: _selectPhotoFromGallery,
-                  ),
-                  const SizedBox(width: 16),
-                ]
-              : []),
-      body: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: OrientationBuilder(
-            builder: (context, orientation) {
-              return orientation == Orientation.portrait
-                  ? Column(children: [
-                      Expanded(
-                          child: buildNewDiagramPhotoSelection(
-                              context, orientation)),
-                      const SizedBox(height: 16),
-                      Expanded(
-                        child: buildCurrentDiagramPhotoSelection(context),
-                      )
-                    ])
-                  : Row(
-                      children: [
+              return FloatingActionButton(
+                  onPressed: isLoading ? null : _proceedWithSelectedDiagram,
+                  child: isLoading
+                      ? Container(
+                          width: 24,
+                          height: 24,
+                          padding: const EdgeInsets.all(2.0),
+                          child: const CircularProgressIndicator(
+                            strokeWidth: 3,
+                          ))
+                      : const Icon(Icons.arrow_forward));
+            }),
+        appBar: AppBar(
+            title: Text(AppLocalizations.of(context)!.diagramSelection),
+            actions: MediaQuery.of(context).orientation == Orientation.landscape
+                ? [
+                    ActionChip(
+                        avatar: const Icon(Icons.add_a_photo_outlined),
+                        label: Text(AppLocalizations.of(context)!.takePhoto),
+                        onPressed: _takePhoto),
+                    const SizedBox(width: 16),
+                    ActionChip(
+                      avatar: const Icon(Icons.add_photo_alternate_outlined),
+                      label: Text(AppLocalizations.of(context)!.selectPhoto),
+                      onPressed: _selectPhotoFromGallery,
+                    ),
+                    const SizedBox(width: 16),
+                  ]
+                : []),
+        body: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: OrientationBuilder(
+              builder: (context, orientation) {
+                return orientation == Orientation.portrait
+                    ? Column(children: [
                         Expanded(
                             child: buildNewDiagramPhotoSelection(
                                 context, orientation)),
-                        const SizedBox(width: 8),
+                        const SizedBox(height: 16),
                         Expanded(
                           child: buildCurrentDiagramPhotoSelection(context),
-                        ),
-                      ],
-                    );
-            },
-          )),
+                        )
+                      ])
+                    : Row(
+                        children: [
+                          Expanded(
+                              child: buildNewDiagramPhotoSelection(
+                                  context, orientation)),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: buildCurrentDiagramPhotoSelection(context),
+                          ),
+                        ],
+                      );
+              },
+            )),
+      ),
     );
   }
 
@@ -259,20 +266,21 @@ class InspectionPointDiagramSelectScreenState
                         return GestureDetector(
                           onTap: () {
                             setState(() {
-                              if (_selectedDiagramPath != null) {
-                                _selectedDiagramPath = null;
+                              if (_selectedNewDiagramPhotoPath != null) {
+                                _selectedNewDiagramPhotoPath = null;
                               }
 
-                              if (_selectedDiagram?.id == data[index].id) {
-                                _selectedDiagram = null;
+                              if (_selectedExistingDiagram?.id ==
+                                  data[index].id) {
+                                _selectedExistingDiagram = null;
                               } else {
-                                _selectedDiagram = data[index];
+                                _selectedExistingDiagram = data[index];
                               }
                             });
                           },
                           child: buildImage(
-                              isSelected:
-                                  data[index].id == _selectedDiagram?.id,
+                              isSelected: data[index].id ==
+                                  _selectedExistingDiagram?.id,
                               diagram: data[index]),
                         );
                       },
@@ -334,19 +342,20 @@ class InspectionPointDiagramSelectScreenState
                         return GestureDetector(
                             onTap: () {
                               setState(() {
-                                if (_selectedDiagram != null) {
-                                  _selectedDiagram = null;
+                                if (_selectedExistingDiagram != null) {
+                                  _selectedExistingDiagram = null;
                                 }
 
-                                if (_selectedDiagramPath == photoPath) {
-                                  _selectedDiagramPath = null;
+                                if (_selectedNewDiagramPhotoPath == photoPath) {
+                                  _selectedNewDiagramPhotoPath = null;
                                 } else {
-                                  _selectedDiagramPath = photoPath;
+                                  _selectedNewDiagramPhotoPath = photoPath;
                                 }
                               });
                             },
                             child: buildImage(
-                              isSelected: _selectedDiagramPath == photoPath,
+                              isSelected:
+                                  _selectedNewDiagramPhotoPath == photoPath,
                               imageFile: File(photoPath),
                             ));
                       },

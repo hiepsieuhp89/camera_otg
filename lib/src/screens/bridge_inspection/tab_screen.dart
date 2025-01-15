@@ -167,11 +167,9 @@ class BridgeInspectionTabScreenState
         (filteredInspectionPoints, bridgeInspection).watch;
 
     void createNewInspectionPoint(InspectionPointType type) {
-      if (type == InspectionPointType.presentCondition) {
-        context.pushRoute(InspectionPointCreationRoute(pointType: type));
-      } else {
-        context.pushRoute(const InspectionPointDiagramSelectRoute());
-      }
+      context.pushRoute(InspectionPointRoute(
+          initialPoint:
+              InspectionPoint(type: type, bridgeId: currentBridge.id)));
     }
 
     newPointMenuButton() {
