@@ -672,25 +672,25 @@ abstract class AppLocalizations {
   /// No description provided for @emptyDamageDiagramWarning.
   ///
   /// In ja, this message translates to:
-  /// **'損傷検査ポイントには図面が必要'**
+  /// **'図面を選択してください'**
   String get emptyDamageDiagramWarning;
 
   /// No description provided for @selectDiagramButton.
   ///
   /// In ja, this message translates to:
-  /// **'図面選択'**
+  /// **'図面を選択'**
   String get selectDiagramButton;
 
   /// No description provided for @changeDiagramButton.
   ///
   /// In ja, this message translates to:
-  /// **'図面変更'**
+  /// **'図面を変更'**
   String get changeDiagramButton;
 
   /// No description provided for @updateInspectionPoints.
   ///
   /// In ja, this message translates to:
-  /// **'点検ポイント更新'**
+  /// **'点検ポイントを更新'**
   String get updateInspectionPoints;
 
   /// No description provided for @selectDiagramWarning.
