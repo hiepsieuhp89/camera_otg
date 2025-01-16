@@ -42,6 +42,9 @@ class BridgeInspectionEvaluationScreenState
   String? _selectedCategory;
   String? _selectedHealthLevel;
   String? _selectedDamageType;
+  late String _initialDamageType;
+  late String _initialDamageCategory;
+  late List<String> _damageTypeOptions;
 
   late TextEditingController _textEditingController;
   late TextEditingController _damageCategoryController;
@@ -133,6 +136,7 @@ class BridgeInspectionEvaluationScreenState
       _textEditingController.text = result.isSkipped
           ? result.skipReason.toString()
           : widget.createdReport?.metadata['remark'] ?? '';
+      _selectedCategory = widget.createdReport?.metadata['damage_category'];
       _selectedDamageType = widget.createdReport?.metadata['damage_type'];
       _selectedHealthLevel = widget.createdReport?.metadata['damage_level'];
     } else {
@@ -144,8 +148,16 @@ class BridgeInspectionEvaluationScreenState
       _selectedHealthLevel = previousReport?.metadata['damage_level'];
     }
 
-    _damageCategoryController.text = _selectedCategory ?? '';
-    _damageTypeController.text = _selectedDamageType ?? '';
+    _initialDamageType = _selectedDamageType ?? '';
+    _initialDamageCategory = _selectedCategory ?? '';
+    _damageTypeOptions = _selectedCategory != null
+        ? ref
+            .read(damageTypesProvider)
+            .value!
+            .where((type) => type.category == _selectedCategory)
+            .map((type) => type.nameJp)
+            .toList()
+        : [_initialDamageType];
   }
 
   @override
@@ -231,7 +243,7 @@ class BridgeInspectionEvaluationScreenState
                 children: [
                   Expanded(
                       child: DropdownMenu<String>(
-                    initialSelection: _selectedCategory,
+                    initialSelection: _initialDamageCategory,
                     controller: _damageCategoryController,
                     label: Text(AppLocalizations.of(context)!.damageType),
                     expandedInsets: const EdgeInsets.all(0),
@@ -245,7 +257,14 @@ class BridgeInspectionEvaluationScreenState
                           : setState(() {
                               _selectedCategory = category;
                               _selectedDamageType = null;
-                              _damageTypeController.text = '';
+
+                              _damageTypeOptions = damageTypes.hasValue
+                                  ? damageTypes.value!
+                                      .where(
+                                          (type) => type.category == category)
+                                      .map((type) => type.nameJp)
+                                      .toList()
+                                  : [_initialDamageType];
                             });
                     },
                     dropdownMenuEntries: damageTypes.hasValue
@@ -264,7 +283,7 @@ class BridgeInspectionEvaluationScreenState
                   Expanded(
                       child: DropdownMenu<String>(
                     controller: _damageTypeController,
-                    initialSelection: _selectedDamageType,
+                    initialSelection: _initialDamageType,
                     label: Text(AppLocalizations.of(context)!.damageDetails),
                     enabled: _selectedCategory != null,
                     expandedInsets: const EdgeInsets.all(0),
@@ -273,16 +292,12 @@ class BridgeInspectionEvaluationScreenState
                         _selectedDamageType = value;
                       });
                     },
-                    dropdownMenuEntries: damageTypes.hasValue
-                        ? damageTypes.value!
-                            .where((type) => type.category == _selectedCategory)
-                            .map((type) {
-                            return DropdownMenuEntry(
-                              value: type.nameJp,
-                              label: type.nameJp,
-                            );
-                          }).toList()
-                        : const [],
+                    dropdownMenuEntries: _damageTypeOptions.map((type) {
+                      return DropdownMenuEntry(
+                        value: type,
+                        label: type,
+                      );
+                    }).toList(),
                   )),
                   const SizedBox(width: 8),
                   DropdownMenu<String>(
