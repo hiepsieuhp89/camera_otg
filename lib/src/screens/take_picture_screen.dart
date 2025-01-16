@@ -86,7 +86,7 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
   void _initPhotos() {
     final previousReport = ref
         .read(
-            bridgeInspectionProvider(widget.inspectionPoint.bridgeId!).notifier)
+            bridgeInspectionProvider(widget.inspectionPoint.bridgeId).notifier)
         .findPreviousReportFromPoint(widget.inspectionPoint.id!);
 
     final preferredPhotoFromPreviousReport = ref

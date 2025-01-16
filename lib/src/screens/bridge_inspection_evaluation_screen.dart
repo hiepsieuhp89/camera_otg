@@ -89,7 +89,7 @@ class BridgeInspectionEvaluationScreenState
     }
     await _compressCapturedPhotos(result.photosNotYetUploaded);
     await ref
-        .read(bridgeInspectionProvider(widget.point.bridgeId!).notifier)
+        .read(bridgeInspectionProvider(widget.point.bridgeId).notifier)
         .updateReport(
           report: widget.createdReport!.copyWith(
               status: status,
@@ -106,7 +106,7 @@ class BridgeInspectionEvaluationScreenState
   Future<void> _createReport(InspectionPointReportStatus status) async {
     await _compressCapturedPhotos(result.photosNotYetUploaded);
     await ref
-        .read(bridgeInspectionProvider(widget.point.bridgeId!).notifier)
+        .read(bridgeInspectionProvider(widget.point.bridgeId).notifier)
         .createReport(
             report: InspectionPointReport(
                 inspectionPointId: widget.point.id!,
@@ -124,7 +124,7 @@ class BridgeInspectionEvaluationScreenState
   void initState() {
     super.initState();
     final previousReport = ref
-        .read(bridgeInspectionProvider(widget.point.bridgeId!).notifier)
+        .read(bridgeInspectionProvider(widget.point.bridgeId).notifier)
         .findPreviousReportFromPoint(widget.point.id!);
 
     result = ref.read(currentPhotoInspectionResultProvider);
