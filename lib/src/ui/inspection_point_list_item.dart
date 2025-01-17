@@ -25,11 +25,11 @@ class InpsectionPointListItem extends ConsumerWidget {
     var orientation = MediaQuery.of(context).orientation;
 
     final activeReport = ref
-        .read(bridgeInspectionProvider(point.bridgeId!).notifier)
+        .read(bridgeInspectionProvider(point.bridgeId).notifier)
         .findActiveReportFromPoint(point.id!);
 
     final previousReport = ref
-        .read(bridgeInspectionProvider(point.bridgeId!).notifier)
+        .read(bridgeInspectionProvider(point.bridgeId).notifier)
         .findPreviousReportFromPoint(point.id!);
 
     final previousPhoto = ref
@@ -37,7 +37,7 @@ class InpsectionPointListItem extends ConsumerWidget {
         .getPreferredPhotoFromReport(previousReport);
 
     final isInspectionInProgress =
-        ref.watch(isInspectionInProgressProvider(point.bridgeId!));
+        ref.watch(isInspectionInProgressProvider(point.bridgeId));
 
     final adjustedSmallTextStyle =
         Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -135,14 +135,6 @@ class InpsectionPointListItem extends ConsumerWidget {
           });
         },
       );
-    }
-
-    Widget showDetailsButton() {
-      return IconButton.filled(
-          onPressed: () {
-            showDetailsListPopUp();
-          },
-          icon: const Icon(Icons.info));
     }
 
     Widget buildActionButton() {

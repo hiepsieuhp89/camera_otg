@@ -29,7 +29,7 @@ class BridgeInspectionPhotoComparisonScreen extends ConsumerWidget {
     final photoInspectionResult =
         ref.watch(currentPhotoInspectionResultProvider);
     final previousReport = ref
-        .read(bridgeInspectionProvider(point.bridgeId!).notifier)
+        .read(bridgeInspectionProvider(point.bridgeId).notifier)
         .findPreviousReportFromPoint(point.id!);
 
     final previousPhoto = ref

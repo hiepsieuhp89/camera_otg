@@ -25,7 +25,6 @@ class InspectionPointDiagramSelectScreenState
     extends ConsumerState<InspectionPointDiagramSelectScreen> {
   String? _selectedNewDiagramPhotoPath;
   Diagram? _selectedExistingDiagram;
-  Diagram? _finalDiagram;
   Future<void>? _diagramFuture;
   final List<String> _newPhotoPaths = [];
   final ImagePicker _picker = ImagePicker();
@@ -55,9 +54,6 @@ class InspectionPointDiagramSelectScreenState
 
   void _proceedWithSelectedDiagram() {
     final bridgeId = ref.watch(currentBridgeProvider)!.id;
-
-    print('selectedNewDiagramPhotoPath: $_selectedNewDiagramPhotoPath');
-    print('selected existing diagram: $_selectedExistingDiagram');
 
     if (_selectedNewDiagramPhotoPath != null) {
       _diagramFuture = ref

@@ -342,7 +342,7 @@ class InspectionPointScreenState extends ConsumerState<InspectionPointScreen> {
         Navigator.push(
                 context,
                 ImageMarkingViewOverlay(
-                    imageProvider: imageProvider!, originalMarking: _marking))
+                    imageProvider: imageProvider, originalMarking: _marking))
             .then((Marking? marking) {
           if (marking != null) {
             setState(() {
