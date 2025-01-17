@@ -10,7 +10,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kyoryo/src/models/inspection_point_report_photo.dart';
 import 'package:kyoryo/src/models/photo_inspection_result.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
-import 'package:kyoryo/src/models/inspection_point_report.dart';
 import 'package:kyoryo/src/models/marking.dart';
 import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
 import 'package:kyoryo/src/providers/current_photo_inspection_result.provider.dart';
@@ -23,10 +22,8 @@ import 'package:audioplayers/audioplayers.dart';
 @RoutePage()
 class TakePictureScreen extends ConsumerStatefulWidget {
   final InspectionPoint inspectionPoint;
-  final InspectionPointReport? createdReport;
 
-  const TakePictureScreen(
-      {super.key, required this.inspectionPoint, this.createdReport});
+  const TakePictureScreen({super.key, required this.inspectionPoint});
 
   @override
   ConsumerState<TakePictureScreen> createState() => _TakePictureScreenState();
@@ -37,7 +34,6 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
   CameraController? _controller;
   Future<void>? _initializeControllerFuture;
   InspectionPointReportPhoto? previousPhoto;
-  List<InspectionPointReportPhoto> photos = [];
   bool showPreviousPhoto = false;
   double _currentZoomLevel = 1.0;
   double _maxZoomLevel = 1.0;
@@ -89,12 +85,24 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
             bridgeInspectionProvider(widget.inspectionPoint.bridgeId).notifier)
         .findPreviousReportFromPoint(widget.inspectionPoint.id!);
 
+    final activeReport = ref
+        .read(
+            bridgeInspectionProvider(widget.inspectionPoint.bridgeId).notifier)
+        .findActiveReportFromPoint(widget.inspectionPoint.id!);
+
     final preferredPhotoFromPreviousReport = ref
         .read(inspectionPointReportServiceProvider)
         .getPreferredPhotoFromReport(previousReport);
 
+    Future(
+      () {
+        ref
+            .read(currentPhotoInspectionResultProvider.notifier)
+            .set(PhotoInspectionResult(photos: activeReport?.photos ?? []));
+      },
+    );
+
     setState(() {
-      photos = widget.createdReport?.photos ?? [];
       previousPhoto = preferredPhotoFromPreviousReport;
       showPreviousPhoto = preferredPhotoFromPreviousReport != null;
     });
@@ -157,13 +165,15 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
       _controller!.takePicture().then((image) {
         AudioPlayer().play(AssetSource('sounds/camera_shoot.mp3'));
 
+        // NOTE: There is no way to set ratio of the image take by camera plugin
+        // so we need to crop the taken image to 4:3 ratio
+        // https://github.com/flutter/flutter/issues/45665
         cropPhoto(image.path).then((_) {
-          setState(() {
-            photos = List.from(photos)
-              ..add(InspectionPointReportPhoto(
-                  localPath: image.path,
-                  sequenceNumber: photos.isEmpty ? 1 : null));
-          });
+          ref
+              .read(currentPhotoInspectionResultProvider.notifier)
+              .addPhoto(InspectionPointReportPhoto(
+                localPath: image.path,
+              ));
         });
 
         _controller!.unlockCaptureOrientation();
@@ -183,46 +193,26 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
     _resetOrientation();
     _exitFullScreen();
 
+    final currentResult = ref.watch(currentPhotoInspectionResultProvider);
+
     ref.read(currentPhotoInspectionResultProvider.notifier).set(
-        PhotoInspectionResult(
-            skipReason: skipReason, isSkipped: isSkipped, photos: photos));
+        currentResult.copyWith(skipReason: skipReason, isSkipped: isSkipped));
 
     context.router
-        .push<PhotoInspectionResult>(BridgeInspectionPhotosTabRoute(
-            createdReport: widget.createdReport, point: widget.inspectionPoint))
-        .then((data) {
-      _setLandscapeOrientation();
-
-      if (data != null) {
-        setState(() {
-          photos = List.from(data.photos);
-        });
-      }
-    });
+        .push(BridgeInspectionPhotosTabRoute(point: widget.inspectionPoint));
   }
 
   void _navigateToReportScreen({bool isSkipped = false, String? skipReason}) {
     _resetOrientation();
     _exitFullScreen();
 
+    final currentResult = ref.watch(currentPhotoInspectionResultProvider);
+
     ref.read(currentPhotoInspectionResultProvider.notifier).set(
-        PhotoInspectionResult(
-            skipReason: skipReason, isSkipped: isSkipped, photos: photos));
+        currentResult.copyWith(skipReason: skipReason, isSkipped: isSkipped));
 
-    context
-        .pushRoute<PhotoInspectionResult>(BridgeInspectionEvaluationRoute(
-      point: widget.inspectionPoint,
-      createdReport: widget.createdReport,
-    ))
-        .then((result) {
-      _setLandscapeOrientation();
-
-      if (result != null) {
-        setState(() {
-          photos = List.from(result.photos);
-        });
-      }
-    });
+    context.pushRoute(
+        BridgeInspectionEvaluationRoute(point: widget.inspectionPoint));
   }
 
   void _confirmSkippingPoint() {
@@ -451,6 +441,8 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
 
   @override
   Widget build(BuildContext context) {
+    final currentResult = ref.watch(currentPhotoInspectionResultProvider);
+
     return Scaffold(
       body: Row(
         children: <Widget>[
@@ -465,7 +457,7 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
                     }),
                 FloatingActionButton(
                   elevation: 0,
-                  onPressed: photos.isEmpty
+                  onPressed: currentResult.photos.isEmpty
                       ? _confirmSkippingPoint
                       : _navigateToReportScreen,
                   child: const Icon(Icons.check),
@@ -578,17 +570,13 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
 
   Widget _buildLatestPhotoPreview() {
     ImageProvider? latestPhotoProvider;
+    final result = ref.watch(currentPhotoInspectionResultProvider);
 
-    // if (capturedPhotoPaths.isNotEmpty) {
-    //   latestPhotoProvider = FileImage(File(capturedPhotoPaths.last));
-    // } else if (uploadedPhotos.isNotEmpty) {
-    //   latestPhotoProvider = NetworkImage(uploadedPhotos.last.url);
-    // }
-
-    if (photos.isNotEmpty) {
-      latestPhotoProvider = photos.last.localPath != null
-          ? FileImage(File(photos.last.localPath!))
-          : CachedNetworkImageProvider(photos.last.url!) as ImageProvider;
+    if (result.photos.isNotEmpty) {
+      latestPhotoProvider = result.photos.last.localPath != null
+          ? FileImage(File(result.photos.last.localPath!))
+          : CachedNetworkImageProvider(result.photos.last.url!)
+              as ImageProvider;
     }
 
     return GestureDetector(
@@ -599,7 +587,7 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
       },
       child: Badge(
         isLabelVisible: latestPhotoProvider != null,
-        label: Text(photos.length.toString()),
+        label: Text(result.photos.length.toString()),
         child: CircleAvatar(
           radius: 20,
           backgroundImage: latestPhotoProvider,

@@ -7,7 +7,7 @@ part of 'current_photo_inspection_result.provider.dart';
 // **************************************************************************
 
 String _$currentPhotoInspectionResultHash() =>
-    r'66a53afd0dc066458a624e08e31a6effd20f0fa6';
+    r'eb6ac7ff7acf9dc6148f930d4ce220c58d711712';
 
 /// See also [CurrentPhotoInspectionResult].
 @ProviderFor(CurrentPhotoInspectionResult)

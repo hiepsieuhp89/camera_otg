@@ -46,8 +46,7 @@ class InpsectionPointListItem extends ConsumerWidget {
             );
 
     void startInspection() {
-      context.pushRoute(TakePictureRoute(
-          inspectionPoint: point, createdReport: activeReport));
+      context.pushRoute(TakePictureRoute(inspectionPoint: point));
     }
 
     Future<dynamic> confirmForReinspection(BuildContext context) {

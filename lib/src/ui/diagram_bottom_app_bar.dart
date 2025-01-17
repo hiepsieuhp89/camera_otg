@@ -169,8 +169,7 @@ class DiagramBottomAppBarState extends ConsumerState<DiagramBottomAppBar> {
             IconButton(
                 icon: const Icon(Icons.search),
                 onPressed: () {
-                  context.pushRoute(TakePictureRoute(
-                      inspectionPoint: point, createdReport: activeReport));
+                  context.pushRoute(TakePictureRoute(inspectionPoint: point));
                 })
           ],
         ),

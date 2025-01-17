@@ -92,14 +92,12 @@ class BridgeInspectionEvaluationRoute
   BridgeInspectionEvaluationRoute({
     Key? key,
     required InspectionPoint point,
-    InspectionPointReport? createdReport,
     List<PageRouteInfo>? children,
   }) : super(
           BridgeInspectionEvaluationRoute.name,
           args: BridgeInspectionEvaluationRouteArgs(
             key: key,
             point: point,
-            createdReport: createdReport,
           ),
           initialChildren: children,
         );
@@ -113,7 +111,6 @@ class BridgeInspectionEvaluationRoute
       return BridgeInspectionEvaluationScreen(
         key: args.key,
         point: args.point,
-        createdReport: args.createdReport,
       );
     },
   );
@@ -123,18 +120,15 @@ class BridgeInspectionEvaluationRouteArgs {
   const BridgeInspectionEvaluationRouteArgs({
     this.key,
     required this.point,
-    this.createdReport,
   });
 
   final Key? key;
 
   final InspectionPoint point;
 
-  final InspectionPointReport? createdReport;
-
   @override
   String toString() {
-    return 'BridgeInspectionEvaluationRouteArgs{key: $key, point: $point, createdReport: $createdReport}';
+    return 'BridgeInspectionEvaluationRouteArgs{key: $key, point: $point}';
   }
 }
 
@@ -145,14 +139,12 @@ class BridgeInspectionPhotoComparisonRoute
   BridgeInspectionPhotoComparisonRoute({
     Key? key,
     required InspectionPoint point,
-    InspectionPointReport? createdReport,
     List<PageRouteInfo>? children,
   }) : super(
           BridgeInspectionPhotoComparisonRoute.name,
           args: BridgeInspectionPhotoComparisonRouteArgs(
             key: key,
             point: point,
-            createdReport: createdReport,
           ),
           initialChildren: children,
         );
@@ -166,7 +158,6 @@ class BridgeInspectionPhotoComparisonRoute
       return BridgeInspectionPhotoComparisonScreen(
         key: args.key,
         point: args.point,
-        createdReport: args.createdReport,
       );
     },
   );
@@ -176,18 +167,15 @@ class BridgeInspectionPhotoComparisonRouteArgs {
   const BridgeInspectionPhotoComparisonRouteArgs({
     this.key,
     required this.point,
-    this.createdReport,
   });
 
   final Key? key;
 
   final InspectionPoint point;
 
-  final InspectionPointReport? createdReport;
-
   @override
   String toString() {
-    return 'BridgeInspectionPhotoComparisonRouteArgs{key: $key, point: $point, createdReport: $createdReport}';
+    return 'BridgeInspectionPhotoComparisonRouteArgs{key: $key, point: $point}';
   }
 }
 
@@ -217,14 +205,12 @@ class BridgeInspectionPhotosTabRoute
   BridgeInspectionPhotosTabRoute({
     Key? key,
     required InspectionPoint point,
-    InspectionPointReport? createdReport,
     List<PageRouteInfo>? children,
   }) : super(
           BridgeInspectionPhotosTabRoute.name,
           args: BridgeInspectionPhotosTabRouteArgs(
             key: key,
             point: point,
-            createdReport: createdReport,
           ),
           initialChildren: children,
         );
@@ -238,7 +224,6 @@ class BridgeInspectionPhotosTabRoute
       return BridgeInspectionPhotosTabScreen(
         key: args.key,
         point: args.point,
-        createdReport: args.createdReport,
       );
     },
   );
@@ -248,18 +233,15 @@ class BridgeInspectionPhotosTabRouteArgs {
   const BridgeInspectionPhotosTabRouteArgs({
     this.key,
     required this.point,
-    this.createdReport,
   });
 
   final Key? key;
 
   final InspectionPoint point;
 
-  final InspectionPointReport? createdReport;
-
   @override
   String toString() {
-    return 'BridgeInspectionPhotosTabRouteArgs{key: $key, point: $point, createdReport: $createdReport}';
+    return 'BridgeInspectionPhotosTabRouteArgs{key: $key, point: $point}';
   }
 }
 
@@ -502,14 +484,12 @@ class TakePictureRoute extends PageRouteInfo<TakePictureRouteArgs> {
   TakePictureRoute({
     Key? key,
     required InspectionPoint inspectionPoint,
-    InspectionPointReport? createdReport,
     List<PageRouteInfo>? children,
   }) : super(
           TakePictureRoute.name,
           args: TakePictureRouteArgs(
             key: key,
             inspectionPoint: inspectionPoint,
-            createdReport: createdReport,
           ),
           initialChildren: children,
         );
@@ -523,7 +503,6 @@ class TakePictureRoute extends PageRouteInfo<TakePictureRouteArgs> {
       return TakePictureScreen(
         key: args.key,
         inspectionPoint: args.inspectionPoint,
-        createdReport: args.createdReport,
       );
     },
   );
@@ -533,17 +512,14 @@ class TakePictureRouteArgs {
   const TakePictureRouteArgs({
     this.key,
     required this.inspectionPoint,
-    this.createdReport,
   });
 
   final Key? key;
 
   final InspectionPoint inspectionPoint;
 
-  final InspectionPointReport? createdReport;
-
   @override
   String toString() {
-    return 'TakePictureRouteArgs{key: $key, inspectionPoint: $inspectionPoint, createdReport: $createdReport}';
+    return 'TakePictureRouteArgs{key: $key, inspectionPoint: $inspectionPoint}';
   }
 }
