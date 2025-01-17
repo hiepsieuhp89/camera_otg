@@ -291,10 +291,21 @@ class DiagramBottomAppBarState extends ConsumerState<DiagramBottomAppBar> {
                                       onPressed: state.maybeWhen(
                                           orElse: () => null,
                                           data: (data) => () {
+                                                print(
+                                                    'test ${AppLocalizations.of(context)!.span(data.spanNumber)}');
+
                                                 context.pushRoute(
                                                     PointsInspectionRoute(
-                                                        points: data
-                                                            .selectedPoints));
+                                                        details:
+                                                            AppLocalizations.of(
+                                                                    context)!
+                                                                .span(data
+                                                                    .spanNumber),
+                                                        pointIds: data
+                                                            .selectedPoints
+                                                            .map((point) =>
+                                                                point.id!)
+                                                            .toList()));
                                               }),
                                       icon: const Icon(
                                           Icons.manage_search_rounded)),

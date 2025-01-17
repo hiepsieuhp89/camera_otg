@@ -62,14 +62,14 @@ class BridgeInspectionEvaluationScreenState
 
     final reportSubmission = (activeReport != null
             ? _updateReport(activeReport, status)
-            : _createReport(status))
+            : _createReport(status).catchError((_) {
+                showMessageFailure();
+              }))
         .then((_) {
       router.popUntil((route) {
         return [BridgeInspectionTabRoute.name, DiagramInspectionRoute.name]
             .contains(route.settings.name);
       });
-    }).catchError((_) {
-      showMessageFailure();
     });
 
     setState(() {
@@ -246,24 +246,24 @@ class BridgeInspectionEvaluationScreenState
                     label: Text(AppLocalizations.of(context)!.damageType),
                     expandedInsets: const EdgeInsets.all(0),
                     onSelected: (category) {
-                      category == 'NON'
-                          ? setState(() {
-                              _selectedCategory = category;
-                              _selectedDamageType = 'NON';
-                              _selectedHealthLevel = 'a';
-                            })
-                          : setState(() {
-                              _selectedCategory = category;
-                              _selectedDamageType = null;
+                      setState(() {
+                        _selectedCategory = category;
 
-                              _damageTypeOptions = damageTypes.hasValue
-                                  ? damageTypes.value!
-                                      .where(
-                                          (type) => type.category == category)
-                                      .map((type) => type.nameJp)
-                                      .toList()
-                                  : [_initialDamageType];
-                            });
+                        _damageTypeOptions = damageTypes.hasValue
+                            ? damageTypes.value!
+                                .where((type) => type.category == category)
+                                .map((type) => type.nameJp)
+                                .toList()
+                            : [_initialDamageType];
+
+                        if (category == 'NON') {
+                          _selectedDamageType = _damageTypeOptions.first;
+                          _damageTypeController.text = _damageTypeOptions.first;
+                          _selectedHealthLevel = 'a';
+                        } else {
+                          _selectedDamageType = null;
+                        }
+                      });
                     },
                     dropdownMenuEntries: damageTypes.hasValue
                         ? damageTypes.value!

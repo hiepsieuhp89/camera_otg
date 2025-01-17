@@ -418,13 +418,15 @@ class InspectionPointRouteArgs {
 class PointsInspectionRoute extends PageRouteInfo<PointsInspectionRouteArgs> {
   PointsInspectionRoute({
     Key? key,
-    required List<InspectionPoint> points,
+    required List<int> pointIds,
+    String? details,
     List<PageRouteInfo>? children,
   }) : super(
           PointsInspectionRoute.name,
           args: PointsInspectionRouteArgs(
             key: key,
-            points: points,
+            pointIds: pointIds,
+            details: details,
           ),
           initialChildren: children,
         );
@@ -437,7 +439,8 @@ class PointsInspectionRoute extends PageRouteInfo<PointsInspectionRouteArgs> {
       final args = data.argsAs<PointsInspectionRouteArgs>();
       return PointsInspectionScreen(
         key: args.key,
-        points: args.points,
+        pointIds: args.pointIds,
+        details: args.details,
       );
     },
   );
@@ -446,16 +449,19 @@ class PointsInspectionRoute extends PageRouteInfo<PointsInspectionRouteArgs> {
 class PointsInspectionRouteArgs {
   const PointsInspectionRouteArgs({
     this.key,
-    required this.points,
+    required this.pointIds,
+    this.details,
   });
 
   final Key? key;
 
-  final List<InspectionPoint> points;
+  final List<int> pointIds;
+
+  final String? details;
 
   @override
   String toString() {
-    return 'PointsInspectionRouteArgs{key: $key, points: $points}';
+    return 'PointsInspectionRouteArgs{key: $key, pointIds: $pointIds, details: $details}';
   }
 }
 
