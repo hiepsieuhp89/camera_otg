@@ -43,6 +43,7 @@ class InspectionPointScreenState extends ConsumerState<InspectionPointScreen> {
     _nameController.text = widget.initialPoint.spanName ?? '';
     _spanNumberController.text = widget.initialPoint.spanNumber ?? '';
     _elementNumberController.text = widget.initialPoint.elementNumber ?? '';
+
     _diagram = widget.initialPoint.diagram;
     _marking = Marking(
         x: widget.initialPoint.diagramMarkingX ?? 0,
@@ -233,10 +234,6 @@ class InspectionPointScreenState extends ConsumerState<InspectionPointScreen> {
                                       ? buildEmptyDamageMarking(context)
                                       : buildDamageDiagramViewer(
                                           context, imageProvider)),
-                              // if (imageProvider == null)
-                              //   buildEmptyDamageMarking(context)
-                              // else
-                              //   buildDamageDiagramViewer(context, imageProvider)
                             ],
                           ),
                         )

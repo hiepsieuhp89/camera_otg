@@ -21,12 +21,10 @@ import 'package:kyoryo/src/utilities/image_utils.dart';
 @RoutePage()
 class BridgeInspectionEvaluationScreen extends ConsumerStatefulWidget {
   final InspectionPoint point;
-  final InspectionPointReport? createdReport;
 
   const BridgeInspectionEvaluationScreen({
     super.key,
     required this.point,
-    this.createdReport,
   });
 
   @override
@@ -52,6 +50,9 @@ class BridgeInspectionEvaluationScreenState
 
   Future<void> submitInspection(InspectionPointReportStatus status) async {
     final router = AutoRouter.of(context);
+    final activeReport = ref
+        .read(bridgeInspectionProvider(widget.point.bridgeId).notifier)
+        .findActiveReportFromPoint(widget.point.id!);
 
     showMessageFailure() {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -59,8 +60,8 @@ class BridgeInspectionEvaluationScreenState
               AppLocalizations.of(context)!.failedToCreateInspectionReport)));
     }
 
-    final reportSubmission = (widget.createdReport != null
-            ? _updateReport(status)
+    final reportSubmission = (activeReport != null
+            ? _updateReport(activeReport, status)
             : _createReport(status))
         .then((_) {
       router.popUntil((route) {
@@ -83,15 +84,13 @@ class BridgeInspectionEvaluationScreenState
     }));
   }
 
-  Future<void> _updateReport(InspectionPointReportStatus status) async {
-    if (widget.createdReport == null) {
-      throw Exception('Report is not created yet');
-    }
+  Future<void> _updateReport(
+      InspectionPointReport report, InspectionPointReportStatus status) async {
     await _compressCapturedPhotos(result.photosNotYetUploaded);
     await ref
         .read(bridgeInspectionProvider(widget.point.bridgeId).notifier)
         .updateReport(
-          report: widget.createdReport!.copyWith(
+          report: report.copyWith(
               status: status,
               metadata: {
                 'damage_category': _selectedCategory ?? '',
@@ -127,18 +126,22 @@ class BridgeInspectionEvaluationScreenState
         .read(bridgeInspectionProvider(widget.point.bridgeId).notifier)
         .findPreviousReportFromPoint(widget.point.id!);
 
+    final activeReport = ref
+        .read(bridgeInspectionProvider(widget.point.bridgeId).notifier)
+        .findActiveReportFromPoint(widget.point.id!);
+
     result = ref.read(currentPhotoInspectionResultProvider);
     _textEditingController = TextEditingController();
     _damageCategoryController = TextEditingController();
     _damageTypeController = TextEditingController();
 
-    if (widget.createdReport != null) {
+    if (activeReport != null) {
       _textEditingController.text = result.isSkipped
           ? result.skipReason.toString()
-          : widget.createdReport?.metadata['remark'] ?? '';
-      _selectedCategory = widget.createdReport?.metadata['damage_category'];
-      _selectedDamageType = widget.createdReport?.metadata['damage_type'];
-      _selectedHealthLevel = widget.createdReport?.metadata['damage_level'];
+          : activeReport.metadata['remark'] ?? '';
+      _selectedCategory = activeReport.metadata['damage_category'];
+      _selectedDamageType = activeReport.metadata['damage_type'];
+      _selectedHealthLevel = activeReport.metadata['damage_level'];
     } else {
       _textEditingController.text = result.isSkipped
           ? result.skipReason.toString()
@@ -164,57 +167,52 @@ class BridgeInspectionEvaluationScreenState
   Widget build(BuildContext context) {
     final damageTypes = ref.watch(damageTypesProvider);
 
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, Object? result) =>
-          didPop ? null : Navigator.pop(context, result),
-      child: OrientationBuilder(
-        builder: (context, orientation) {
-          return Scaffold(
-              resizeToAvoidBottomInset: false,
-              appBar: orientation == Orientation.portrait
-                  ? AppBar(title: Text(widget.point.spanName ?? ''), actions: [
-                      buildGoToPhotoSelectionButton(context),
-                    ])
-                  : null,
-              body: orientation == Orientation.portrait
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: buildPhotosCarousel(context, orientation),
-                        ),
-                        Expanded(
-                            child: Padding(
-                          padding: const EdgeInsets.all(12.0),
-                          child: buildEvaluationForm(
-                              context, damageTypes, orientation),
-                        )),
-                      ],
-                    )
-                  : Row(
-                      children: [
-                        Expanded(
-                          child: buildPhotosCarousel(context, orientation),
-                        ),
-                        Expanded(
-                            child: Padding(
-                          padding: const EdgeInsets.all(12.0),
-                          child: buildEvaluationForm(
-                              context, damageTypes, orientation),
-                        )),
-                      ],
-                    ));
-        },
-      ),
+    return OrientationBuilder(
+      builder: (context, orientation) {
+        return Scaffold(
+            resizeToAvoidBottomInset: false,
+            appBar: orientation == Orientation.portrait
+                ? AppBar(title: Text(widget.point.spanName ?? ''), actions: [
+                    buildGoToPhotoSelectionButton(context),
+                  ])
+                : null,
+            body: orientation == Orientation.portrait
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: buildPhotosCarousel(context, orientation),
+                      ),
+                      Expanded(
+                          child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: buildEvaluationForm(
+                            context, damageTypes, orientation),
+                      )),
+                    ],
+                  )
+                : Row(
+                    children: [
+                      Expanded(
+                        child: buildPhotosCarousel(context, orientation),
+                      ),
+                      Expanded(
+                          child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: buildEvaluationForm(
+                            context, damageTypes, orientation),
+                      )),
+                    ],
+                  ));
+      },
     );
   }
 
   IconButton buildGoToPhotoSelectionButton(BuildContext context) {
     onButtonPressed() {
       context.router
-          .push<PhotoInspectionResult>(BridgeInspectionPhotosTabRoute(
-              point: widget.point, createdReport: widget.createdReport))
+          .push<PhotoInspectionResult>(
+              BridgeInspectionPhotosTabRoute(point: widget.point))
           .then((data) {
         if (data == null) {
           return;

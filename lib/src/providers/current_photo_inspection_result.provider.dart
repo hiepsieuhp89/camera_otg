@@ -39,6 +39,18 @@ class CurrentPhotoInspectionResult extends _$CurrentPhotoInspectionResult {
     state = state.copyWith(photos: photos..removeAt(index));
   }
 
+  void addPhoto(InspectionPointReportPhoto photo) {
+    List<InspectionPointReportPhoto> photos = List.from(state.photos);
+
+    if (photos.isEmpty) {
+      photo = photo.copyWith(sequenceNumber: 1);
+    }
+
+    photos.add(photo);
+
+    state = state.copyWith(photos: photos);
+  }
+
   void selectPhoto(int index) {
     List<InspectionPointReportPhoto> photos = List.from(state.photos);
 

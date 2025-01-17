@@ -2,7 +2,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:kyoryo/src/models/diagram.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
-import 'package:kyoryo/src/models/inspection_point_report.dart';
 import 'package:kyoryo/src/routing/auth_guard.dart';
 import 'package:kyoryo/src/screens/app_update_screen.dart';
 import 'package:kyoryo/src/screens/bridge_inspection/all_screen.dart';

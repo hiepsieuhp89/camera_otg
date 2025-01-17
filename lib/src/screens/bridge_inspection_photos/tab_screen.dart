@@ -3,17 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
-import 'package:kyoryo/src/models/inspection_point_report.dart';
 import 'package:kyoryo/src/providers/current_photo_inspection_result.provider.dart';
 import 'package:kyoryo/src/routing/router.dart';
 
 @RoutePage()
 class BridgeInspectionPhotosTabScreen extends ConsumerWidget {
   final InspectionPoint point;
-  final InspectionPointReport? createdReport;
 
-  const BridgeInspectionPhotosTabScreen(
-      {super.key, required this.point, this.createdReport});
+  const BridgeInspectionPhotosTabScreen({super.key, required this.point});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -22,7 +19,8 @@ class BridgeInspectionPhotosTabScreen extends ConsumerWidget {
 
     onNavigationSelected(TabsRouter router, int index) {
       if (index == 2) {
-        context.router.maybePop(photoInspectionResult);
+        context.router
+            .popUntil((route) => route.settings.name == TakePictureRoute.name);
         return;
       }
       router.setActiveIndex(index);
@@ -42,8 +40,8 @@ class BridgeInspectionPhotosTabScreen extends ConsumerWidget {
               heroTag: 'rail_button',
               elevation: 0,
               onPressed: () {
-                context.router.replace(BridgeInspectionEvaluationRoute(
-                    point: point, createdReport: createdReport));
+                context.router
+                    .replace(BridgeInspectionEvaluationRoute(point: point));
               },
               child: const Icon(Icons.check),
             ),
@@ -92,8 +90,7 @@ class BridgeInspectionPhotosTabScreen extends ConsumerWidget {
 
     return AutoTabsRouter(
       routes: [
-        BridgeInspectionPhotoComparisonRoute(
-            point: point, createdReport: createdReport),
+        BridgeInspectionPhotoComparisonRoute(point: point),
         const BridgeInspectionPhotoSelectionRoute(),
       ],
       duration: const Duration(milliseconds: 600),
@@ -124,8 +121,8 @@ class BridgeInspectionPhotosTabScreen extends ConsumerWidget {
                       heroTag: 'bottom_button',
                       elevation: 0,
                       onPressed: () {
-                        context.router.replace(BridgeInspectionEvaluationRoute(
-                            point: point, createdReport: createdReport));
+                        context.router.replace(
+                            BridgeInspectionEvaluationRoute(point: point));
                       },
                       child: const Icon(Icons.check),
                     )

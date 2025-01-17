@@ -6,7 +6,6 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kyoryo/src/models/inspection_point_report.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
 import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
 import 'package:kyoryo/src/providers/current_photo_inspection_result.provider.dart';
@@ -16,18 +15,17 @@ import 'package:kyoryo/src/ui/photo_sequence_number_mark.dart';
 @RoutePage()
 class BridgeInspectionPhotoComparisonScreen extends ConsumerWidget {
   final InspectionPoint point;
-  final InspectionPointReport? createdReport;
 
   const BridgeInspectionPhotoComparisonScreen({
     super.key,
     required this.point,
-    this.createdReport,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final photoInspectionResult =
         ref.watch(currentPhotoInspectionResultProvider);
+
     final previousReport = ref
         .read(bridgeInspectionProvider(point.bridgeId).notifier)
         .findPreviousReportFromPoint(point.id!);

@@ -18,12 +18,13 @@ class PhotoInspectionResult {
 
   PhotoInspectionResult copyWith({
     List<InspectionPointReportPhoto>? photos,
-    String? selectedPhotoPath,
+    String? skipReason,
+    bool? isSkipped,
   }) {
     return PhotoInspectionResult(
       photos: photos ?? _photos.toList(),
-      skipReason: skipReason,
-      isSkipped: isSkipped,
+      skipReason: skipReason ?? this.skipReason,
+      isSkipped: isSkipped ?? this.isSkipped,
     );
   }
 }
