@@ -61,7 +61,7 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
     );
 
     setState(() {
-      _controller = CameraController(backCamera, ResolutionPreset.veryHigh,
+      _controller = CameraController(backCamera, ResolutionPreset.max,
           enableAudio: false);
       _initializeControllerFuture = _controller?.initialize().then((_) async {
         final maxZoomLevel = await _controller!.getMaxZoomLevel();
