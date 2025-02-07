@@ -8,6 +8,11 @@ import 'src/app.dart';
 
 void main() async {
   await dotenv.load();
+  Logger.root.level = Level.ALL;
+  Logger.root.onRecord.listen((record) {
+    debugPrint('${record.level.name}: ${record.time}: ${record.message}');
+  });
+
   var log = Logger("Main");
 
   FlutterError.onError = (details) {
