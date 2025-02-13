@@ -14,7 +14,7 @@ InspectionPointReportService inspectionPointReportService(Ref ref) {
 class InspectionPointReportService {
   InspectionPointReportPhoto? getPreferredPhotoFromReport(
       InspectionPointReport? report) {
-    if (report == null) {
+    if (report == null || report.photos.isEmpty) {
       return null;
     }
 
