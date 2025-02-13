@@ -291,9 +291,6 @@ class DiagramBottomAppBarState extends ConsumerState<DiagramBottomAppBar> {
                                       onPressed: state.maybeWhen(
                                           orElse: () => null,
                                           data: (data) => () {
-                                                print(
-                                                    'test ${AppLocalizations.of(context)!.span(data.spanNumber)}');
-
                                                 context.pushRoute(
                                                     PointsInspectionRoute(
                                                         details:

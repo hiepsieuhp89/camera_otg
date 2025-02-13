@@ -9,6 +9,7 @@ import 'package:kyoryo/src/models/inspection_point_report.dart';
 import 'package:kyoryo/src/models/inspection_point_report_photo.dart';
 import 'package:kyoryo/src/models/marking.dart';
 import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
+import 'package:kyoryo/src/providers/report_submission_tracker.provider.dart';
 import 'package:kyoryo/src/routing/router.dart';
 import 'package:kyoryo/src/services/inspection_point_report.service.dart';
 import 'package:kyoryo/src/utilities/datetime.dart';
@@ -137,6 +138,22 @@ class InpsectionPointListItem extends ConsumerWidget {
     }
 
     Widget buildActionButton() {
+      final hasSubmissionInProgress = ref
+              .watch(reportSubmissionTrackerProvider)
+              .getSubmissionFor(point.id!)
+              ?.status ==
+          ReportSubmissionStatus.submitting;
+
+      if (hasSubmissionInProgress) {
+        return FilledButton(
+            onPressed: null,
+            child: const SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(),
+            ));
+      }
+
       if (activeReport == null) {
         return IconButton.filled(
           onPressed: isInspectionInProgress

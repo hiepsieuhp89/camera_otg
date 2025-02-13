@@ -244,5 +244,11 @@
   "updateInspectionPoints": "点検ポイントを更新",
   "@updateInspectionPoints": {},
   "selectDiagramWarning": "図面を選択してください",
-  "@selectDiagramWarning": {}
+  "@selectDiagramWarning": {},
+  "failedToSubmitInspectionPointReport": "点検ポイント報告書の提出に失敗しました",
+  "@failedToSubmitInspectionPointReport": {},
+  "submittedInspectionPointReport": "点検ポイント報告書を提出しました",
+  "@submittedInspectionPointReport": {},
+  "retry": "再試行",
+  "@retry": {}
 }

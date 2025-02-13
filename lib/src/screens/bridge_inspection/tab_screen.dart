@@ -8,6 +8,7 @@ import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
 import 'package:kyoryo/src/providers/current_bridge.provider.dart';
 import 'package:kyoryo/src/providers/inspection_point_filters.provider.dart';
 import 'package:kyoryo/src/providers/inspection_points.provider.dart';
+import 'package:kyoryo/src/providers/report_submission_tracker.provider.dart';
 import 'package:kyoryo/src/routing/router.dart';
 import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:kyoryo/src/ui/inspection_point_filters_form.dart';
@@ -162,6 +163,41 @@ class BridgeInspectionTabScreenState
         ref.watch(bridgeInspectionProvider(currentBridge.id));
     final isInspectionInProgress =
         ref.watch(isInspectionInProgressProvider(currentBridge.id));
+
+    ref.listen(reportSubmissionTrackerProvider, (previous, next) {
+      if (next.hasUnnotifiedSubmissions) {
+        final submission = next.firstUnnotifiedSubmission;
+
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(submission!.status == ReportSubmissionStatus.success
+                  ? AppLocalizations.of(context)!.submittedInspectionPointReport
+                  : AppLocalizations.of(context)!
+                      .failedToSubmitInspectionPointReport),
+              showCloseIcon: true,
+              onVisible: () {
+                ref
+                    .read(reportSubmissionTrackerProvider.notifier)
+                    .updateReportSubmissionNotified(
+                        submission.report.inspectionPointId, true);
+              },
+              action: submission.status == ReportSubmissionStatus.failure
+                  ? SnackBarAction(
+                      label: AppLocalizations.of(context)!.retry,
+                      onPressed: () {
+                        ref
+                            .read(bridgeInspectionProvider(currentBridge.id)
+                                .notifier)
+                            .retryReportSubmission(submission);
+                      },
+                    )
+                  : null,
+            ),
+          );
+        });
+      }
+    });
 
     AsyncValue<(List<InspectionPoint>, List<Inspection?>)> requiredData =
         (filteredInspectionPoints, bridgeInspection).watch;

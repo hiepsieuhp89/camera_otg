@@ -324,4 +324,13 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get selectDiagramWarning => '図面を選択してください';
+
+  @override
+  String get failedToSubmitInspectionPointReport => '点検ポイント報告書の提出に失敗しました';
+
+  @override
+  String get submittedInspectionPointReport => '点検ポイント報告書を提出しました';
+
+  @override
+  String get retry => '再試行';
 }
