@@ -68,10 +68,6 @@ class BridgeInspectionEvaluationScreenState
             .contains(route.settings.name);
       });
     });
-
-    setState(() {
-      _submissionType = status;
-    });
   }
 
   Future<void> _updateReport(
