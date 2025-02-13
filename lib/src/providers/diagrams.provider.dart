@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kyoryo/src/models/diagram.dart';
 import 'package:kyoryo/src/providers/api.provider.dart';
-import 'package:kyoryo/src/utilities/image_utils.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'diagrams.provider.g.dart';
@@ -15,9 +14,9 @@ class Diagrams extends _$Diagrams {
 
   Future<Diagram> createDiagram(
       int bridgeId, String diagramPath, Orientation? orientation) async {
-    await compressImage(diagramPath, quality: 70);
-    final diagramPhoto =
-        await ref.watch(apiServiceProvider).uploadPhoto(diagramPath);
+    final diagramPhoto = await ref
+        .watch(apiServiceProvider)
+        .uploadPhoto(diagramPath, compress: true);
 
     return await ref
         .watch(apiServiceProvider)

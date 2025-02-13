@@ -423,7 +423,7 @@ class _NumberOfPendingReportsProviderElement
   int get bridgeId => (origin as NumberOfPendingReportsProvider).bridgeId;
 }
 
-String _$bridgeInspectionHash() => r'13b11dd9562121f46bebbc64b1e97257d7aa7f65';
+String _$bridgeInspectionHash() => r'e841c8f53a6f18e7fede21be995ee6cd5ea3115b';
 
 abstract class _$BridgeInspection
     extends BuildlessAutoDisposeAsyncNotifier<List<Inspection?>> {

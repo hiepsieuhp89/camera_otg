@@ -698,6 +698,24 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'図面を選択してください'**
   String get selectDiagramWarning;
+
+  /// No description provided for @failedToSubmitInspectionPointReport.
+  ///
+  /// In ja, this message translates to:
+  /// **'点検ポイント報告書の提出に失敗しました'**
+  String get failedToSubmitInspectionPointReport;
+
+  /// No description provided for @submittedInspectionPointReport.
+  ///
+  /// In ja, this message translates to:
+  /// **'点検ポイント報告書を提出しました'**
+  String get submittedInspectionPointReport;
+
+  /// No description provided for @retry.
+  ///
+  /// In ja, this message translates to:
+  /// **'再試行'**
+  String get retry;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -8,6 +8,7 @@ import 'package:kyoryo/src/models/inspection_point_report.dart';
 import 'package:kyoryo/src/models/inspection_point_report_photo.dart';
 import 'package:kyoryo/src/models/photo.dart';
 import 'package:kyoryo/src/providers/api.provider.dart';
+import 'package:kyoryo/src/providers/report_submission_tracker.provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'bridge_inspection.provider.g.dart';
@@ -68,6 +69,13 @@ class BridgeInspection extends _$BridgeInspection {
       throw Exception('No active inspection found');
     }
 
+    ref.read(reportSubmissionTrackerProvider.notifier).addReportSubmission(
+        report.inspectionPointId,
+        ReportSubmission(
+            report: report,
+            status: ReportSubmissionStatus.submitting,
+            notified: false));
+
     List<InspectionPointReportPhoto> reportPhotos = [];
 
     for (int i = 0; i < report.photos.length; i++) {
@@ -86,16 +94,29 @@ class BridgeInspection extends _$BridgeInspection {
       }
     }
 
-    final created = await ref.read(apiServiceProvider).createReport(
-          report: report.copyWith(
-              photos: reportPhotos, inspectionId: currentState[1]!.id!),
-        );
+    try {
+      final created = await ref.read(apiServiceProvider).createReport(
+            report: report.copyWith(
+                photos: reportPhotos, inspectionId: currentState[1]!.id!),
+          );
 
-    final currentActiveInspection = currentState[1]!.copyWith(reports: [
-      ...currentState[1]!.reports,
-      created,
-    ]);
-    state = AsyncData([currentState[0], currentActiveInspection]);
+      final currentActiveInspection = currentState[1]!.copyWith(reports: [
+        ...currentState[1]!.reports,
+        created,
+      ]);
+
+      state = AsyncData([currentState[0], currentActiveInspection]);
+
+      ref
+          .read(reportSubmissionTrackerProvider.notifier)
+          .updateReportSubmissionStatus(
+              report.inspectionPointId, ReportSubmissionStatus.success);
+    } catch (e) {
+      ref
+          .read(reportSubmissionTrackerProvider.notifier)
+          .updateReportSubmissionStatus(
+              report.inspectionPointId, ReportSubmissionStatus.failure);
+    }
   }
 
   Future<void> updateReport({required InspectionPointReport report}) async {
@@ -110,6 +131,13 @@ class BridgeInspection extends _$BridgeInspection {
       return;
     }
 
+    ref.read(reportSubmissionTrackerProvider.notifier).addReportSubmission(
+        report.inspectionPointId,
+        ReportSubmission(
+            report: report,
+            status: ReportSubmissionStatus.submitting,
+            notified: false));
+
     List<InspectionPointReportPhoto> photos = List.from(report.photos);
 
     for (int i = 0; i < photos.length; i++) {
@@ -122,19 +150,42 @@ class BridgeInspection extends _$BridgeInspection {
       }
     }
 
-    final updatedReport =
-        await ref.read(apiServiceProvider).updateReport(report.copyWith(
-              photos: photos,
-            ));
+    try {
+      final updatedReport =
+          await ref.read(apiServiceProvider).updateReport(report.copyWith(
+                photos: photos,
+              ));
 
-    final currentActiveInspection = currentState[1]!.copyWith(
-      reports: [
-        ...currentState[1]!.reports.where((r) => r.id != updatedReport.id),
-        updatedReport,
-      ],
-    );
+      final currentActiveInspection = currentState[1]!.copyWith(
+        reports: [
+          ...currentState[1]!.reports.where((r) => r.id != updatedReport.id),
+          updatedReport,
+        ],
+      );
 
-    state = AsyncData([currentState[0], currentActiveInspection]);
+      state = AsyncData([currentState[0], currentActiveInspection]);
+
+      ref
+          .read(reportSubmissionTrackerProvider.notifier)
+          .updateReportSubmissionStatus(
+              report.inspectionPointId, ReportSubmissionStatus.success);
+    } catch (e) {
+      debugPrint('Error updating report: $e');
+      ref
+          .read(reportSubmissionTrackerProvider.notifier)
+          .updateReportSubmissionStatus(
+              report.inspectionPointId, ReportSubmissionStatus.failure);
+    }
+  }
+
+  Future<void> retryReportSubmission(ReportSubmission submission) {
+    final isUpdate = submission.report.id != null;
+
+    if (isUpdate) {
+      return updateReport(report: submission.report);
+    } else {
+      return createReport(report: submission.report);
+    }
   }
 
   Future<void> setActiveInspectionFinished(bool isFinished) async {

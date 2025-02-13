@@ -16,7 +16,6 @@ import 'package:kyoryo/src/providers/current_photo_inspection_result.provider.da
 import 'package:kyoryo/src/providers/misc.provider.dart';
 import 'package:kyoryo/src/routing/router.dart';
 import 'package:kyoryo/src/ui/photo_sequence_number_mark.dart';
-import 'package:kyoryo/src/utilities/image_utils.dart';
 
 @RoutePage()
 class BridgeInspectionEvaluationScreen extends ConsumerStatefulWidget {
@@ -35,8 +34,6 @@ class BridgeInspectionEvaluationScreen extends ConsumerStatefulWidget {
 class BridgeInspectionEvaluationScreenState
     extends ConsumerState<BridgeInspectionEvaluationScreen> {
   late PhotoInspectionResult result;
-  Future<void>? _pendingSubmission;
-  InspectionPointReportStatus? _submissionType;
   String? _selectedCategory;
   String? _selectedHealthLevel;
   String? _selectedDamageType;
@@ -60,7 +57,7 @@ class BridgeInspectionEvaluationScreenState
               AppLocalizations.of(context)!.failedToCreateInspectionReport)));
     }
 
-    final reportSubmission = (activeReport != null
+    (activeReport != null
             ? _updateReport(activeReport, status)
             : _createReport(status).catchError((_) {
                 showMessageFailure();
@@ -74,20 +71,12 @@ class BridgeInspectionEvaluationScreenState
 
     setState(() {
       _submissionType = status;
-      _pendingSubmission = reportSubmission;
     });
-  }
-
-  Future<void> _compressCapturedPhotos(List<String> photoPaths) async {
-    await Future.wait(photoPaths.map((photoPath) async {
-      return await compressImage(photoPath);
-    }));
   }
 
   Future<void> _updateReport(
       InspectionPointReport report, InspectionPointReportStatus status) async {
-    await _compressCapturedPhotos(result.photosNotYetUploaded);
-    await ref
+    ref
         .read(bridgeInspectionProvider(widget.point.bridgeId).notifier)
         .updateReport(
           report: report.copyWith(
@@ -103,8 +92,7 @@ class BridgeInspectionEvaluationScreenState
   }
 
   Future<void> _createReport(InspectionPointReportStatus status) async {
-    await _compressCapturedPhotos(result.photosNotYetUploaded);
-    await ref
+    ref
         .read(bridgeInspectionProvider(widget.point.bridgeId).notifier)
         .createReport(
             report: InspectionPointReport(
@@ -341,72 +329,34 @@ class BridgeInspectionEvaluationScreenState
             if (orientation == Orientation.landscape)
               buildGoToPhotoSelectionButton(context),
             const Spacer(),
-            FutureBuilder(
-                future: _pendingSubmission,
-                builder: ((context, snapshot) {
-                  final isLoading =
-                      snapshot.connectionState == ConnectionState.waiting;
-                  final inspectionStatus = result.isSkipped
-                      ? InspectionPointReportStatus.skipped
-                      : InspectionPointReportStatus.finished;
-
-                  return Row(
-                    children: [
-                      if (!result.isSkipped) ...[
-                        FilledButton.icon(
-                          icon: isLoading &&
-                                  _submissionType ==
-                                      InspectionPointReportStatus.pending
-                              ? Container(
-                                  width: 24,
-                                  height: 24,
-                                  padding: const EdgeInsets.all(2.0),
-                                  child: const CircularProgressIndicator(
-                                    strokeWidth: 3,
-                                  ),
-                                )
-                              : const Icon(Icons.timer),
-                          label: Text(AppLocalizations.of(context)!.holdButton),
-                          onPressed: isLoading
-                              ? null
-                              : () {
-                                  submitInspection(
-                                      InspectionPointReportStatus.pending);
-                                },
-                          style: FilledButton.styleFrom(
-                              backgroundColor: Colors.orange),
-                        ),
-                        const SizedBox(width: 16),
-                      ],
-                      FilledButton.icon(
-                          onPressed: isLoading
-                              ? null
-                              : () {
-                                  submitInspection(inspectionStatus);
-                                },
-                          // style: FilledButton.styleFrom(
-                          //     minimumSize: const Size.fromHeight(55)),
-                          icon: isLoading && _submissionType == inspectionStatus
-                              ? Container(
-                                  width: 24,
-                                  height: 24,
-                                  padding: const EdgeInsets.all(2.0),
-                                  child: const CircularProgressIndicator(
-                                    strokeWidth: 3,
-                                  ),
-                                )
-                              : inspectionStatus ==
-                                      InspectionPointReportStatus.finished
-                                  ? const Icon(Icons.check)
-                                  : const Icon(Icons.do_not_disturb),
-                          label: result.isSkipped
-                              ? Text(
-                                  AppLocalizations.of(context)!.skipEvaluation)
-                              : Text(AppLocalizations.of(context)!
-                                  .finishEvaluation))
-                    ],
-                  );
-                }))
+            Row(
+              children: [
+                if (!result.isSkipped) ...[
+                  FilledButton.icon(
+                    icon: const Icon(Icons.timer),
+                    label: Text(AppLocalizations.of(context)!.holdButton),
+                    onPressed: () {
+                      submitInspection(InspectionPointReportStatus.pending);
+                    },
+                    style:
+                        FilledButton.styleFrom(backgroundColor: Colors.orange),
+                  ),
+                  const SizedBox(width: 16),
+                ],
+                FilledButton.icon(
+                    onPressed: () {
+                      submitInspection(result.isSkipped
+                          ? InspectionPointReportStatus.skipped
+                          : InspectionPointReportStatus.finished);
+                    },
+                    icon: result.isSkipped
+                        ? const Icon(Icons.do_not_disturb)
+                        : const Icon(Icons.check),
+                    label: result.isSkipped
+                        ? Text(AppLocalizations.of(context)!.skipEvaluation)
+                        : Text(AppLocalizations.of(context)!.finishEvaluation))
+              ],
+            )
           ],
         )
       ],

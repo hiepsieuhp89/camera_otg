@@ -9,6 +9,7 @@ import 'package:kyoryo/src/models/municipality.dart';
 import 'package:kyoryo/src/models/photo.dart';
 import 'package:kyoryo/src/models/user.dart';
 import 'package:kyoryo/src/services/api_client.service.dart';
+import 'package:kyoryo/src/utilities/image_utils.dart';
 import 'package:logging/logging.dart';
 import 'package:kyoryo/src/models/version.dart';
 
@@ -190,7 +191,11 @@ class ApiService {
         .toList();
   }
 
-  Future<Photo> uploadPhoto(String filePath) async {
+  Future<Photo> uploadPhoto(String filePath, {bool compress = false}) async {
+    if (compress) {
+      await compressImage(filePath);
+    }
+
     final jsonResponse = await apiClient.postSingleFile(
         'api/mobile/photo', filePath,
         headerParams: getAuthorizationHeader());
