@@ -1,3 +1,4 @@
+// dart format width=80
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
 // **************************************************************************
@@ -13,10 +14,7 @@ part of 'router.dart';
 /// [AppUpdateScreen]
 class AppUpdateRoute extends PageRouteInfo<void> {
   const AppUpdateRoute({List<PageRouteInfo>? children})
-      : super(
-          AppUpdateRoute.name,
-          initialChildren: children,
-        );
+    : super(AppUpdateRoute.name, initialChildren: children);
 
   static const String name = 'AppUpdateRoute';
 
@@ -32,10 +30,7 @@ class AppUpdateRoute extends PageRouteInfo<void> {
 /// [BridgeFiltersScreen]
 class BridgeFiltersRoute extends PageRouteInfo<void> {
   const BridgeFiltersRoute({List<PageRouteInfo>? children})
-      : super(
-          BridgeFiltersRoute.name,
-          initialChildren: children,
-        );
+    : super(BridgeFiltersRoute.name, initialChildren: children);
 
   static const String name = 'BridgeFiltersRoute';
 
@@ -51,10 +46,7 @@ class BridgeFiltersRoute extends PageRouteInfo<void> {
 /// [BridgeInspectionAllScreen]
 class BridgeInspectionAllRoute extends PageRouteInfo<void> {
   const BridgeInspectionAllRoute({List<PageRouteInfo>? children})
-      : super(
-          BridgeInspectionAllRoute.name,
-          initialChildren: children,
-        );
+    : super(BridgeInspectionAllRoute.name, initialChildren: children);
 
   static const String name = 'BridgeInspectionAllRoute';
 
@@ -70,10 +62,7 @@ class BridgeInspectionAllRoute extends PageRouteInfo<void> {
 /// [BridgeInspectionDamageScreen]
 class BridgeInspectionDamageRoute extends PageRouteInfo<void> {
   const BridgeInspectionDamageRoute({List<PageRouteInfo>? children})
-      : super(
-          BridgeInspectionDamageRoute.name,
-          initialChildren: children,
-        );
+    : super(BridgeInspectionDamageRoute.name, initialChildren: children);
 
   static const String name = 'BridgeInspectionDamageRoute';
 
@@ -94,13 +83,10 @@ class BridgeInspectionEvaluationRoute
     required InspectionPoint point,
     List<PageRouteInfo>? children,
   }) : super(
-          BridgeInspectionEvaluationRoute.name,
-          args: BridgeInspectionEvaluationRouteArgs(
-            key: key,
-            point: point,
-          ),
-          initialChildren: children,
-        );
+         BridgeInspectionEvaluationRoute.name,
+         args: BridgeInspectionEvaluationRouteArgs(key: key, point: point),
+         initialChildren: children,
+       );
 
   static const String name = 'BridgeInspectionEvaluationRoute';
 
@@ -108,19 +94,13 @@ class BridgeInspectionEvaluationRoute
     name,
     builder: (data) {
       final args = data.argsAs<BridgeInspectionEvaluationRouteArgs>();
-      return BridgeInspectionEvaluationScreen(
-        key: args.key,
-        point: args.point,
-      );
+      return BridgeInspectionEvaluationScreen(key: args.key, point: args.point);
     },
   );
 }
 
 class BridgeInspectionEvaluationRouteArgs {
-  const BridgeInspectionEvaluationRouteArgs({
-    this.key,
-    required this.point,
-  });
+  const BridgeInspectionEvaluationRouteArgs({this.key, required this.point});
 
   final Key? key;
 
@@ -141,13 +121,10 @@ class BridgeInspectionPhotoComparisonRoute
     required InspectionPoint point,
     List<PageRouteInfo>? children,
   }) : super(
-          BridgeInspectionPhotoComparisonRoute.name,
-          args: BridgeInspectionPhotoComparisonRouteArgs(
-            key: key,
-            point: point,
-          ),
-          initialChildren: children,
-        );
+         BridgeInspectionPhotoComparisonRoute.name,
+         args: BridgeInspectionPhotoComparisonRouteArgs(key: key, point: point),
+         initialChildren: children,
+       );
 
   static const String name = 'BridgeInspectionPhotoComparisonRoute';
 
@@ -183,10 +160,10 @@ class BridgeInspectionPhotoComparisonRouteArgs {
 /// [BridgeInspectionPhotoSelectionScreen]
 class BridgeInspectionPhotoSelectionRoute extends PageRouteInfo<void> {
   const BridgeInspectionPhotoSelectionRoute({List<PageRouteInfo>? children})
-      : super(
-          BridgeInspectionPhotoSelectionRoute.name,
-          initialChildren: children,
-        );
+    : super(
+        BridgeInspectionPhotoSelectionRoute.name,
+        initialChildren: children,
+      );
 
   static const String name = 'BridgeInspectionPhotoSelectionRoute';
 
@@ -207,13 +184,10 @@ class BridgeInspectionPhotosTabRoute
     required InspectionPoint point,
     List<PageRouteInfo>? children,
   }) : super(
-          BridgeInspectionPhotosTabRoute.name,
-          args: BridgeInspectionPhotosTabRouteArgs(
-            key: key,
-            point: point,
-          ),
-          initialChildren: children,
-        );
+         BridgeInspectionPhotosTabRoute.name,
+         args: BridgeInspectionPhotosTabRouteArgs(key: key, point: point),
+         initialChildren: children,
+       );
 
   static const String name = 'BridgeInspectionPhotosTabRoute';
 
@@ -221,19 +195,13 @@ class BridgeInspectionPhotosTabRoute
     name,
     builder: (data) {
       final args = data.argsAs<BridgeInspectionPhotosTabRouteArgs>();
-      return BridgeInspectionPhotosTabScreen(
-        key: args.key,
-        point: args.point,
-      );
+      return BridgeInspectionPhotosTabScreen(key: args.key, point: args.point);
     },
   );
 }
 
 class BridgeInspectionPhotosTabRouteArgs {
-  const BridgeInspectionPhotosTabRouteArgs({
-    this.key,
-    required this.point,
-  });
+  const BridgeInspectionPhotosTabRouteArgs({this.key, required this.point});
 
   final Key? key;
 
@@ -249,10 +217,10 @@ class BridgeInspectionPhotosTabRouteArgs {
 /// [BridgeInspectionPresentConditionScreen]
 class BridgeInspectionPresentConditionRoute extends PageRouteInfo<void> {
   const BridgeInspectionPresentConditionRoute({List<PageRouteInfo>? children})
-      : super(
-          BridgeInspectionPresentConditionRoute.name,
-          initialChildren: children,
-        );
+    : super(
+        BridgeInspectionPresentConditionRoute.name,
+        initialChildren: children,
+      );
 
   static const String name = 'BridgeInspectionPresentConditionRoute';
 
@@ -268,10 +236,7 @@ class BridgeInspectionPresentConditionRoute extends PageRouteInfo<void> {
 /// [BridgeInspectionTabScreen]
 class BridgeInspectionTabRoute extends PageRouteInfo<void> {
   const BridgeInspectionTabRoute({List<PageRouteInfo>? children})
-      : super(
-          BridgeInspectionTabRoute.name,
-          initialChildren: children,
-        );
+    : super(BridgeInspectionTabRoute.name, initialChildren: children);
 
   static const String name = 'BridgeInspectionTabRoute';
 
@@ -287,10 +252,7 @@ class BridgeInspectionTabRoute extends PageRouteInfo<void> {
 /// [BridgeListScreen]
 class BridgeListRoute extends PageRouteInfo<void> {
   const BridgeListRoute({List<PageRouteInfo>? children})
-      : super(
-          BridgeListRoute.name,
-          initialChildren: children,
-        );
+    : super(BridgeListRoute.name, initialChildren: children);
 
   static const String name = 'BridgeListRoute';
 
@@ -310,13 +272,10 @@ class DiagramInspectionRoute extends PageRouteInfo<DiagramInspectionRouteArgs> {
     required Diagram diagram,
     List<PageRouteInfo>? children,
   }) : super(
-          DiagramInspectionRoute.name,
-          args: DiagramInspectionRouteArgs(
-            key: key,
-            diagram: diagram,
-          ),
-          initialChildren: children,
-        );
+         DiagramInspectionRoute.name,
+         args: DiagramInspectionRouteArgs(key: key, diagram: diagram),
+         initialChildren: children,
+       );
 
   static const String name = 'DiagramInspectionRoute';
 
@@ -324,19 +283,13 @@ class DiagramInspectionRoute extends PageRouteInfo<DiagramInspectionRouteArgs> {
     name,
     builder: (data) {
       final args = data.argsAs<DiagramInspectionRouteArgs>();
-      return DiagramInspectionScreen(
-        key: args.key,
-        diagram: args.diagram,
-      );
+      return DiagramInspectionScreen(key: args.key, diagram: args.diagram);
     },
   );
 }
 
 class DiagramInspectionRouteArgs {
-  const DiagramInspectionRouteArgs({
-    this.key,
-    required this.diagram,
-  });
+  const DiagramInspectionRouteArgs({this.key, required this.diagram});
 
   final Key? key;
 
@@ -352,10 +305,7 @@ class DiagramInspectionRouteArgs {
 /// [InspectionPointDiagramSelectScreen]
 class InspectionPointDiagramSelectRoute extends PageRouteInfo<void> {
   const InspectionPointDiagramSelectRoute({List<PageRouteInfo>? children})
-      : super(
-          InspectionPointDiagramSelectRoute.name,
-          initialChildren: children,
-        );
+    : super(InspectionPointDiagramSelectRoute.name, initialChildren: children);
 
   static const String name = 'InspectionPointDiagramSelectRoute';
 
@@ -375,13 +325,10 @@ class InspectionPointRoute extends PageRouteInfo<InspectionPointRouteArgs> {
     required InspectionPoint initialPoint,
     List<PageRouteInfo>? children,
   }) : super(
-          InspectionPointRoute.name,
-          args: InspectionPointRouteArgs(
-            key: key,
-            initialPoint: initialPoint,
-          ),
-          initialChildren: children,
-        );
+         InspectionPointRoute.name,
+         args: InspectionPointRouteArgs(key: key, initialPoint: initialPoint),
+         initialChildren: children,
+       );
 
   static const String name = 'InspectionPointRoute';
 
@@ -398,10 +345,7 @@ class InspectionPointRoute extends PageRouteInfo<InspectionPointRouteArgs> {
 }
 
 class InspectionPointRouteArgs {
-  const InspectionPointRouteArgs({
-    this.key,
-    required this.initialPoint,
-  });
+  const InspectionPointRouteArgs({this.key, required this.initialPoint});
 
   final Key? key;
 
@@ -422,14 +366,14 @@ class PointsInspectionRoute extends PageRouteInfo<PointsInspectionRouteArgs> {
     String? details,
     List<PageRouteInfo>? children,
   }) : super(
-          PointsInspectionRoute.name,
-          args: PointsInspectionRouteArgs(
-            key: key,
-            pointIds: pointIds,
-            details: details,
-          ),
-          initialChildren: children,
-        );
+         PointsInspectionRoute.name,
+         args: PointsInspectionRouteArgs(
+           key: key,
+           pointIds: pointIds,
+           details: details,
+         ),
+         initialChildren: children,
+       );
 
   static const String name = 'PointsInspectionRoute';
 
@@ -469,10 +413,7 @@ class PointsInspectionRouteArgs {
 /// [SplashScreen]
 class SplashRoute extends PageRouteInfo<void> {
   const SplashRoute({List<PageRouteInfo>? children})
-      : super(
-          SplashRoute.name,
-          initialChildren: children,
-        );
+    : super(SplashRoute.name, initialChildren: children);
 
   static const String name = 'SplashRoute';
 
@@ -492,13 +433,10 @@ class TakePictureRoute extends PageRouteInfo<TakePictureRouteArgs> {
     required InspectionPoint inspectionPoint,
     List<PageRouteInfo>? children,
   }) : super(
-          TakePictureRoute.name,
-          args: TakePictureRouteArgs(
-            key: key,
-            inspectionPoint: inspectionPoint,
-          ),
-          initialChildren: children,
-        );
+         TakePictureRoute.name,
+         args: TakePictureRouteArgs(key: key, inspectionPoint: inspectionPoint),
+         initialChildren: children,
+       );
 
   static const String name = 'TakePictureRoute';
 
@@ -515,10 +453,7 @@ class TakePictureRoute extends PageRouteInfo<TakePictureRouteArgs> {
 }
 
 class TakePictureRouteArgs {
-  const TakePictureRouteArgs({
-    this.key,
-    required this.inspectionPoint,
-  });
+  const TakePictureRouteArgs({this.key, required this.inspectionPoint});
 
   final Key? key;
 
