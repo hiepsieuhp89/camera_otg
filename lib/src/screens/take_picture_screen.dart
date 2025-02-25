@@ -44,7 +44,6 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
   double _minExposureOffset = 0.0;
 
   Completer<void>? _takingPictureCompleter;
-  late AudioCache _audioCache;
 
   @override
   void initState() {
