@@ -172,8 +172,6 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
 
       AudioPlayer().play(AssetSource('sounds/camera_shoot.mp3'));
 
-      await _controller!.lockCaptureOrientation();
-
       final image = await _controller!.takePicture();
 
       _takingPictureCompleter!.complete();
@@ -183,7 +181,6 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
           );
 
       await Future.wait([
-        _controller!.unlockCaptureOrientation(),
         _controller!.setFocusPoint(const Offset(0.5, 0.5)),
         _controller!.setExposurePoint(const Offset(0.5, 0.5)),
         cropPhoto(image.path)
