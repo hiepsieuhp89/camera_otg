@@ -1,23 +1,24 @@
+import 'dart:async';
 import 'dart:io';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kyoryo/src/models/inspection_point_report_photo.dart';
-import 'package:kyoryo/src/models/photo_inspection_result.dart';
+import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:kyoryo/src/models/inspection_point.dart';
+import 'package:kyoryo/src/models/inspection_point_report_photo.dart';
 import 'package:kyoryo/src/models/marking.dart';
+import 'package:kyoryo/src/models/photo_inspection_result.dart';
 import 'package:kyoryo/src/providers/bridge_inspection.provider.dart';
 import 'package:kyoryo/src/providers/current_photo_inspection_result.provider.dart';
 import 'package:kyoryo/src/routing/router.dart';
 import 'package:kyoryo/src/services/inspection_point_report.service.dart';
 import 'package:kyoryo/src/ui/collapsible_panel.dart';
 import 'package:kyoryo/src/utilities/image_utils.dart';
-import 'package:audioplayers/audioplayers.dart';
 
 @RoutePage()
 class TakePictureScreen extends ConsumerStatefulWidget {
@@ -41,6 +42,8 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
   double _currentExposureOffset = 0.0;
   double _maxExposureOffset = 0.0;
   double _minExposureOffset = 0.0;
+
+  Completer<void>? _takingPictureCompleter;
 
   @override
   void initState() {
@@ -153,36 +156,39 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
     }
   }
 
-  void _takePicture() async {
+  Future<void> _takePicture() async {
+    if (_controller?.value.isInitialized != true ||
+        _takingPictureCompleter?.isCompleted == false) {
+      return;
+    }
+
+    _takingPictureCompleter = Completer<void>();
+
     try {
       await _initializeControllerFuture;
 
-      if (_controller!.value.isTakingPicture) {
-        return;
-      }
+      AudioPlayer().play(AssetSource('sounds/camera_shoot.mp3'));
 
-      await _controller!.lockCaptureOrientation();
-      _controller!.takePicture().then((image) {
-        AudioPlayer().play(AssetSource('sounds/camera_shoot.mp3'));
+      final image = await _controller!.takePicture();
+
+      _takingPictureCompleter!.complete();
+
+      ref.read(currentPhotoInspectionResultProvider.notifier).addPhoto(
+            InspectionPointReportPhoto(localPath: image.path),
+          );
+
+      await Future.wait([
+        _controller!.setFocusPoint(const Offset(0.5, 0.5)),
+        _controller!.setExposurePoint(const Offset(0.5, 0.5)),
 
         // NOTE: There is no way to set ratio of the image take by camera plugin
         // so we need to crop the taken image to 4:3 ratio
         // https://github.com/flutter/flutter/issues/45665
-        cropPhoto(image.path).then((_) {
-          ref
-              .read(currentPhotoInspectionResultProvider.notifier)
-              .addPhoto(InspectionPointReportPhoto(
-                localPath: image.path,
-              ));
-        });
-
-        _controller!.unlockCaptureOrientation();
-        // set the exposure and focus point back to the center
-        _controller!.setFocusPoint(const Offset(0.5, 0.5));
-        _controller!.setExposurePoint(const Offset(0.5, 0.5));
-      });
+        cropPhoto(image.path)
+      ]);
     } catch (e) {
-      debugPrint(e.toString());
+      _takingPictureCompleter!.complete();
+      debugPrint('Error taking picture: $e');
     }
   }
 
