@@ -157,11 +157,8 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
   }
 
   Future<void> _takePicture() async {
-    if (_controller == null || !_controller!.value.isInitialized) {
-      return;
-    }
-    if (_takingPictureCompleter != null &&
-        !_takingPictureCompleter!.isCompleted) {
+    if (_controller?.value.isInitialized != true ||
+        _takingPictureCompleter?.isCompleted == false) {
       return;
     }
 
@@ -183,6 +180,10 @@ class _TakePictureScreenState extends ConsumerState<TakePictureScreen>
       await Future.wait([
         _controller!.setFocusPoint(const Offset(0.5, 0.5)),
         _controller!.setExposurePoint(const Offset(0.5, 0.5)),
+
+        // NOTE: There is no way to set ratio of the image take by camera plugin
+        // so we need to crop the taken image to 4:3 ratio
+        // https://github.com/flutter/flutter/issues/45665
         cropPhoto(image.path)
       ]);
     } catch (e) {
