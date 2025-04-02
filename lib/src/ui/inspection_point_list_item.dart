@@ -78,20 +78,61 @@ class InpsectionPointListItem extends ConsumerWidget {
     }
 
     Column buildDetailsColumn(report) {
+      bool isNewPoint = previousReport == null && activeReport != null;
+      bool hasNoComment = activeReport?.metadata?["remark"]?.toString().isEmpty ?? false;
+      
+      // Check differences only when both reports exist
+      bool isDifferentDamageCategory = activeReport != null && previousReport != null &&
+          activeReport.metadata?["damage_category"] != previousReport.metadata?["damage_category"];
+      bool isDifferentDamageType = activeReport != null && previousReport != null &&
+          activeReport.metadata?["damage_type"] != previousReport.metadata?["damage_type"];
+      bool isDifferentDamageLevel = activeReport != null && previousReport != null &&
+          activeReport.metadata?["damage_level"] != previousReport.metadata?["damage_level"];
+      bool isDifferentRemark = activeReport != null && previousReport != null &&
+          activeReport.metadata?["remark"] != previousReport.metadata?["remark"];
+
+      bool isAllDifferent = isDifferentDamageCategory && isDifferentDamageType && 
+          isDifferentDamageLevel && isDifferentRemark;
+
+      // Apply red border for any of these conditions
+      bool shouldHighlightDamageCategory = isNewPoint || isDifferentDamageCategory || isAllDifferent;
+      bool shouldHighlightDamageTypeLevel = isNewPoint || isDifferentDamageType || 
+          isDifferentDamageLevel || isAllDifferent;
+      bool shouldHighlightRemark = isNewPoint || hasNoComment || isDifferentRemark || isAllDifferent;
+
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          Container(
+            decoration: shouldHighlightDamageCategory ? BoxDecoration(
+              border: Border.all(color: Colors.red, width: 2),
+            ) : null,
+            child: Text(
               '${AppLocalizations.of(context)!.targetMaterial}: '
               '${report?.metadata?["damage_category"] ?? ''}',
-              style: adjustedSmallTextStyle),
-          Text(
+              style: adjustedSmallTextStyle
+            ),
+          ),
+          Container(
+            decoration: shouldHighlightDamageTypeLevel ? BoxDecoration(
+              border: Border.all(color: Colors.red, width: 2),
+            ) : null,
+            child: Text(
               '${report?.metadata?['damage_type']?.toString() ?? ''}'
               '${report?.metadata?['damage_level']?.toString() ?? ''}',
-              style: adjustedSmallTextStyle),
+              style: adjustedSmallTextStyle
+            ),
+          ),
           const SizedBox(height: 3.0),
-          Text(report?.metadata?['remark']?.toString() ?? '',
-              style: adjustedSmallTextStyle),
+          Container(
+            decoration: shouldHighlightRemark ? BoxDecoration(
+              border: Border.all(color: Colors.red, width: 2),
+            ) : null,
+            child: Text(
+              report?.metadata?['remark']?.toString() ?? '',
+              style: adjustedSmallTextStyle
+            ),
+          ),
         ],
       );
     }
