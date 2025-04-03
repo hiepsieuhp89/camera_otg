@@ -52,6 +52,8 @@ class AppUpdate extends _$AppUpdate {
         version = versions.dev;
       case 'stg':
         version = versions.stg;
+      case 'prd':
+        version = versions.prd;
       default:
         version = null;
     }

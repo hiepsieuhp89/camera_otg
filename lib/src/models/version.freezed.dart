@@ -210,6 +210,8 @@ abstract class _VersionByEnvironment implements VersionByEnvironment {
   Version? get dev;
   @override
   Version? get stg;
+  @override
+  Version? get prd;
 
   /// Create a copy of VersionByEnvironment
   /// with the given fields replaced by the non-null parameter values.
