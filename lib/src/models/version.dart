@@ -9,6 +9,7 @@ class VersionByEnvironment with _$VersionByEnvironment {
   factory VersionByEnvironment({
     Version? dev,
     Version? stg,
+    Version? prd,
   }) = _VersionByEnvironment;
 
   factory VersionByEnvironment.fromJson(Map<String, dynamic> json) =>

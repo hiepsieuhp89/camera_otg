@@ -22,6 +22,7 @@ VersionByEnvironment _$VersionByEnvironmentFromJson(Map<String, dynamic> json) {
 mixin _$VersionByEnvironment {
   Version? get dev => throw _privateConstructorUsedError;
   Version? get stg => throw _privateConstructorUsedError;
+  Version? get prd => throw _privateConstructorUsedError;
 
   /// Serializes this VersionByEnvironment to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -39,10 +40,11 @@ abstract class $VersionByEnvironmentCopyWith<$Res> {
           $Res Function(VersionByEnvironment) then) =
       _$VersionByEnvironmentCopyWithImpl<$Res, VersionByEnvironment>;
   @useResult
-  $Res call({Version? dev, Version? stg});
+  $Res call({Version? dev, Version? stg, Version? prd});
 
   $VersionCopyWith<$Res>? get dev;
   $VersionCopyWith<$Res>? get stg;
+  $VersionCopyWith<$Res>? get prd;
 }
 
 /// @nodoc
@@ -63,6 +65,7 @@ class _$VersionByEnvironmentCopyWithImpl<$Res,
   $Res call({
     Object? dev = freezed,
     Object? stg = freezed,
+    Object? prd = freezed,
   }) {
     return _then(_value.copyWith(
       dev: freezed == dev
@@ -72,6 +75,10 @@ class _$VersionByEnvironmentCopyWithImpl<$Res,
       stg: freezed == stg
           ? _value.stg
           : stg // ignore: cast_nullable_to_non_nullable
+              as Version?,
+      prd: freezed == prd
+          ? _value.prd
+          : prd // ignore: cast_nullable_to_non_nullable
               as Version?,
     ) as $Val);
   }
@@ -103,6 +110,20 @@ class _$VersionByEnvironmentCopyWithImpl<$Res,
       return _then(_value.copyWith(stg: value) as $Val);
     });
   }
+
+  /// Create a copy of VersionByEnvironment
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $VersionCopyWith<$Res>? get prd {
+    if (_value.prd == null) {
+      return null;
+    }
+
+    return $VersionCopyWith<$Res>(_value.prd!, (value) {
+      return _then(_value.copyWith(prd: value) as $Val);
+    });
+  }
 }
 
 /// @nodoc
@@ -113,12 +134,14 @@ abstract class _$$VersionByEnvironmentImplCopyWith<$Res>
       __$$VersionByEnvironmentImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({Version? dev, Version? stg});
+  $Res call({Version? dev, Version? stg, Version? prd});
 
   @override
   $VersionCopyWith<$Res>? get dev;
   @override
   $VersionCopyWith<$Res>? get stg;
+  @override
+  $VersionCopyWith<$Res>? get prd;
 }
 
 /// @nodoc
@@ -136,6 +159,7 @@ class __$$VersionByEnvironmentImplCopyWithImpl<$Res>
   $Res call({
     Object? dev = freezed,
     Object? stg = freezed,
+    Object? prd = freezed,
   }) {
     return _then(_$VersionByEnvironmentImpl(
       dev: freezed == dev
@@ -146,6 +170,10 @@ class __$$VersionByEnvironmentImplCopyWithImpl<$Res>
           ? _value.stg
           : stg // ignore: cast_nullable_to_non_nullable
               as Version?,
+      prd: freezed == prd
+          ? _value.prd
+          : prd // ignore: cast_nullable_to_non_nullable
+              as Version?,
     ));
   }
 }
@@ -153,7 +181,7 @@ class __$$VersionByEnvironmentImplCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$VersionByEnvironmentImpl implements _VersionByEnvironment {
-  _$VersionByEnvironmentImpl({this.dev, this.stg});
+  _$VersionByEnvironmentImpl({this.dev, this.stg, this.prd});
 
   factory _$VersionByEnvironmentImpl.fromJson(Map<String, dynamic> json) =>
       _$$VersionByEnvironmentImplFromJson(json);
@@ -162,10 +190,12 @@ class _$VersionByEnvironmentImpl implements _VersionByEnvironment {
   final Version? dev;
   @override
   final Version? stg;
+  @override
+  final Version? prd;
 
   @override
   String toString() {
-    return 'VersionByEnvironment(dev: $dev, stg: $stg)';
+    return 'VersionByEnvironment(dev: $dev, stg: $stg, prd: $prd)';
   }
 
   @override
@@ -174,12 +204,13 @@ class _$VersionByEnvironmentImpl implements _VersionByEnvironment {
         (other.runtimeType == runtimeType &&
             other is _$VersionByEnvironmentImpl &&
             (identical(other.dev, dev) || other.dev == dev) &&
-            (identical(other.stg, stg) || other.stg == stg));
+            (identical(other.stg, stg) || other.stg == stg) &&
+            (identical(other.prd, prd) || other.prd == prd));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, dev, stg);
+  int get hashCode => Object.hash(runtimeType, dev, stg, prd);
 
   /// Create a copy of VersionByEnvironment
   /// with the given fields replaced by the non-null parameter values.
@@ -200,8 +231,10 @@ class _$VersionByEnvironmentImpl implements _VersionByEnvironment {
 }
 
 abstract class _VersionByEnvironment implements VersionByEnvironment {
-  factory _VersionByEnvironment({final Version? dev, final Version? stg}) =
-      _$VersionByEnvironmentImpl;
+  factory _VersionByEnvironment(
+      {final Version? dev,
+      final Version? stg,
+      final Version? prd}) = _$VersionByEnvironmentImpl;
 
   factory _VersionByEnvironment.fromJson(Map<String, dynamic> json) =
       _$VersionByEnvironmentImpl.fromJson;
@@ -210,6 +243,8 @@ abstract class _VersionByEnvironment implements VersionByEnvironment {
   Version? get dev;
   @override
   Version? get stg;
+  @override
+  Version? get prd;
 
   /// Create a copy of VersionByEnvironment
   /// with the given fields replaced by the non-null parameter values.

@@ -15,6 +15,9 @@ _$VersionByEnvironmentImpl _$$VersionByEnvironmentImplFromJson(
       stg: json['stg'] == null
           ? null
           : Version.fromJson(json['stg'] as Map<String, dynamic>),
+      prd: json['prd'] == null
+          ? null
+          : Version.fromJson(json['prd'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$$VersionByEnvironmentImplToJson(
@@ -22,6 +25,7 @@ Map<String, dynamic> _$$VersionByEnvironmentImplToJson(
     <String, dynamic>{
       'dev': instance.dev,
       'stg': instance.stg,
+      'prd': instance.prd,
     };
 
 _$VersionImpl _$$VersionImplFromJson(Map<String, dynamic> json) =>
