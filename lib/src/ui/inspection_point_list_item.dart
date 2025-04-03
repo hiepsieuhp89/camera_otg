@@ -77,33 +77,53 @@ class InpsectionPointListItem extends ConsumerWidget {
       );
     }
 
-    Column buildDetailsColumn(report) {
+    Column buildDetailsColumn(InspectionPointReport? report, {bool isPrevious = false}) {
+      if (isPrevious) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '${AppLocalizations.of(context)!.targetMaterial}: '
+              '${report?.metadata?["damage_category"] ?? ''}',
+              style: adjustedSmallTextStyle
+            ),
+            Text(
+              '${report?.metadata?['damage_type']?.toString() ?? ''}'
+              '${report?.metadata?['damage_level']?.toString() ?? ''}',
+              style: adjustedSmallTextStyle
+            ),
+            const SizedBox(height: 3.0),
+            Text(
+              report?.metadata?['remark']?.toString() ?? '',
+              style: adjustedSmallTextStyle
+            ),
+          ],
+        );
+      }
+
       bool isNewPoint = previousReport == null && activeReport != null;
-      bool hasNoComment = activeReport?.metadata?["remark"]?.toString().isEmpty ?? false;
+      bool hasNoComment = report?.metadata?["remark"]?.toString().isEmpty ?? false;
       
-      // Check differences only when both reports exist
-      bool isDifferentDamageCategory = activeReport != null && previousReport != null &&
-          activeReport.metadata?["damage_category"] != previousReport.metadata?["damage_category"];
-      bool isDifferentDamageType = activeReport != null && previousReport != null &&
-          activeReport.metadata?["damage_type"] != previousReport.metadata?["damage_type"];
-      bool isDifferentDamageLevel = activeReport != null && previousReport != null &&
-          activeReport.metadata?["damage_level"] != previousReport.metadata?["damage_level"];
-      bool isDifferentRemark = activeReport != null && previousReport != null &&
-          activeReport.metadata?["remark"] != previousReport.metadata?["remark"];
+      bool isDifferentDamageCategory = 
+          report?.metadata?["damage_category"] != previousReport?.metadata?["damage_category"];
+      bool isDifferentDamageType = 
+          report?.metadata?["damage_type"] != previousReport?.metadata?["damage_type"];
+      bool isDifferentDamageLevel = 
+          report?.metadata?["damage_level"] != previousReport?.metadata?["damage_level"];
+      bool isDifferentRemark = 
+          report?.metadata?["remark"] != previousReport?.metadata?["remark"];
 
-      bool isAllDifferent = isDifferentDamageCategory && isDifferentDamageType && 
-          isDifferentDamageLevel && isDifferentRemark;
-
-      // Apply red border for any of these conditions
-      bool shouldHighlightDamageCategory = isNewPoint || isDifferentDamageCategory || isAllDifferent;
+      bool shouldHighlightDamageCategory = isNewPoint || isDifferentDamageCategory ;
       bool shouldHighlightDamageTypeLevel = isNewPoint || isDifferentDamageType || 
-          isDifferentDamageLevel || isAllDifferent;
-      bool shouldHighlightRemark = isNewPoint || hasNoComment || isDifferentRemark || isAllDifferent;
+          isDifferentDamageLevel;
+      bool shouldHighlightRemark = isNewPoint || hasNoComment || isDifferentRemark;
 
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
+            constraints: shouldHighlightDamageCategory ? 
+                const BoxConstraints(minWidth: 100, minHeight: 24) : null,
             decoration: shouldHighlightDamageCategory ? BoxDecoration(
               border: Border.all(color: Colors.red, width: 2),
             ) : null,
@@ -114,6 +134,8 @@ class InpsectionPointListItem extends ConsumerWidget {
             ),
           ),
           Container(
+            constraints: shouldHighlightDamageTypeLevel ? 
+                const BoxConstraints(minWidth: 100, minHeight: 24) : null,
             decoration: shouldHighlightDamageTypeLevel ? BoxDecoration(
               border: Border.all(color: Colors.red, width: 2),
             ) : null,
@@ -125,6 +147,8 @@ class InpsectionPointListItem extends ConsumerWidget {
           ),
           const SizedBox(height: 3.0),
           Container(
+            constraints: shouldHighlightRemark ? 
+                const BoxConstraints(minWidth: 100, minHeight: 24) : null,
             decoration: shouldHighlightRemark ? BoxDecoration(
               border: Border.all(color: Colors.red, width: 2),
             ) : null,
@@ -168,7 +192,7 @@ class InpsectionPointListItem extends ConsumerWidget {
                               .bodySmall
                               ?.copyWith(fontWeight: FontWeight.bold),
                         ),
-                        buildDetailsColumn(previousReport)
+                        buildDetailsColumn(previousReport, isPrevious: true)
                       ],
                     ),
                   ])),
@@ -349,7 +373,7 @@ class InpsectionPointListItem extends ConsumerWidget {
                                         ),
                                       ),
                                       const SizedBox(height: 3.0),
-                                      buildDetailsColumn(previousReport)
+                                      buildDetailsColumn(previousReport, isPrevious: true)
                                     ],
                                   ),
                                 ),
