@@ -78,6 +78,18 @@ class InpsectionPointListItem extends ConsumerWidget {
     }
 
     Column buildDetailsColumn(InspectionPointReport? report, {bool isPrevious = false}) {
+      if (report == null && !isPrevious) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              AppLocalizations.of(context)!.noDataYet,
+              style: adjustedSmallTextStyle
+            ),
+          ],
+        );
+      }
+      
       if (isPrevious) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -102,21 +114,27 @@ class InpsectionPointListItem extends ConsumerWidget {
       }
 
       bool isNewPoint = previousReport == null && activeReport != null;
-      bool hasNoComment = report?.metadata?["remark"]?.toString().isEmpty ?? false;
       
       bool isDifferentDamageCategory = 
+          report?.metadata?["damage_category"] == null || 
+          report?.metadata?["damage_category"]?.toString().isEmpty == true || 
           report?.metadata?["damage_category"] != previousReport?.metadata?["damage_category"];
       bool isDifferentDamageType = 
+          report?.metadata?["damage_type"] == null || 
+          report?.metadata?["damage_type"]?.toString().isEmpty == true || 
           report?.metadata?["damage_type"] != previousReport?.metadata?["damage_type"];
       bool isDifferentDamageLevel = 
+          report?.metadata?["damage_level"] == null || 
+          report?.metadata?["damage_level"]?.toString().isEmpty == true || 
           report?.metadata?["damage_level"] != previousReport?.metadata?["damage_level"];
       bool isDifferentRemark = 
+          report?.metadata?["remark"] == null || 
+          report?.metadata?["remark"]?.toString().isEmpty == true || 
           report?.metadata?["remark"] != previousReport?.metadata?["remark"];
 
-      bool shouldHighlightDamageCategory = isNewPoint || isDifferentDamageCategory ;
-      bool shouldHighlightDamageTypeLevel = isNewPoint || isDifferentDamageType || 
-          isDifferentDamageLevel;
-      bool shouldHighlightRemark = isNewPoint || hasNoComment || isDifferentRemark;
+      bool shouldHighlightDamageCategory = isNewPoint || isDifferentDamageCategory;
+      bool shouldHighlightDamageTypeLevel = isNewPoint || isDifferentDamageType || isDifferentDamageLevel;
+      bool shouldHighlightRemark = isNewPoint || isDifferentRemark;
 
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
