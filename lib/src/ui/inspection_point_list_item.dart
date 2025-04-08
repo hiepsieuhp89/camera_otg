@@ -77,21 +77,86 @@ class InpsectionPointListItem extends ConsumerWidget {
       );
     }
 
-    Column buildDetailsColumn(report) {
+    Column buildDetailsColumn(InspectionPointReport? report, {bool isPrevious = false}) {
+      if (isPrevious) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '${AppLocalizations.of(context)!.targetMaterial}: '
+              '${report?.metadata?["damage_category"] ?? ''}',
+              style: adjustedSmallTextStyle
+            ),
+            Text(
+              '${report?.metadata?['damage_type']?.toString() ?? ''}'
+              '${report?.metadata?['damage_level']?.toString() ?? ''}',
+              style: adjustedSmallTextStyle
+            ),
+            const SizedBox(height: 3.0),
+            Text(
+              report?.metadata?['remark']?.toString() ?? '',
+              style: adjustedSmallTextStyle
+            ),
+          ],
+        );
+      }
+
+      bool isNewPoint = previousReport == null && activeReport != null;
+      bool hasNoComment = report?.metadata?["remark"]?.toString().isEmpty ?? false;
+      
+      bool isDifferentDamageCategory = 
+          report?.metadata?["damage_category"] != previousReport?.metadata?["damage_category"];
+      bool isDifferentDamageType = 
+          report?.metadata?["damage_type"] != previousReport?.metadata?["damage_type"];
+      bool isDifferentDamageLevel = 
+          report?.metadata?["damage_level"] != previousReport?.metadata?["damage_level"];
+      bool isDifferentRemark = 
+          report?.metadata?["remark"] != previousReport?.metadata?["remark"];
+
+      bool shouldHighlightDamageCategory = isNewPoint || isDifferentDamageCategory ;
+      bool shouldHighlightDamageTypeLevel = isNewPoint || isDifferentDamageType || 
+          isDifferentDamageLevel;
+      bool shouldHighlightRemark = isNewPoint || hasNoComment || isDifferentRemark;
+
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          Container(
+            constraints: shouldHighlightDamageCategory ? 
+                const BoxConstraints(minWidth: 100, minHeight: 24) : null,
+            decoration: shouldHighlightDamageCategory ? BoxDecoration(
+              border: Border.all(color: Colors.red, width: 2),
+            ) : null,
+            child: Text(
               '${AppLocalizations.of(context)!.targetMaterial}: '
               '${report?.metadata?["damage_category"] ?? ''}',
-              style: adjustedSmallTextStyle),
-          Text(
+              style: adjustedSmallTextStyle
+            ),
+          ),
+          Container(
+            constraints: shouldHighlightDamageTypeLevel ? 
+                const BoxConstraints(minWidth: 100, minHeight: 24) : null,
+            decoration: shouldHighlightDamageTypeLevel ? BoxDecoration(
+              border: Border.all(color: Colors.red, width: 2),
+            ) : null,
+            child: Text(
               '${report?.metadata?['damage_type']?.toString() ?? ''}'
               '${report?.metadata?['damage_level']?.toString() ?? ''}',
-              style: adjustedSmallTextStyle),
+              style: adjustedSmallTextStyle
+            ),
+          ),
           const SizedBox(height: 3.0),
-          Text(report?.metadata?['remark']?.toString() ?? '',
-              style: adjustedSmallTextStyle),
+          Container(
+            constraints: shouldHighlightRemark ? 
+                const BoxConstraints(minWidth: 100, minHeight: 24) : null,
+            decoration: shouldHighlightRemark ? BoxDecoration(
+              border: Border.all(color: Colors.red, width: 2),
+            ) : null,
+            child: Text(
+              report?.metadata?['remark']?.toString() ?? '',
+              style: adjustedSmallTextStyle
+            ),
+          ),
         ],
       );
     }
@@ -127,7 +192,7 @@ class InpsectionPointListItem extends ConsumerWidget {
                               .bodySmall
                               ?.copyWith(fontWeight: FontWeight.bold),
                         ),
-                        buildDetailsColumn(previousReport)
+                        buildDetailsColumn(previousReport, isPrevious: true)
                       ],
                     ),
                   ])),
@@ -308,7 +373,7 @@ class InpsectionPointListItem extends ConsumerWidget {
                                         ),
                                       ),
                                       const SizedBox(height: 3.0),
-                                      buildDetailsColumn(previousReport)
+                                      buildDetailsColumn(previousReport, isPrevious: true)
                                     ],
                                   ),
                                 ),
