@@ -6,7 +6,7 @@ part of 'text_expansions.provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$textExpansionsHash() => r'4b0e37a4244358ee8916daca675f0bbc9a5f9050';
+String _$textExpansionsHash() => r'cba9757ff7c460e9513aaec804ce4336d46e7542';
 
 /// See also [textExpansions].
 @ProviderFor(textExpansions)
