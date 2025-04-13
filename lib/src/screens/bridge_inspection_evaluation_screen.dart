@@ -16,6 +16,10 @@ import 'package:kyoryo/src/providers/current_photo_inspection_result.provider.da
 import 'package:kyoryo/src/providers/misc.provider.dart';
 import 'package:kyoryo/src/routing/router.dart';
 import 'package:kyoryo/src/ui/photo_sequence_number_mark.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:kyoryo/src/models/text_expansion.dart';
+import 'package:kyoryo/src/providers/text_expansions.provider.dart';
+import 'package:flutter/foundation.dart';
 
 @RoutePage()
 class BridgeInspectionEvaluationScreen extends ConsumerStatefulWidget {
@@ -216,6 +220,8 @@ class BridgeInspectionEvaluationScreenState
 
   buildEvaluationForm(BuildContext context,
       AsyncValue<List<DamageType>> damageTypes, Orientation orientation) {
+    final textExpansionsAsync = ref.watch(textExpansionsProvider);
+    
     return Column(
       children: [
         Expanded(
@@ -303,7 +309,9 @@ class BridgeInspectionEvaluationScreenState
               ),
               const SizedBox(height: 8),
               Expanded(
-                child: TextField(
+                child: textExpansionsAsync.when(
+                  loading: () => const CircularProgressIndicator(),
+                  error: (error, stackTrace) => TextField(
                     minLines: 7,
                     maxLines: null,
                     controller: _textEditingController,
@@ -314,7 +322,10 @@ class BridgeInspectionEvaluationScreenState
                       constraints: const BoxConstraints(
                           minHeight: double.infinity,
                           minWidth: double.infinity),
-                    )),
+                    ),
+                  ),
+                  data: (textExpansions) => _buildTypeAheadField(context, textExpansions),
+                ),
               ),
             ],
           ),
@@ -357,6 +368,192 @@ class BridgeInspectionEvaluationScreenState
         )
       ],
     );
+  }
+
+  Widget _buildTypeAheadField(BuildContext context, List<TextExpansion> textExpansions) {
+    return TypeAheadField<TextExpansion>(
+      textFieldConfiguration: TextFieldConfiguration(
+        controller: _textEditingController,
+        minLines: 7,
+        maxLines: null,
+        keyboardType: TextInputType.multiline,
+        decoration: InputDecoration(
+          labelText: AppLocalizations.of(context)!.remark,
+          border: const OutlineInputBorder(),
+          constraints: const BoxConstraints(
+            minHeight: double.infinity,
+            minWidth: double.infinity,
+          ),
+        ),
+        onChanged: (value) {
+          // Auto-expand single matches when space is pressed
+          if (value.endsWith(' ')) {
+            final lastWord = _getLastWord(value.substring(0, value.length - 1));
+            
+            final matches = textExpansions
+                .where((expansion) => 
+                    expansion.abbreviation.toLowerCase() == lastWord.toLowerCase())
+                .toList();
+            
+            if (matches.length == 1) {
+              // Replace the abbreviation with the expanded text
+              final newText = value.substring(0, value.length - lastWord.length - 1) +
+                  matches[0].expandedText + ' ';
+              
+              _textEditingController.value = TextEditingValue(
+                text: newText,
+                selection: TextSelection.collapsed(offset: newText.length),
+              );
+            }
+          }
+        },
+      ),
+      suggestionsCallback: (pattern) {
+        final lastWord = _getLastWord(pattern);
+        
+        if (lastWord.isEmpty) return [];
+        
+        // Check if we have any exact matches
+        final exactMatches = textExpansions
+            .where((expansion) => 
+                expansion.abbreviation.toLowerCase() == lastWord.toLowerCase())
+            .toList();
+            
+        // If we have exact matches, prioritize those
+        if (exactMatches.isNotEmpty) {
+          return exactMatches;
+        }
+        
+        // Otherwise, use partial matches
+        final partialMatches = textExpansions
+            .where((expansion) => 
+                expansion.abbreviation.toLowerCase().contains(lastWord.toLowerCase()))
+            .toList();
+        
+        return partialMatches;
+      },
+      itemBuilder: (context, suggestion) {
+        final lastWord = _getLastWord(_textEditingController.text);
+        
+        // Create a RichText to highlight the matching part
+        return ListTile(
+          title: RichText(
+            text: TextSpan(
+              children: _highlightMatches(
+                suggestion.abbreviation, 
+                lastWord,
+                Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black,
+                Theme.of(context).primaryColor,
+              ),
+            ),
+          ),
+          subtitle: Text(suggestion.expandedText),
+        );
+      },
+      onSuggestionSelected: (suggestion) {
+        final currentText = _textEditingController.text;
+        final lastWord = _getLastWord(currentText);
+        final lastWordIndex = currentText.lastIndexOf(lastWord);
+        
+        if (lastWordIndex != -1) {
+          final newText = currentText.substring(0, lastWordIndex) + 
+              suggestion.expandedText;
+          
+          _textEditingController.value = TextEditingValue(
+            text: newText,
+            selection: TextSelection.collapsed(offset: newText.length),
+          );
+        }
+      },
+      hideOnEmpty: true,
+      hideOnLoading: true,
+      debounceDuration: const Duration(milliseconds: 300),
+      
+      // Add these properties to fix the dropdown position
+      direction: AxisDirection.up, // Show above instead of below
+      
+      // Limit the height to ensure it doesn't cover too much
+      suggestionsBoxDecoration: SuggestionsBoxDecoration(
+        constraints: const BoxConstraints(maxHeight: 200),
+        elevation: 4.0,
+        borderRadius: BorderRadius.circular(8.0),
+      ),
+      
+      keepSuggestionsOnLoading: false,
+      
+      noItemsFoundBuilder: (context) => const Padding(
+        padding: EdgeInsets.all(8.0),
+        child: Text("No suggestions", style: TextStyle(fontStyle: FontStyle.italic)),
+      ),
+    );
+  }
+
+  String _getLastWord(String text) {
+    // If the text contains no spaces (common in Japanese), check for the last Latin character sequence
+    if (!text.contains(' ')) {
+      // Use regex to find Latin character sequences
+      final matches = RegExp(r'[a-zA-Z]+$').allMatches(text);
+      if (matches.isNotEmpty) {
+        final match = matches.last;
+        return text.substring(match.start, match.end);
+      }
+      return ''; // No Latin character sequence found
+    }
+    
+    // For text with spaces, get the last space-separated word
+    final words = text.split(' ');
+    return words.isEmpty ? '' : words.last;
+  }
+
+  List<TextSpan> _highlightMatches(
+    String text, 
+    String query, 
+    Color textColor, 
+    Color highlightColor
+  ) {
+    if (query.isEmpty) {
+      return [TextSpan(text: text, style: TextStyle(color: textColor))];
+    }
+
+    final lowerText = text.toLowerCase();
+    final lowerQuery = query.toLowerCase();
+    final spans = <TextSpan>[];
+    int start = 0;
+
+    // Find all occurrences of the query in the text
+    int indexOfMatch = lowerText.indexOf(lowerQuery);
+    while (indexOfMatch != -1) {
+      // Add normal text before the match
+      if (indexOfMatch > start) {
+        spans.add(TextSpan(
+          text: text.substring(start, indexOfMatch),
+          style: TextStyle(color: textColor),
+        ));
+      }
+      
+      // Add highlighted text for the match
+      spans.add(TextSpan(
+        text: text.substring(indexOfMatch, indexOfMatch + query.length),
+        style: TextStyle(
+          color: highlightColor,
+          fontWeight: FontWeight.bold,
+        ),
+      ));
+      
+      // Update start position for next search
+      start = indexOfMatch + query.length;
+      indexOfMatch = lowerText.indexOf(lowerQuery, start);
+    }
+    
+    // Add remaining text after last match
+    if (start < text.length) {
+      spans.add(TextSpan(
+        text: text.substring(start),
+        style: TextStyle(color: textColor),
+      ));
+    }
+    
+    return spans;
   }
 
   buildPhotosCarousel(BuildContext context, Orientation orientation) {

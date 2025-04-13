@@ -12,6 +12,7 @@ import 'package:kyoryo/src/services/api_client.service.dart';
 import 'package:kyoryo/src/utilities/image_utils.dart';
 import 'package:logging/logging.dart';
 import 'package:kyoryo/src/models/version.dart';
+import 'package:flutter/foundation.dart';
 
 class ApiService {
   final ApiClient apiClient = ApiClient();
@@ -218,5 +219,17 @@ class ApiService {
         headerParams: getAuthorizationHeader());
 
     return InspectionPoint.fromJson(jsonResponse);
+  }
+
+  Future<List<dynamic>> fetchTextExpansions() async {
+    try {
+      final jsonResponse = await apiClient.get('api/common/text_expansions',
+          headerParams: getAuthorizationHeader());
+
+      return jsonResponse as List;
+    } catch (e) {
+      debugPrint('Error fetching text expansions: $e');
+      return [];
+    }
   }
 }
