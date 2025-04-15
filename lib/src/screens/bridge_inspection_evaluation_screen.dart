@@ -149,6 +149,14 @@ class BridgeInspectionEvaluationScreenState
   }
 
   @override
+  void dispose() {
+    _textEditingController.dispose();
+    _damageCategoryController.dispose();
+    _damageTypeController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final damageTypes = ref.watch(damageTypesProvider);
 
