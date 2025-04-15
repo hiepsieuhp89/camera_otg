@@ -16,11 +16,7 @@ import 'package:kyoryo/src/providers/current_photo_inspection_result.provider.da
 import 'package:kyoryo/src/providers/misc.provider.dart';
 import 'package:kyoryo/src/routing/router.dart';
 import 'package:kyoryo/src/ui/photo_sequence_number_mark.dart';
-import 'package:flutter_typeahead/flutter_typeahead.dart';
-import 'package:kyoryo/src/models/text_expansion.dart';
-import 'package:kyoryo/src/providers/text_expansions.provider.dart';
 import 'package:kyoryo/src/ui/text_expansion_type_ahead.dart';
-import 'package:flutter/foundation.dart';
 
 @RoutePage()
 class BridgeInspectionEvaluationScreen extends ConsumerStatefulWidget {

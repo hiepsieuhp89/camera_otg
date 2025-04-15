@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kyoryo/src/models/text_expansion.dart';
 import 'package:kyoryo/src/providers/api.provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -6,7 +7,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'text_expansions.provider.g.dart';
 
 @riverpod
-Future<List<TextExpansion>> textExpansions(TextExpansionsRef ref) async {
+Future<List<TextExpansion>> textExpansions(Ref ref) async {
   try {
     // Use the apiServiceProvider instead of creating a new ApiService instance
     final apiService = ref.watch(apiServiceProvider);

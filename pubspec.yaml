@@ -38,7 +38,7 @@ dependencies:
   open_file: ^3.5.10
   permission_handler: ^11.3.1
   scrollable_positioned_list: ^0.3.8
-  flutter_typeahead: 4.7.0
+  flutter_typeahead: ^5.1.0
 
 dev_dependencies:
   flutter_test:
@@ -58,8 +58,6 @@ dependency_overrides:
   # that happens from 0.6.6 to 0.6.10+3 on the time of writing.
   # https://github.com/flutter/flutter/issues/154241
   camera_android_camerax: 0.6.5+6
-  # Add flutter_keyboard_visibility override to fix namespace issue
-  flutter_keyboard_visibility: 6.0.0
 
 flutter:
   uses-material-design: true

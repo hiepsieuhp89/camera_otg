@@ -1,10 +1,10 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:kyoryo/src/models/text_expansion.dart';
 import 'package:kyoryo/src/providers/text_expansions.provider.dart';
-import 'dart:math';
 
 // Helper class for word info
 class WordInfo {
@@ -23,13 +23,13 @@ class TextExpansionTypeAhead extends ConsumerStatefulWidget {
   final InputDecoration? decoration;
 
   const TextExpansionTypeAhead({
-    Key? key,
+    super.key,
     required this.controller,
     this.labelText,
     this.minLines = 3,
     this.maxLines,
     this.decoration,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<TextExpansionTypeAhead> createState() => _TextExpansionTypeAheadState();
@@ -42,7 +42,6 @@ class _TextExpansionTypeAheadState extends ConsumerState<TextExpansionTypeAhead>
   OverlayEntry? _overlayEntry;
   List<TextExpansion> _suggestions = [];
   int _selectedIndex = 0;
-  String _currentWord = '';
   int _currentWordStart = 0;
   int _currentWordEnd = 0;
   bool _suppressSuggestions = false;
@@ -114,7 +113,6 @@ class _TextExpansionTypeAheadState extends ConsumerState<TextExpansionTypeAhead>
       return;
     }
 
-    _currentWord = word;
     _currentWordStart = wordInfo.start;
     _currentWordEnd = wordInfo.end;
 
@@ -143,9 +141,6 @@ class _TextExpansionTypeAheadState extends ConsumerState<TextExpansionTypeAhead>
     final RenderBox renderBox = context.findRenderObject() as RenderBox;
     final size = renderBox.size;
     final offset = renderBox.localToGlobal(Offset.zero);
-    
-    // Get the cursor position for better overlay placement
-    final cursorLine = _getCursorLinePosition();
     
     _hideOverlay();
 
@@ -274,7 +269,7 @@ class _TextExpansionTypeAheadState extends ConsumerState<TextExpansionTypeAhead>
     final text = _textController.text;
     final beforeWord = text.substring(0, _currentWordStart);
     final afterWord = text.substring(_currentWordEnd);
-    final newText = beforeWord + suggestion.expandedText + afterWord;
+    final newText = "$beforeWord${suggestion.expandedText}$afterWord";
     
     _textController.value = TextEditingValue(
       text: newText,
@@ -353,7 +348,7 @@ class _TextExpansionTypeAheadState extends ConsumerState<TextExpansionTypeAhead>
             if (exactMatch.id != -1) {
               // Replace with expanded text
               final beforeWord = text.substring(0, wordInfo.start);
-              final newText = beforeWord + exactMatch.expandedText + ' ';
+              final newText = "$beforeWord${exactMatch.expandedText} ";
               
               _textController.value = TextEditingValue(
                 text: newText,
@@ -417,84 +412,6 @@ class _TextExpansionTypeAheadState extends ConsumerState<TextExpansionTypeAhead>
       );
     }
   }
-
-  List<TextSpan> _highlightMatches(
-    String text, 
-    String query, 
-    Color textColor, 
-    Color highlightColor
-  ) {
-    if (query.isEmpty) {
-      return [TextSpan(text: text, style: TextStyle(color: textColor))];
-    }
-
-    final lowerText = text.toLowerCase();
-    final lowerQuery = query.toLowerCase();
-    final spans = <TextSpan>[];
-    int start = 0;
-
-    // Find all occurrences of the query in the text
-    int indexOfMatch = lowerText.indexOf(lowerQuery);
-    while (indexOfMatch != -1) {
-      // Add normal text before the match
-      if (indexOfMatch > start) {
-        spans.add(TextSpan(
-          text: text.substring(start, indexOfMatch),
-          style: TextStyle(color: textColor),
-        ));
-      }
-      
-      // Add highlighted text for the match
-      spans.add(TextSpan(
-        text: text.substring(indexOfMatch, indexOfMatch + query.length),
-        style: TextStyle(
-          color: highlightColor,
-          fontWeight: FontWeight.bold,
-          backgroundColor: Colors.yellow.withOpacity(0.3),
-        ),
-      ));
-      
-      // Update start position for next search
-      start = indexOfMatch + query.length;
-      indexOfMatch = lowerText.indexOf(lowerQuery, start);
-    }
-    
-    // Add remaining text after last match
-    if (start < text.length) {
-      spans.add(TextSpan(
-        text: text.substring(start),
-        style: TextStyle(color: textColor),
-      ));
-    }
-    
-    return spans;
-  }
-
-  // Calculate the position of the cursor within the text field
-  Offset _getCursorLinePosition() {
-    // Default to a position near the top of the field as fallback
-    double cursorY = 30.0;
-    
-    try {
-      final cursorPos = _textController.selection.baseOffset;
-      if (cursorPos >= 0) {
-        // Split text by newlines to find which line the cursor is on
-        final textBeforeCursor = _textController.text.substring(0, cursorPos);
-        final lines = textBeforeCursor.split('\n');
-        final lineCount = lines.length;
-        
-        // Estimate cursor Y position based on line count and line height
-        // This is an approximation since we don't have access to the exact render metrics
-        const estimatedLineHeight = 20.0; // Adjust based on your text style
-        cursorY = lineCount * estimatedLineHeight;
-      }
-    } catch (e) {
-      // If any errors in calculation, use the default fallback
-    }
-    
-    return Offset(0, cursorY);
-  }
-
   // Handle keyboard navigation for dropdown
   bool _handleKeyPress(KeyEvent event) {
     // Only handle keys when we have focus and suggestions are visible
