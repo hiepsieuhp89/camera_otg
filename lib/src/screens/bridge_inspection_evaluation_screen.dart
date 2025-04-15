@@ -16,6 +16,7 @@ import 'package:kyoryo/src/providers/current_photo_inspection_result.provider.da
 import 'package:kyoryo/src/providers/misc.provider.dart';
 import 'package:kyoryo/src/routing/router.dart';
 import 'package:kyoryo/src/ui/photo_sequence_number_mark.dart';
+import 'package:kyoryo/src/ui/text_expansion_type_ahead.dart';
 
 @RoutePage()
 class BridgeInspectionEvaluationScreen extends ConsumerStatefulWidget {
@@ -148,13 +149,21 @@ class BridgeInspectionEvaluationScreenState
   }
 
   @override
+  void dispose() {
+    _textEditingController.dispose();
+    _damageCategoryController.dispose();
+    _damageTypeController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final damageTypes = ref.watch(damageTypesProvider);
 
     return OrientationBuilder(
       builder: (context, orientation) {
         return Scaffold(
-            resizeToAvoidBottomInset: false,
+            resizeToAvoidBottomInset: true,
             appBar: orientation == Orientation.portrait
                 ? AppBar(title: Text(widget.point.spanName ?? ''), actions: [
                     buildGoToPhotoSelectionButton(context),
@@ -303,18 +312,11 @@ class BridgeInspectionEvaluationScreenState
               ),
               const SizedBox(height: 8),
               Expanded(
-                child: TextField(
-                    minLines: 7,
-                    maxLines: null,
-                    controller: _textEditingController,
-                    keyboardType: TextInputType.multiline,
-                    decoration: InputDecoration(
-                      labelText: AppLocalizations.of(context)!.remark,
-                      border: const OutlineInputBorder(),
-                      constraints: const BoxConstraints(
-                          minHeight: double.infinity,
-                          minWidth: double.infinity),
-                    )),
+                child: TextExpansionTypeAhead(
+                  controller: _textEditingController,
+                  minLines: 7,
+                  labelText: AppLocalizations.of(context)!.remark,
+                ),
               ),
             ],
           ),
