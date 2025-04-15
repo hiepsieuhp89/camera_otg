@@ -716,6 +716,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'再試行'**
   String get retry;
+
+  /// Shows the number of available text suggestions
+  ///
+  /// In ja, this message translates to:
+  /// **'{count} 候補'**
+  String suggestionsCount(Object count);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

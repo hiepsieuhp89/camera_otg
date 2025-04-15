@@ -335,4 +335,9 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get retry => '再試行';
+
+  @override
+  String suggestionsCount(Object count) {
+    return '$count 候補';
+  }
 }

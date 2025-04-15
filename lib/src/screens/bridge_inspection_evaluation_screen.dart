@@ -155,7 +155,7 @@ class BridgeInspectionEvaluationScreenState
     return OrientationBuilder(
       builder: (context, orientation) {
         return Scaffold(
-            resizeToAvoidBottomInset: false,
+            resizeToAvoidBottomInset: true,
             appBar: orientation == Orientation.portrait
                 ? AppBar(title: Text(widget.point.spanName ?? ''), actions: [
                     buildGoToPhotoSelectionButton(context),

@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kyoryo/src/models/text_expansion.dart';
 import 'package:kyoryo/src/providers/text_expansions.provider.dart';
+import 'package:kyoryo/src/localization/app_localizations.dart';
 
 // Helper class for word info
 class WordInfo {
@@ -181,7 +182,7 @@ class _TextExpansionTypeAheadState extends ConsumerState<TextExpansionTypeAhead>
                     ),
                   ),
                   child: Text(
-                    '${_suggestions.length} suggestion(s)',
+                    AppLocalizations.of(context)!.suggestionsCount(_suggestions.length),
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.normal,
