@@ -12,7 +12,7 @@ class WordInfo {
   final String word;
   final int start;
   final int end;
-  
+
   WordInfo({required this.word, required this.start, required this.end});
 }
 
@@ -33,13 +33,14 @@ class TextExpansionTypeAhead extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<TextExpansionTypeAhead> createState() => _TextExpansionTypeAheadState();
+  ConsumerState<TextExpansionTypeAhead> createState() =>
+      _TextExpansionTypeAheadState();
 }
 
-class _TextExpansionTypeAheadState extends ConsumerState<TextExpansionTypeAhead> {
+class _TextExpansionTypeAheadState
+    extends ConsumerState<TextExpansionTypeAhead> {
   final FocusNode _focusNode = FocusNode();
-  final TextEditingController _textController = TextEditingController();
-  
+
   OverlayEntry? _overlayEntry;
   List<TextExpansion> _suggestions = [];
   int _selectedIndex = 0;
@@ -50,26 +51,6 @@ class _TextExpansionTypeAheadState extends ConsumerState<TextExpansionTypeAhead>
   @override
   void initState() {
     super.initState();
-    _textController.text = widget.controller.text;
-    
-    // Listen to changes from the original controller
-    widget.controller.addListener(() {
-      if (_textController.text != widget.controller.text) {
-        _textController.text = widget.controller.text;
-      }
-    });
-
-    // Listen to changes from our internal controller
-    _textController.addListener(() {
-      if (widget.controller.text != _textController.text) {
-        widget.controller.text = _textController.text;
-      }
-      
-      // If the selection has changed, update suggestions
-      if (_textController.selection.isValid) {
-        _updateSuggestions();
-      }
-    });
 
     // Add focus listener to show/hide overlay
     _focusNode.addListener(() {
@@ -79,7 +60,7 @@ class _TextExpansionTypeAheadState extends ConsumerState<TextExpansionTypeAhead>
         _updateSuggestions();
       }
     });
-    
+
     // Add keyboard listener to handle navigation
     ServicesBinding.instance.keyboard.addHandler(_handleKeyPress);
   }
@@ -88,7 +69,6 @@ class _TextExpansionTypeAheadState extends ConsumerState<TextExpansionTypeAhead>
   void dispose() {
     _hideOverlay();
     _focusNode.dispose();
-    _textController.dispose();
     ServicesBinding.instance.keyboard.removeHandler(_handleKeyPress);
     super.dispose();
   }
@@ -97,8 +77,8 @@ class _TextExpansionTypeAheadState extends ConsumerState<TextExpansionTypeAhead>
     final textExpansions = ref.read(textExpansionsProvider).valueOrNull ?? [];
     if (textExpansions.isEmpty) return;
 
-    final text = _textController.text;
-    final cursorPosition = _textController.selection.baseOffset;
+    final text = widget.controller.text;
+    final cursorPosition = widget.controller.selection.baseOffset;
     if (cursorPosition < 0) return;
 
     // Get word at cursor
@@ -123,13 +103,13 @@ class _TextExpansionTypeAheadState extends ConsumerState<TextExpansionTypeAhead>
         .toList();
 
     final partialMatches = textExpansions
-        .where((item) => 
+        .where((item) =>
             item.abbreviation.toLowerCase().contains(word.toLowerCase()) &&
             !exactMatches.contains(item))
         .toList();
 
     _suggestions = [...exactMatches, ...partialMatches];
-    
+
     if (_suggestions.isNotEmpty) {
       _selectedIndex = 0;
       _showOverlay();
@@ -142,16 +122,18 @@ class _TextExpansionTypeAheadState extends ConsumerState<TextExpansionTypeAhead>
     final RenderBox renderBox = context.findRenderObject() as RenderBox;
     final size = renderBox.size;
     final offset = renderBox.localToGlobal(Offset.zero);
-    
+
     _hideOverlay();
 
     // Position the tooltip higher above the text field
-    final tooltipTop = offset.dy - 100; // Move it higher (100px instead of 50px)
-    
+    final tooltipTop =
+        offset.dy - 100; // Move it higher (100px instead of 50px)
+
     // Calculate a dynamic height based on suggestion count, but keep it small
     final suggestionsCount = min(_suggestions.length, 3);
-    final dynamicHeight = 30.0 + (suggestionsCount * 24.0); // Header (30px) + items (24px each)
-    
+    final dynamicHeight =
+        30.0 + (suggestionsCount * 24.0); // Header (30px) + items (24px each)
+
     _overlayEntry = OverlayEntry(
       builder: (context) => Positioned(
         left: offset.dx + 10,
@@ -164,7 +146,8 @@ class _TextExpansionTypeAheadState extends ConsumerState<TextExpansionTypeAhead>
           borderRadius: BorderRadius.circular(4),
           child: Container(
             constraints: BoxConstraints(
-              maxHeight: min(dynamicHeight, 80), // More strict height limit based on suggestion count
+              maxHeight: min(dynamicHeight,
+                  80), // More strict height limit based on suggestion count
               maxWidth: size.width * 0.6,
             ),
             child: Column(
@@ -173,7 +156,8 @@ class _TextExpansionTypeAheadState extends ConsumerState<TextExpansionTypeAhead>
               children: [
                 // Simpler header with just the suggestion count
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
                     color: Colors.grey[200],
                     borderRadius: const BorderRadius.only(
@@ -182,7 +166,8 @@ class _TextExpansionTypeAheadState extends ConsumerState<TextExpansionTypeAhead>
                     ),
                   ),
                   child: Text(
-                    AppLocalizations.of(context)!.suggestionsCount(_suggestions.length),
+                    AppLocalizations.of(context)!
+                        .suggestionsCount(_suggestions.length),
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.normal,
@@ -196,19 +181,26 @@ class _TextExpansionTypeAheadState extends ConsumerState<TextExpansionTypeAhead>
                   child: ListView.builder(
                     shrinkWrap: true,
                     padding: EdgeInsets.zero,
-                    itemCount: min(_suggestions.length, 3), // Limit to 3 suggestions maximum
+                    itemCount: min(_suggestions.length,
+                        3), // Limit to 3 suggestions maximum
                     itemBuilder: (context, index) {
                       final suggestion = _suggestions[index];
                       return InkWell(
                         onTap: () => _applySuggestion(suggestion),
                         child: Container(
                           decoration: BoxDecoration(
-                            color: index == _selectedIndex ? 
-                                Colors.grey[100] : Colors.transparent,
-                            border: index == _selectedIndex ? 
-                                Border(left: BorderSide(color: Colors.blue[400]!, width: 3)) : null,
+                            color: index == _selectedIndex
+                                ? Colors.grey[100]
+                                : Colors.transparent,
+                            border: index == _selectedIndex
+                                ? Border(
+                                    left: BorderSide(
+                                        color: Colors.blue[400]!, width: 3))
+                                : null,
                           ),
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), // More compact padding
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4), // More compact padding
                           child: Row(
                             children: [
                               Expanded(
@@ -236,7 +228,7 @@ class _TextExpansionTypeAheadState extends ConsumerState<TextExpansionTypeAhead>
                                 ),
                               ),
                               // Simple checkmark for selected item
-                              if (index == _selectedIndex) 
+                              if (index == _selectedIndex)
                                 Icon(
                                   Icons.check,
                                   size: 14,
@@ -267,18 +259,18 @@ class _TextExpansionTypeAheadState extends ConsumerState<TextExpansionTypeAhead>
   }
 
   void _applySuggestion(TextExpansion suggestion) {
-    final text = _textController.text;
+    final text = widget.controller.text;
     final beforeWord = text.substring(0, _currentWordStart);
     final afterWord = text.substring(_currentWordEnd);
     final newText = "$beforeWord${suggestion.expandedText}$afterWord";
-    
-    _textController.value = TextEditingValue(
+
+    widget.controller.value = TextEditingValue(
       text: newText,
       selection: TextSelection.collapsed(
         offset: beforeWord.length + suggestion.expandedText.length,
       ),
     );
-    
+
     _hideOverlay();
     _suppressSuggestions = false;
   }
@@ -286,7 +278,7 @@ class _TextExpansionTypeAheadState extends ConsumerState<TextExpansionTypeAhead>
   @override
   Widget build(BuildContext context) {
     final textExpansionsAsync = ref.watch(textExpansionsProvider);
-    
+
     return textExpansionsAsync.when(
       loading: () => const Center(
         child: SizedBox(
@@ -306,32 +298,34 @@ class _TextExpansionTypeAheadState extends ConsumerState<TextExpansionTypeAhead>
       minLines: widget.minLines,
       maxLines: widget.maxLines,
       keyboardType: TextInputType.multiline,
-      decoration: widget.decoration ?? InputDecoration(
-        labelText: widget.labelText,
-        border: const OutlineInputBorder(),
-        constraints: const BoxConstraints(
-          minHeight: double.infinity,
-          minWidth: double.infinity,
-        ),
-      ),
+      decoration: widget.decoration ??
+          InputDecoration(
+            labelText: widget.labelText,
+            border: const OutlineInputBorder(),
+            constraints: const BoxConstraints(
+              minHeight: double.infinity,
+              minWidth: double.infinity,
+            ),
+          ),
     );
   }
 
   Widget _buildTextField(BuildContext context) {
     return TextField(
-      controller: _textController,
+      controller: widget.controller,
       focusNode: _focusNode,
       minLines: widget.minLines,
       maxLines: widget.maxLines,
       keyboardType: TextInputType.multiline,
-      decoration: widget.decoration ?? InputDecoration(
-        labelText: widget.labelText,
-        border: const OutlineInputBorder(),
-        constraints: const BoxConstraints(
-          minHeight: double.infinity,
-          minWidth: double.infinity,
-        ),
-      ),
+      decoration: widget.decoration ??
+          InputDecoration(
+            labelText: widget.labelText,
+            border: const OutlineInputBorder(),
+            constraints: const BoxConstraints(
+              minHeight: double.infinity,
+              minWidth: double.infinity,
+            ),
+          ),
       onChanged: (value) {
         // Additional handling for space auto-expansion
         if (value.endsWith(' ')) {
@@ -339,19 +333,21 @@ class _TextExpansionTypeAheadState extends ConsumerState<TextExpansionTypeAhead>
           final wordInfo = _getLastWordInfo(text);
           if (wordInfo != null) {
             final word = wordInfo.word;
-            final textExpansions = ref.read(textExpansionsProvider).valueOrNull ?? [];
-            
+            final textExpansions =
+                ref.read(textExpansionsProvider).valueOrNull ?? [];
+
             final exactMatch = textExpansions.firstWhere(
               (item) => item.abbreviation.toLowerCase() == word.toLowerCase(),
-              orElse: () => TextExpansion(id: -1, abbreviation: '', expandedText: ''),
+              orElse: () =>
+                  TextExpansion(id: -1, abbreviation: '', expandedText: ''),
             );
-            
+
             if (exactMatch.id != -1) {
               // Replace with expanded text
               final beforeWord = text.substring(0, wordInfo.start);
               final newText = "$beforeWord${exactMatch.expandedText} ";
-              
-              _textController.value = TextEditingValue(
+
+              widget.controller.value = TextEditingValue(
                 text: newText,
                 selection: TextSelection.collapsed(offset: newText.length),
               );
@@ -394,10 +390,10 @@ class _TextExpansionTypeAheadState extends ConsumerState<TextExpansionTypeAhead>
   // Get the last word in text
   WordInfo? _getLastWordInfo(String text) {
     if (text.isEmpty) return null;
-    
+
     // Find the last space
     int lastSpaceIndex = text.lastIndexOf(' ');
-    
+
     if (lastSpaceIndex == -1) {
       // No spaces, entire text is one word
       return WordInfo(word: text, start: 0, end: text.length);
@@ -405,7 +401,7 @@ class _TextExpansionTypeAheadState extends ConsumerState<TextExpansionTypeAhead>
       // Get text after last space
       String lastWord = text.substring(lastSpaceIndex + 1);
       if (lastWord.isEmpty) return null;
-      
+
       return WordInfo(
         word: lastWord,
         start: lastSpaceIndex + 1,
@@ -413,13 +409,14 @@ class _TextExpansionTypeAheadState extends ConsumerState<TextExpansionTypeAhead>
       );
     }
   }
+
   // Handle keyboard navigation for dropdown
   bool _handleKeyPress(KeyEvent event) {
     // Only handle keys when we have focus and suggestions are visible
     if (!_focusNode.hasFocus || _overlayEntry == null || _suggestions.isEmpty) {
       return false;
     }
-    
+
     if (event is KeyDownEvent) {
       if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
         setState(() {
@@ -428,28 +425,29 @@ class _TextExpansionTypeAheadState extends ConsumerState<TextExpansionTypeAhead>
         });
         return true;
       }
-      
+
       if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
         setState(() {
-          _selectedIndex = (_selectedIndex - 1 + _suggestions.length) % _suggestions.length;
+          _selectedIndex =
+              (_selectedIndex - 1 + _suggestions.length) % _suggestions.length;
           _showOverlay(); // Refresh overlay to update selection
         });
         return true;
       }
-      
-      if (event.logicalKey == LogicalKeyboardKey.tab || 
+
+      if (event.logicalKey == LogicalKeyboardKey.tab ||
           event.logicalKey == LogicalKeyboardKey.enter) {
         _applySuggestion(_suggestions[_selectedIndex]);
         return true;
       }
-      
+
       if (event.logicalKey == LogicalKeyboardKey.escape) {
         _hideOverlay();
         _suppressSuggestions = true;
         return true;
       }
     }
-    
+
     return false;
   }
-} 
+}
