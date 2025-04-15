@@ -250,5 +250,12 @@
   "submittedInspectionPointReport": "点検ポイント報告書を提出しました",
   "@submittedInspectionPointReport": {},
   "retry": "再試行",
-  "@retry": {}
+  "@retry": {},
+  "suggestionsCount": "{count} 候補",
+  "@suggestionsCount": {
+    "description": "Shows the number of available text suggestions",
+    "placeholders": {
+      "count": {}
+    }
+  }
 }
