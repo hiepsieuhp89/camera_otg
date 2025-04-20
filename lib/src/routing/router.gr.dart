@@ -302,6 +302,43 @@ class DiagramInspectionRouteArgs {
 }
 
 /// generated route for
+/// [DiagramSketchScreen]
+class DiagramSketchRoute extends PageRouteInfo<DiagramSketchRouteArgs> {
+  DiagramSketchRoute({
+    Key? key,
+    required Diagram diagram,
+    List<PageRouteInfo>? children,
+  }) : super(
+         DiagramSketchRoute.name,
+         args: DiagramSketchRouteArgs(key: key, diagram: diagram),
+         initialChildren: children,
+       );
+
+  static const String name = 'DiagramSketchRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<DiagramSketchRouteArgs>();
+      return DiagramSketchScreen(key: args.key, diagram: args.diagram);
+    },
+  );
+}
+
+class DiagramSketchRouteArgs {
+  const DiagramSketchRouteArgs({this.key, required this.diagram});
+
+  final Key? key;
+
+  final Diagram diagram;
+
+  @override
+  String toString() {
+    return 'DiagramSketchRouteArgs{key: $key, diagram: $diagram}';
+  }
+}
+
+/// generated route for
 /// [InspectionPointDiagramSelectScreen]
 class InspectionPointDiagramSelectRoute extends PageRouteInfo<void> {
   const InspectionPointDiagramSelectRoute({List<PageRouteInfo>? children})

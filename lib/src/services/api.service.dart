@@ -97,6 +97,15 @@ class ApiService {
     return Diagram.fromJson(jsonResponse);
   }
 
+  Future<Diagram> updateDiagram(Diagram diagram) async {
+    final jsonResponse = await apiClient.put(
+        'api/mobile/bridges/${diagram.bridgeId}/diagrams/${diagram.id}?photo_id=${diagram.photoId}',
+        body: diagram.toJson(),
+        headerParams: getAuthorizationHeader());
+
+    return Diagram.fromJson(jsonResponse);
+  }
+
   Future<List<Inspection>> fetchInspections(int bridgeId) async {
     final jsonResponse = await apiClient.get(
         'api/mobile/bridges/$bridgeId/inspections',

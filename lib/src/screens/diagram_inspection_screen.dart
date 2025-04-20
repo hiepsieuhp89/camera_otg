@@ -10,6 +10,7 @@ import 'package:kyoryo/src/providers/current_bridge.provider.dart';
 import 'package:kyoryo/src/providers/damage_inspection.provider.dart';
 import 'package:kyoryo/src/providers/diagram_inspection.provider.dart';
 import 'package:kyoryo/src/providers/inspection_points.provider.dart';
+import 'package:kyoryo/src/routing/router.dart';
 import 'package:kyoryo/src/ui/diagram_bottom_app_bar.dart';
 import 'package:photo_view/photo_view.dart';
 
@@ -103,6 +104,23 @@ class DiagramInspectionScreenState
 
     return Scaffold(
       extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: () async {
+              final result = await context.router.push<bool>(
+                DiagramSketchRoute(diagram: widget.diagram),
+              );
+              if (result == true) {
+                // Refresh the diagram data
+                ref.invalidate(diagramInspectionProvider(widget.diagram));
+              }
+            },
+          ),
+        ],
+      ),
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.end,
