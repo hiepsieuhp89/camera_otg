@@ -107,28 +107,33 @@ class DiagramInspectionScreenState
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         actions: [
-          Container(
-            margin: const EdgeInsets.only(right: 8),
-            decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: IconButton(
-              icon: const Icon(
-                Icons.edit,
-                size: 28,
-                color: Colors.blue,
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: Material(
+              elevation: 4,
+              borderRadius: BorderRadius.circular(16),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8E6FF),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: IconButton(
+                  icon: const Icon(
+                    Icons.edit,
+                    size: 24,
+                    color: Color(0xFF6C63FF),
+                  ),
+                  onPressed: () async {
+                    final result = await context.router.push<bool>(
+                      DiagramSketchRoute(diagram: widget.diagram),
+                    );
+                    if (result == true) {
+                      // Refresh the diagram data
+                      ref.invalidate(diagramInspectionProvider(widget.diagram));
+                    }
+                  },
+                ),
               ),
-              padding: const EdgeInsets.all(8),
-              onPressed: () async {
-                final result = await context.router.push<bool>(
-                  DiagramSketchRoute(diagram: widget.diagram),
-                );
-                if (result == true) {
-                  // Refresh the diagram data
-                  ref.invalidate(diagramInspectionProvider(widget.diagram));
-                }
-              },
             ),
           ),
         ],
