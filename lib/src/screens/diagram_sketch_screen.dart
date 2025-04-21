@@ -9,7 +9,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kyoryo/src/models/diagram.dart';
 import 'package:kyoryo/src/providers/api.provider.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:flutter/services.dart';
 
 @RoutePage()
 class DiagramSketchScreen extends ConsumerStatefulWidget {
@@ -32,6 +31,8 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
     ..color = Colors.red
     ..style = PaintingStyle.stroke
     ..strokeCap = StrokeCap.round;
+
+  static const Color defaultColor = Colors.red;
     
   // Define sticker image links
   static const List<String> imageLinks = [
@@ -72,12 +73,12 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
           focusNode: textFocusNode,
           textStyle: const TextStyle(
             fontWeight: FontWeight.bold,
-            color: Colors.red,
+            color: defaultColor,
             fontSize: 18,
           ),
         ),
         freeStyle: const FreeStyleSettings(
-          color: Colors.red,
+          color: defaultColor,
           strokeWidth: 5,
         ),
         shape: ShapeSettings(
@@ -90,7 +91,106 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
         ),
       ),
     );
+    // Listen to focus events of the text field
+    textFocusNode.addListener(onFocus);
     loadImage();
+  }
+
+  void onFocus() {
+    setState(() {});
+  }
+
+  // Helper methods for UI controls
+  void setFreeStyleStrokeWidth(double value) {
+    controller.freeStyleStrokeWidth = value;
+  }
+
+  void setFreeStyleColor(double hue) {
+    controller.freeStyleColor = HSVColor.fromAHSV(1, hue, 1, 1).toColor();
+  }
+
+  void setTextFontSize(double size) {
+    setState(() {
+      controller.textSettings = controller.textSettings.copyWith(
+        textStyle: controller.textSettings.textStyle.copyWith(fontSize: size),
+      );
+    });
+  }
+
+  void setTextColor(double hue) {
+    controller.textStyle = controller.textStyle.copyWith(
+      color: HSVColor.fromAHSV(1, hue, 1, 1).toColor(),
+    );
+  }
+
+  void setShapeFactoryPaint(Paint paint) {
+    setState(() {
+      controller.shapePaint = paint;
+    });
+  }
+
+  void flipSelectedImageDrawable() {
+    final imageDrawable = controller.selectedObjectDrawable;
+    if (imageDrawable is! ImageDrawable) return;
+    
+    controller.replaceDrawable(
+      imageDrawable,
+      imageDrawable.copyWith(flipped: !imageDrawable.flipped),
+    );
+  }
+
+  void removeSelectedDrawable() {
+    final selectedDrawable = controller.selectedObjectDrawable;
+    if (selectedDrawable != null) {
+      controller.removeDrawable(selectedDrawable);
+    }
+  }
+
+  Future<void> addSticker() async {
+    final imageLink = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Select sticker"),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: GridView.builder(
+            shrinkWrap: true,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 4,
+              childAspectRatio: 1,
+            ),
+            itemCount: imageLinks.length,
+            itemBuilder: (context, index) => InkWell(
+              onTap: () => Navigator.pop(context, imageLinks[index]),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Image.network(imageLinks[index]),
+              ),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+        ],
+      ),
+    );
+
+    if (imageLink == null) return;
+
+    // Load and add the sticker
+    final imageProvider = NetworkImage(imageLink);
+    final imageStream = imageProvider.resolve(ImageConfiguration.empty);
+    final completer = Completer<ui.Image>();
+    
+    imageStream.addListener(ImageStreamListener((info, _) {
+      completer.complete(info.image);
+    }));
+
+    final stickerImage = await completer.future;
+    controller.addImage(stickerImage);
   }
 
   Future<void> loadImage() async {
@@ -157,209 +257,388 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
     }
   }
 
-  Future<void> addSticker(String imageUrl) async {
-    try {
-      // Load the network image
-      final imageProvider = NetworkImage(imageUrl);
-      final imageStream = imageProvider.resolve(ImageConfiguration.empty);
-      final completer = Completer<ui.Image>();
-      
-      imageStream.addListener(ImageStreamListener((info, _) {
-        completer.complete(info.image);
-      }));
-
-      final stickerImage = await completer.future;
-      
-      // Create an image drawable and add it to the controller
-      final drawable = ImageDrawable(
-        image: stickerImage,
-        position: const Offset(100, 100),  // Initial position
-      );
-      
-      setState(() {
-        controller.value = controller.value.copyWith(
-          drawables: [...controller.value.drawables, drawable],
-          selectedObjectDrawable: drawable,
-        );
-      });
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to add sticker: $e')),
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    if (isLoading) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit Sketch'),
+        title: const Text('Edit Diagram'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.undo),
-            onPressed: controller.canUndo ? controller.undo : null,
+          // Delete selected drawable
+          ValueListenableBuilder<PainterControllerValue>(
+            valueListenable: controller,
+            builder: (context, _, __) => IconButton(
+              icon: const Icon(Icons.delete),
+              onPressed: controller.selectedObjectDrawable == null ? null : removeSelectedDrawable,
+            ),
           ),
-          IconButton(
-            icon: const Icon(Icons.redo),
-            onPressed: controller.canRedo ? controller.redo : null,
+          // Flip selected image
+          ValueListenableBuilder<PainterControllerValue>(
+            valueListenable: controller,
+            builder: (context, _, __) => IconButton(
+              icon: const Icon(Icons.flip),
+              onPressed: controller.selectedObjectDrawable is ImageDrawable ? flipSelectedImageDrawable : null,
+            ),
           ),
-          IconButton(
-            icon: isSaving 
-              ? const SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Icon(Icons.save),
-            onPressed: isSaving ? null : saveSketch,
+          // Undo
+          ValueListenableBuilder<PainterControllerValue>(
+            valueListenable: controller,
+            builder: (context, _, __) => IconButton(
+              icon: const Icon(Icons.undo),
+              onPressed: controller.canUndo ? controller.undo : null,
+            ),
+          ),
+          // Redo
+          ValueListenableBuilder<PainterControllerValue>(
+            valueListenable: controller,
+            builder: (context, _, __) => IconButton(
+              icon: const Icon(Icons.redo),
+              onPressed: controller.canRedo ? controller.redo : null,
+            ),
+          ),
+          // Save
+          ValueListenableBuilder<PainterControllerValue>(
+            valueListenable: controller,
+            builder: (context, _, __) => IconButton(
+              icon: const Icon(Icons.save),
+              onPressed: isSaving ? null : saveSketch,
+            ),
           ),
         ],
       ),
       body: Stack(
         children: [
-          Positioned.fill(
-            child: Center(
-              child: AspectRatio(
-                aspectRatio: backgroundImage.width / backgroundImage.height,
-                child: FlutterPainter(
-                  controller: controller,
+          if (!isLoading)
+            Positioned.fill(
+              child: Center(
+                child: AspectRatio(
+                  aspectRatio: backgroundImage.width / backgroundImage.height,
+                  child: FlutterPainter(
+                    controller: controller,
+                  ),
+                ),
+              ),
+            ),
+          // Style controls panel
+          Positioned(
+            bottom: 0, // Lower position, just above the toolbar
+            left: 0,
+            right: 0,
+            child: ValueListenableBuilder(
+              valueListenable: controller,
+              builder: (context, _, __) => Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 4,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (controller.freeStyleMode != FreeStyleMode.none) ...[
+                      const Text(
+                        "Brush Settings",
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const SizedBox(width: 45, child: Text("Width:", style: TextStyle(fontSize: 13))),
+                          Expanded(
+                            child: SliderTheme(
+                              data: SliderTheme.of(context).copyWith(
+                                trackHeight: 2,
+                                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                              ),
+                              child: Slider(
+                                value: controller.freeStyleStrokeWidth,
+                                min: 2,
+                                max: 25,
+                                onChanged: setFreeStyleStrokeWidth,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (controller.freeStyleMode == FreeStyleMode.draw)
+                        Row(
+                          children: [
+                            const SizedBox(width: 45, child: Text("Color:", style: TextStyle(fontSize: 13))),
+                            Expanded(
+                              child: SliderTheme(
+                                data: SliderTheme.of(context).copyWith(
+                                  trackHeight: 2,
+                                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                                ),
+                                child: Slider(
+                                  value: HSVColor.fromColor(controller.freeStyleColor).hue,
+                                  min: 0,
+                                  max: 359.99,
+                                  activeColor: controller.freeStyleColor,
+                                  onChanged: setFreeStyleColor,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                    ],
+                    if (textFocusNode.hasFocus) ...[
+                      const Text(
+                        "Text Settings",
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const SizedBox(width: 45, child: Text("Size:", style: TextStyle(fontSize: 13))),
+                          Expanded(
+                            child: SliderTheme(
+                              data: SliderTheme.of(context).copyWith(
+                                trackHeight: 2,
+                                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                              ),
+                              child: Slider(
+                                value: controller.textStyle.fontSize ?? 14,
+                                min: 8,
+                                max: 96,
+                                onChanged: setTextFontSize,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          const SizedBox(width: 45, child: Text("Color:", style: TextStyle(fontSize: 13))),
+                          Expanded(
+                            child: SliderTheme(
+                              data: SliderTheme.of(context).copyWith(
+                                trackHeight: 2,
+                                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                              ),
+                              child: Slider(
+                                value: HSVColor.fromColor(controller.textStyle.color ?? defaultColor).hue,
+                                min: 0,
+                                max: 359.99,
+                                activeColor: controller.textStyle.color,
+                                onChanged: setTextColor,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    if (controller.shapeFactory != null) ...[
+                      const Text(
+                        "Shape Settings",
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const SizedBox(width: 45, child: Text("Width:", style: TextStyle(fontSize: 13))),
+                          Expanded(
+                            child: SliderTheme(
+                              data: SliderTheme.of(context).copyWith(
+                                trackHeight: 2,
+                                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                              ),
+                              child: Slider(
+                                value: controller.shapePaint?.strokeWidth ?? shapePaint.strokeWidth,
+                                min: 2,
+                                max: 25,
+                                onChanged: (value) => setShapeFactoryPaint(
+                                  (controller.shapePaint ?? shapePaint).copyWith(
+                                    strokeWidth: value,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          const SizedBox(width: 45, child: Text("Color:", style: TextStyle(fontSize: 13))),
+                          Expanded(
+                            child: SliderTheme(
+                              data: SliderTheme.of(context).copyWith(
+                                trackHeight: 2,
+                                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                              ),
+                              child: Slider(
+                                value: HSVColor.fromColor((controller.shapePaint ?? shapePaint).color).hue,
+                                min: 0,
+                                max: 359.99,
+                                activeColor: (controller.shapePaint ?? shapePaint).color,
+                                onChanged: (hue) => setShapeFactoryPaint(
+                                  (controller.shapePaint ?? shapePaint).copyWith(
+                                    color: HSVColor.fromAHSV(1, hue, 1, 1).toColor(),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          const SizedBox(width: 45, child: Text("Fill:", style: TextStyle(fontSize: 13))),
+                          Switch(
+                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            value: (controller.shapePaint ?? shapePaint).style == PaintingStyle.fill,
+                            onChanged: (value) => setShapeFactoryPaint(
+                              (controller.shapePaint ?? shapePaint).copyWith(
+                                style: value ? PaintingStyle.fill : PaintingStyle.stroke,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
                 ),
               ),
             ),
           ),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                boxShadow: [
-                  BoxShadow(
-                    blurRadius: 3,
-                    color: Colors.black.withOpacity(0.2),
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  // Free-style drawing
-                  IconButton(
-                    icon: Icon(Icons.edit),
-                    onPressed: () {
-                      controller.freeStyleMode = controller.freeStyleMode != FreeStyleMode.draw
-                          ? FreeStyleMode.draw
-                          : FreeStyleMode.none;
-                    },
-                    color: controller.freeStyleMode == FreeStyleMode.draw 
-                        ? Theme.of(context).primaryColor 
-                        : null,
-                  ),
-                  // Add text
-                  IconButton(
-                    icon: Icon(Icons.text_fields),
-                    onPressed: () {
-                      if (controller.freeStyleMode != FreeStyleMode.none) {
-                        controller.freeStyleMode = FreeStyleMode.none;
-                      }
-                      controller.addText();
-                    },
-                    color: textFocusNode.hasFocus 
-                        ? Theme.of(context).primaryColor 
-                        : null,
-                  ),
-                  // Add shapes
-                  PopupMenuButton<ShapeFactory>(
-                    tooltip: "Add shape",
-                    itemBuilder: (context) => <ShapeFactory, String>{
-                      RectangleFactory(): "Rectangle",
-                      OvalFactory(): "Oval",
-                      ArrowFactory(): "Arrow",
-                    }
-                        .entries
-                        .map((e) => PopupMenuItem(
-                            value: e.key,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                Icon(
-                                  e.key is RectangleFactory
-                                      ? Icons.rectangle_outlined
-                                      : e.key is OvalFactory
-                                          ? Icons.circle_outlined
-                                          : Icons.arrow_forward,
-                                  color: Colors.black,
-                                ),
-                                Text(" ${e.value}")
-                              ],
-                            )))
-                        .toList(),
-                    onSelected: (factory) {
-                      controller.shapeFactory = factory;
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Icon(
-                        Icons.shape_line,
-                        color: controller.shapeFactory != null
-                            ? Theme.of(context).primaryColor
-                            : null,
-                      ),
-                    ),
-                  ),
-                  // Eraser
-                  IconButton(
-                    icon: Icon(Icons.auto_fix_high),
-                    onPressed: () {
-                      controller.freeStyleMode = controller.freeStyleMode != FreeStyleMode.erase
-                          ? FreeStyleMode.erase
-                          : FreeStyleMode.none;
-                    },
-                    color: controller.freeStyleMode == FreeStyleMode.erase 
-                        ? Theme.of(context).primaryColor 
-                        : null,
-                  ),
-                  // Stickers
-                  PopupMenuButton<String>(
-                    tooltip: "Add sticker",
-                    itemBuilder: (context) => imageLinks
-                        .map((url) => PopupMenuItem(
-                            value: url,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                Image.network(
-                                  url,
-                                  width: 24,
-                                  height: 24,
-                                ),
-                                Text(" Sticker ${imageLinks.indexOf(url) + 1}")
-                              ],
-                            )))
-                        .toList(),
-                    onSelected: addSticker,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Icon(Icons.emoji_emotions),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
         ],
+      ),
+      bottomNavigationBar: ValueListenableBuilder(
+        valueListenable: controller,
+        builder: (context, _, __) => Container(
+          color: Colors.white,
+          padding: const EdgeInsets.all(8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              // Free-style drawing
+              IconButton(
+                icon: Icon(Icons.edit),
+                onPressed: () {
+                  controller.freeStyleMode = controller.freeStyleMode != FreeStyleMode.draw
+                      ? FreeStyleMode.draw
+                      : FreeStyleMode.none;
+                  // Clear shape factory when switching to drawing
+                  if (controller.shapeFactory != null) {
+                    controller.shapeFactory = null;
+                  }
+                },
+                color: controller.freeStyleMode == FreeStyleMode.draw 
+                    ? Theme.of(context).primaryColor 
+                    : null,
+              ),
+              // Eraser
+              IconButton(
+                icon: Icon(Icons.auto_fix_high),
+                onPressed: () {
+                  controller.freeStyleMode = controller.freeStyleMode != FreeStyleMode.erase
+                      ? FreeStyleMode.erase
+                      : FreeStyleMode.none;
+                  // Clear shape factory when switching to eraser
+                  if (controller.shapeFactory != null) {
+                    controller.shapeFactory = null;
+                  }
+                },
+                color: controller.freeStyleMode == FreeStyleMode.erase 
+                    ? Theme.of(context).primaryColor 
+                    : null,
+              ),
+              // Add text
+              IconButton(
+                icon: Icon(Icons.text_fields),
+                onPressed: () {
+                  if (controller.freeStyleMode != FreeStyleMode.none) {
+                    controller.freeStyleMode = FreeStyleMode.none;
+                  }
+                  // Clear shape factory when adding text
+                  if (controller.shapeFactory != null) {
+                    controller.shapeFactory = null;
+                  }
+                  controller.addText();
+                },
+                color: textFocusNode.hasFocus 
+                    ? Theme.of(context).primaryColor 
+                    : null,
+              ),
+              // Add sticker
+              IconButton(
+                icon: Icon(Icons.emoji_emotions),
+                onPressed: () {
+                  // Clear shape factory when adding sticker
+                  if (controller.shapeFactory != null) {
+                    controller.shapeFactory = null;
+                  }
+                  addSticker();
+                },
+              ),
+              // Add shapes
+              PopupMenuButton<ShapeFactory?>(
+                tooltip: "Add shape",
+                itemBuilder: (context) => <ShapeFactory?, String>{
+                  null: "None",
+                  LineFactory(): "Line",
+                  ArrowFactory(): "Arrow",
+                  DoubleArrowFactory(): "Double Arrow",
+                  RectangleFactory(): "Rectangle",
+                  OvalFactory(): "Oval",
+                }
+                    .entries
+                    .map((e) => PopupMenuItem(
+                        value: e.key,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Icon(
+                              e.key == null
+                                  ? Icons.close
+                                  : e.key is LineFactory
+                                      ? Icons.horizontal_rule
+                                      : e.key is ArrowFactory
+                                          ? Icons.arrow_right_alt
+                                          : e.key is DoubleArrowFactory
+                                              ? Icons.sync_alt
+                                              : e.key is RectangleFactory
+                                                  ? Icons.rectangle_outlined
+                                                  : Icons.circle_outlined,
+                              color: Colors.black,
+                            ),
+                            Text(" ${e.value}")
+                          ],
+                        )))
+                    .toList(),
+                onSelected: (factory) {
+                  if (controller.freeStyleMode != FreeStyleMode.none) {
+                    controller.freeStyleMode = FreeStyleMode.none;
+                  }
+                  controller.shapeFactory = factory;
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Icon(
+                    Icons.shape_line,
+                    color: controller.shapeFactory != null
+                        ? Theme.of(context).primaryColor
+                        : null,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
