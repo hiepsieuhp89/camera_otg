@@ -99,7 +99,7 @@ class ApiService {
 
   Future<Diagram> updateDiagram(Diagram diagram) async {
     final jsonResponse = await apiClient.put(
-        'api/mobile/bridges/${diagram.bridgeId}/diagrams/${diagram.id}?photo_id=${diagram.photoId}',
+        'api/mobile/bridges/${diagram.bridgeId}/diagrams/${diagram.id}',
         body: diagram.toJson(),
         headerParams: getAuthorizationHeader());
 
