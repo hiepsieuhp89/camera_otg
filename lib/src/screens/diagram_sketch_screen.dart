@@ -35,6 +35,7 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
   static const Color defaultColor = Colors.red;
     
   // Define sticker image links
+  /* 
   static const List<String> imageLinks = [
     "https://i.imgur.com/btoI5OX.png",
     "https://i.imgur.com/EXTQFt7.png",
@@ -63,6 +64,7 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
     "https://i.imgur.com/1PRzwBf.png",
     "https://i.imgur.com/VeeMfBS.png",
   ];
+  */
 
   @override
   void initState() {
@@ -146,6 +148,7 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
     }
   }
 
+  /* 
   Future<void> addSticker() async {
     final imageLink = await showDialog<String>(
       context: context,
@@ -192,6 +195,7 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
     final stickerImage = await completer.future;
     controller.addImage(stickerImage);
   }
+  */
 
   Future<void> loadImage() async {
     // Load the network image
@@ -574,6 +578,7 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                     ? Theme.of(context).primaryColor 
                     : null,
               ),
+              /* 
               // Add sticker
               IconButton(
                 icon: Icon(Icons.emoji_emotions),
@@ -585,6 +590,7 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                   addSticker();
                 },
               ),
+              */
               // Add shapes
               PopupMenuButton<ShapeFactory?>(
                 tooltip: "Add shape",
