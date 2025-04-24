@@ -257,5 +257,72 @@
     "placeholders": {
       "count": {}
     }
+  },
+  "editDiagram": "図面を編集",
+  "@editDiagram": {
+    "description": "Title for diagram editing screen"
+  },
+  "failedToSaveSketch": "スケッチの保存に失敗しました: {error}",
+  "@failedToSaveSketch": {
+    "description": "Error message when failing to save a sketch",
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "brushSettings": "ブラシ設定",
+  "@brushSettings": {
+    "description": "Settings for brush tool"
+  },
+  "textSettings": "テキスト設定",
+  "@textSettings": {
+    "description": "Settings for text tool"
+  },
+  "shapeSettings": "図形設定",
+  "@shapeSettings": {
+    "description": "Settings for shape tool"
+  },
+  "width": "太さ:",
+  "@width": {
+    "description": "Width setting for tools"
+  },
+  "color": "色:",
+  "@color": {
+    "description": "Color setting for tools"
+  },
+  "size": "サイズ:",
+  "@size": {
+    "description": "Size setting for text"
+  },
+  "fill": "塗りつぶし:",
+  "@fill": {
+    "description": "Fill setting for shapes"
+  },
+  "addShape": "図形を追加",
+  "@addShape": {
+    "description": "Tooltip for adding a shape"
+  },
+  "none": "なし",
+  "@none": {
+    "description": "Option for no selection"
+  },
+  "line": "線",
+  "@line": {
+    "description": "Line shape option"
+  },
+  "arrow": "矢印",
+  "@arrow": {
+    "description": "Arrow shape option"
+  },
+  "doubleArrow": "双方向矢印",
+  "@doubleArrow": {
+    "description": "Double arrow shape option"
+  },
+  "rectangle": "長方形",
+  "@rectangle": {
+    "description": "Rectangle shape option"
+  },
+  "oval": "楕円",
+  "@oval": {
+    "description": "Oval shape option"
   }
 }

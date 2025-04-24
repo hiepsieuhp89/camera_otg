@@ -45,12 +45,12 @@ import 'app_localizations_ja.dart';
 ///
 /// iOS applications define key application metadata, including supported
 /// locales, in an Info.plist file that is built into the application bundle.
-/// To configure the locales supported by your app, you’ll need to edit this
+/// To configure the locales supported by your app, you'll need to edit this
 /// file.
 ///
-/// First, open your project’s ios/Runner.xcworkspace Xcode workspace file.
+/// First, open your project's ios/Runner.xcworkspace Xcode workspace file.
 /// Then, in the Project Navigator, open the Info.plist file under the Runner
-/// project’s Runner folder.
+/// project's Runner folder.
 ///
 /// Next, select the Information Property List item, select Add Item from the
 /// Editor menu, then select Localizations from the pop-up menu.
@@ -722,6 +722,102 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'{count} 候補'**
   String suggestionsCount(Object count);
+
+  /// No description provided for @editDiagram.
+  ///
+  /// In ja, this message translates to:
+  /// **'図面を編集'**
+  String get editDiagram;
+
+  /// Error message when failing to save a sketch
+  ///
+  /// In ja, this message translates to:
+  /// **'スケッチの保存に失敗しました: {error}'**
+  String failedToSaveSketch(Object error);
+
+  /// Settings for brush tool
+  ///
+  /// In ja, this message translates to:
+  /// **'ブラシ設定'**
+  String get brushSettings;
+
+  /// Settings for text tool
+  ///
+  /// In ja, this message translates to:
+  /// **'テキスト設定'**
+  String get textSettings;
+
+  /// Settings for shape tool
+  ///
+  /// In ja, this message translates to:
+  /// **'図形設定'**
+  String get shapeSettings;
+
+  /// Width setting for tools
+  ///
+  /// In ja, this message translates to:
+  /// **'太さ:'**
+  String get width;
+
+  /// Color setting for tools
+  ///
+  /// In ja, this message translates to:
+  /// **'色:'**
+  String get color;
+
+  /// Size setting for text
+  ///
+  /// In ja, this message translates to:
+  /// **'サイズ:'**
+  String get size;
+
+  /// Fill setting for shapes
+  ///
+  /// In ja, this message translates to:
+  /// **'塗りつぶし:'**
+  String get fill;
+
+  /// Tooltip for adding a shape
+  ///
+  /// In ja, this message translates to:
+  /// **'図形を追加'**
+  String get addShape;
+
+  /// Option for no selection
+  ///
+  /// In ja, this message translates to:
+  /// **'なし'**
+  String get none;
+
+  /// Line shape option
+  ///
+  /// In ja, this message translates to:
+  /// **'線'**
+  String get line;
+
+  /// Arrow shape option
+  ///
+  /// In ja, this message translates to:
+  /// **'矢印'**
+  String get arrow;
+
+  /// Double arrow shape option
+  ///
+  /// In ja, this message translates to:
+  /// **'双方向矢印'**
+  String get doubleArrow;
+
+  /// Rectangle shape option
+  ///
+  /// In ja, this message translates to:
+  /// **'長方形'**
+  String get rectangle;
+
+  /// Oval shape option
+  ///
+  /// In ja, this message translates to:
+  /// **'楕円'**
+  String get oval;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

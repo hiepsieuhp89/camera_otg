@@ -8,6 +8,7 @@ import 'package:flutter_painter_v2/flutter_painter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kyoryo/src/models/diagram.dart';
 import 'package:kyoryo/src/providers/api.provider.dart';
+import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:path_provider/path_provider.dart';
 
 @RoutePage()
@@ -249,7 +250,7 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save sketch: $e')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.failedToSaveSketch(e.toString()))),
         );
       }
     } finally {
@@ -263,9 +264,11 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+    
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit Diagram'),
+        title: Text(localizations.editDiagram),
         actions: [
           // Delete selected drawable
           ValueListenableBuilder<PainterControllerValue>(
@@ -345,9 +348,9 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (controller.freeStyleMode != FreeStyleMode.none) ...[
-                      const Text(
-                        "Brush Settings",
-                        style: TextStyle(
+                      Text(
+                        localizations.brushSettings,
+                        style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                         ),
@@ -355,7 +358,7 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          const SizedBox(width: 45, child: Text("Width:", style: TextStyle(fontSize: 13))),
+                          SizedBox(width: 45, child: Text(localizations.width, style: const TextStyle(fontSize: 13))),
                           Expanded(
                             child: SliderTheme(
                               data: SliderTheme.of(context).copyWith(
@@ -375,7 +378,7 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                       if (controller.freeStyleMode == FreeStyleMode.draw)
                         Row(
                           children: [
-                            const SizedBox(width: 45, child: Text("Color:", style: TextStyle(fontSize: 13))),
+                            SizedBox(width: 45, child: Text(localizations.color, style: const TextStyle(fontSize: 13))),
                             Expanded(
                               child: SliderTheme(
                                 data: SliderTheme.of(context).copyWith(
@@ -395,9 +398,9 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                         ),
                     ],
                     if (textFocusNode.hasFocus) ...[
-                      const Text(
-                        "Text Settings",
-                        style: TextStyle(
+                      Text(
+                        localizations.textSettings,
+                        style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                         ),
@@ -405,7 +408,7 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          const SizedBox(width: 45, child: Text("Size:", style: TextStyle(fontSize: 13))),
+                          SizedBox(width: 45, child: Text(localizations.size, style: const TextStyle(fontSize: 13))),
                           Expanded(
                             child: SliderTheme(
                               data: SliderTheme.of(context).copyWith(
@@ -424,7 +427,7 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                       ),
                       Row(
                         children: [
-                          const SizedBox(width: 45, child: Text("Color:", style: TextStyle(fontSize: 13))),
+                          SizedBox(width: 45, child: Text(localizations.color, style: const TextStyle(fontSize: 13))),
                           Expanded(
                             child: SliderTheme(
                               data: SliderTheme.of(context).copyWith(
@@ -444,9 +447,9 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                       ),
                     ],
                     if (controller.shapeFactory != null) ...[
-                      const Text(
-                        "Shape Settings",
-                        style: TextStyle(
+                      Text(
+                        localizations.shapeSettings,
+                        style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                         ),
@@ -454,7 +457,7 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          const SizedBox(width: 45, child: Text("Width:", style: TextStyle(fontSize: 13))),
+                          SizedBox(width: 45, child: Text(localizations.width, style: const TextStyle(fontSize: 13))),
                           Expanded(
                             child: SliderTheme(
                               data: SliderTheme.of(context).copyWith(
@@ -477,7 +480,7 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                       ),
                       Row(
                         children: [
-                          const SizedBox(width: 45, child: Text("Color:", style: TextStyle(fontSize: 13))),
+                          SizedBox(width: 45, child: Text(localizations.color, style: const TextStyle(fontSize: 13))),
                           Expanded(
                             child: SliderTheme(
                               data: SliderTheme.of(context).copyWith(
@@ -501,7 +504,7 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                       ),
                       Row(
                         children: [
-                          const SizedBox(width: 45, child: Text("Fill:", style: TextStyle(fontSize: 13))),
+                          SizedBox(width: 45, child: Text(localizations.fill, style: const TextStyle(fontSize: 13))),
                           Switch(
                             materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             value: (controller.shapePaint ?? shapePaint).style == PaintingStyle.fill,
@@ -593,14 +596,14 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
               */
               // Add shapes
               PopupMenuButton<ShapeFactory?>(
-                tooltip: "Add shape",
+                tooltip: localizations.addShape,
                 itemBuilder: (context) => <ShapeFactory?, String>{
-                  null: "None",
-                  LineFactory(): "Line",
-                  ArrowFactory(): "Arrow",
-                  DoubleArrowFactory(): "Double Arrow",
-                  RectangleFactory(): "Rectangle",
-                  OvalFactory(): "Oval",
+                  null: localizations.none,
+                  LineFactory(): localizations.line,
+                  ArrowFactory(): localizations.arrow,
+                  DoubleArrowFactory(): localizations.doubleArrow,
+                  RectangleFactory(): localizations.rectangle,
+                  OvalFactory(): localizations.oval,
                 }
                     .entries
                     .map((e) => PopupMenuItem(
