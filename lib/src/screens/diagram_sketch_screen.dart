@@ -7,6 +7,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_painter_v2/flutter_painter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:kyoryo/src/models/diagram.dart';
 import 'package:kyoryo/src/providers/api.provider.dart';
@@ -42,7 +43,7 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
     ..strokeCap = StrokeCap.round;
 
   static const Color defaultColor = Colors.red;
-  static const Color toolbarBackgroundColor = Color(0xC0424242);
+  static const Color toolbarBackgroundColor = Color(0x99424242); // 60% opacity (99 in hex)
 
   bool isCompactConfig = true;
 
@@ -307,7 +308,8 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                     child: CircularProgressIndicator(),
                   ),
                   
-                // Top header bar in drawing area
+                // Top header bar in drawing area - HIDDEN
+                /*
                 if (isUIVisible)
                   Positioned(
                     top: 0,
@@ -342,33 +344,54 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                       ),
                     ),
                   ),
+                */
 
-                // Save button 
-                Positioned(
-                  top: 16,
-                  right: 16,
-                  child: Material(
-                    color: Colors.transparent,
-                    child: FloatingActionButton.small(
-                      heroTag: 'save_button',
-                      backgroundColor: Theme.of(context).primaryColor,
-                      onPressed: isSaving ? null : saveSketch,
-                      child: isSaving 
-                          ? const SizedBox(
-                              width: 20, 
-                              height: 20, 
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
-                            )
-                          : const Icon(
-                              Icons.save,
-                              color: Colors.white,
-                            ),
+                // Back button as floating action button 
+                if (isUIVisible)
+                  Positioned(
+                    top: 16,
+                    left: 16,
+                    child: Material(
+                      color: Colors.transparent,
+                      child: FloatingActionButton.small(
+                        heroTag: 'back_button',
+                        backgroundColor: toolbarBackgroundColor,
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Icon(
+                          Icons.arrow_back,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
                   ),
-                ),
+
+                // Save button 
+                if (isUIVisible)
+                  Positioned(
+                    top: 16,
+                    right: 16,
+                    child: Material(
+                      color: Colors.transparent,
+                      child: FloatingActionButton.small(
+                        heroTag: 'save_button',
+                        backgroundColor: toolbarBackgroundColor,
+                        onPressed: isSaving ? null : saveSketch,
+                        child: isSaving 
+                            ? const SizedBox(
+                                width: 20, 
+                                height: 20, 
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(
+                                Icons.save,
+                                color: Colors.white,
+                              ),
+                      ),
+                    ),
+                  ),
                 
                 // Toggle UI visibility button
                 Positioned(
@@ -411,7 +434,12 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                               ValueListenableBuilder<PainterControllerValue>(
                                 valueListenable: controller,
                                 builder: (context, value, __) => IconButton(
-                                  icon: const Icon(Icons.delete, color: Colors.white),
+                                  icon: Icon(
+                                    Icons.delete,
+                                    color: value.selectedObjectDrawable == null 
+                                        ? Colors.white.withValues(red: 255, green: 255, blue: 255, alpha: 77) 
+                                        : Colors.white,
+                                  ),
                                   onPressed: value.selectedObjectDrawable == null
                                       ? null
                                       : removeSelectedDrawable,
@@ -420,7 +448,12 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                               ValueListenableBuilder<PainterControllerValue>(
                                 valueListenable: controller,
                                 builder: (context, value, __) => IconButton(
-                                  icon: const Icon(Icons.flip, color: Colors.white),
+                                  icon: Icon(
+                                    Icons.flip,
+                                    color: value.selectedObjectDrawable is ImageDrawable
+                                        ? Colors.white
+                                        : Colors.white.withValues(red: 255, green: 255, blue: 255, alpha: 77),
+                                  ),
                                   onPressed: value.selectedObjectDrawable is ImageDrawable
                                       ? flipSelectedImageDrawable
                                       : null,
@@ -453,7 +486,7 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                               ValueListenableBuilder(
                                 valueListenable: controller,
                                 builder: (context, _, __) => IconButton(
-                                  icon: const Icon(Icons.edit),
+                                  icon: const Icon(Icons.brush),
                                   onPressed: () {
                                     controller.freeStyleMode =
                                         controller.freeStyleMode != FreeStyleMode.draw
@@ -480,7 +513,7 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                               ValueListenableBuilder(
                                 valueListenable: controller,
                                 builder: (context, _, __) => IconButton(
-                                  icon: const Icon(Icons.delete_outline),
+                                  icon: const FaIcon(FontAwesomeIcons.eraser),
                                   onPressed: () {
                                     controller.freeStyleMode =
                                         controller.freeStyleMode != FreeStyleMode.erase
