@@ -410,6 +410,96 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                     ),
                   ),
                 ),
+                
+                // Settings panel - Floating at the top center
+                if (isUIVisible && isSettingsPanelVisible)
+                  Positioned(
+                    left: MediaQuery.of(context).size.width * 0.25, // Center by using 25% left margin
+                    top: 4,
+                    width: MediaQuery.of(context).size.width * 0.5, // 50% of screen width
+                    child: GestureDetector(
+                      onTap: () {},
+                      behavior: HitTestBehavior.translucent,
+                      child: ValueListenableBuilder(
+                        valueListenable: controller,
+                        builder: (context, _, __) => Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12, 
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: toolbarBackgroundColor.withOpacity(0.6),
+                            borderRadius: const BorderRadius.all(Radius.circular(8)),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withAlpha(40),
+                                blurRadius: 4,
+                              ),
+                            ],
+                          ),
+                          child: SingleChildScrollView(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (controller.freeStyleMode != FreeStyleMode.none) ...[
+                                  buildCompactSettingsControls(
+                                    label: localizations.width,
+                                    value: controller.freeStyleStrokeWidth,
+                                    min: 2,
+                                    max: 25,
+                                    onChanged: setFreeStyleStrokeWidth,
+                                    showColor: controller.freeStyleMode == FreeStyleMode.draw,
+                                    colorValue: controller.freeStyleColor,
+                                    onColorChanged: setFreeStyleColor,
+                                  ),
+                                ],
+                                if (textFocusNode.hasFocus) ...[
+                                  buildCompactSettingsControls(
+                                    label: localizations.size,
+                                    value: controller.textStyle.fontSize ?? 14,
+                                    min: 8,
+                                    max: 96,
+                                    onChanged: setTextFontSize,
+                                    showColor: true,
+                                    colorValue: controller.textStyle.color ?? defaultColor,
+                                    onColorChanged: setTextColor,
+                                  ),
+                                ],
+                                if (controller.shapeFactory != null) ...[
+                                  buildCompactSettingsControls(
+                                    label: localizations.width,
+                                    value: controller.shapePaint?.strokeWidth ?? shapePaint.strokeWidth,
+                                    min: 2,
+                                    max: 25,
+                                    onChanged: (value) => setShapeFactoryPaint(
+                                      (controller.shapePaint ?? shapePaint).copyWith(
+                                        strokeWidth: value,
+                                      ),
+                                    ),
+                                    showColor: true,
+                                    colorValue: (controller.shapePaint ?? shapePaint).color,
+                                    onColorChanged: (hue) => setShapeFactoryPaint(
+                                      (controller.shapePaint ?? shapePaint).copyWith(
+                                        color: HSVColor.fromAHSV(1, hue, 1, 1).toColor(),
+                                      ),
+                                    ),
+                                    showFillOption: true,
+                                    isFilled: (controller.shapePaint ?? shapePaint).style == PaintingStyle.fill,
+                                    onFillChanged: (value) => setShapeFactoryPaint(
+                                      (controller.shapePaint ?? shapePaint).copyWith(
+                                        style: value ? PaintingStyle.fill : PaintingStyle.stroke,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -635,121 +725,6 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
             ),
         ],
       ),
-      // Settings panel at the bottom
-      bottomSheet: isSettingsPanelVisible
-          ? GestureDetector(
-              onTap: () {},
-              behavior: HitTestBehavior.translucent,
-              child: ValueListenableBuilder(
-                valueListenable: controller,
-                builder: (context, _, __) => Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16, 
-                    vertical: 8,
-                  ),
-                  margin: EdgeInsets.only(bottom: 0),
-                  decoration: BoxDecoration(
-                    color: toolbarBackgroundColor,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withAlpha(51),
-                        blurRadius: 4,
-                      ),
-                    ],
-                  ),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              controller.freeStyleMode != FreeStyleMode.none
-                                ? localizations.brushSettings
-                                : controller.shapeFactory != null
-                                  ? localizations.shapeSettings
-                                  : textFocusNode.hasFocus
-                                    ? localizations.textSettings
-                                    : localizations.brushSettings,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white,
-                              ),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.close, color: Colors.white, size: 20),
-                              onPressed: () {
-                                hideSettingsPanel();
-                                if (textFocusNode.hasFocus) {
-                                  textFocusNode.unfocus();
-                                }
-                              },
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                            ),
-                          ],
-                        ),
-                        if (controller.freeStyleMode != FreeStyleMode.none) ...[
-                          buildCompactSettingsControls(
-                            label: localizations.width,
-                            value: controller.freeStyleStrokeWidth,
-                            min: 2,
-                            max: 25,
-                            onChanged: setFreeStyleStrokeWidth,
-                            showColor: controller.freeStyleMode == FreeStyleMode.draw,
-                            colorValue: controller.freeStyleColor,
-                            onColorChanged: setFreeStyleColor,
-                          ),
-                        ],
-                        if (textFocusNode.hasFocus) ...[
-                          buildCompactSettingsControls(
-                            label: localizations.size,
-                            value: controller.textStyle.fontSize ?? 14,
-                            min: 8,
-                            max: 96,
-                            onChanged: setTextFontSize,
-                            showColor: true,
-                            colorValue: controller.textStyle.color ?? defaultColor,
-                            onColorChanged: setTextColor,
-                          ),
-                        ],
-                        if (controller.shapeFactory != null) ...[
-                          buildCompactSettingsControls(
-                            label: localizations.width,
-                            value: controller.shapePaint?.strokeWidth ?? shapePaint.strokeWidth,
-                            min: 2,
-                            max: 25,
-                            onChanged: (value) => setShapeFactoryPaint(
-                              (controller.shapePaint ?? shapePaint).copyWith(
-                                strokeWidth: value,
-                              ),
-                            ),
-                            showColor: true,
-                            colorValue: (controller.shapePaint ?? shapePaint).color,
-                            onColorChanged: (hue) => setShapeFactoryPaint(
-                              (controller.shapePaint ?? shapePaint).copyWith(
-                                color: HSVColor.fromAHSV(1, hue, 1, 1).toColor(),
-                              ),
-                            ),
-                            showFillOption: true,
-                            isFilled: (controller.shapePaint ?? shapePaint).style == PaintingStyle.fill,
-                            onFillChanged: (value) => setShapeFactoryPaint(
-                              (controller.shapePaint ?? shapePaint).copyWith(
-                                style: value ? PaintingStyle.fill : PaintingStyle.stroke,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            )
-          : null,
     );
   }
 
@@ -795,7 +770,14 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
           ),
         ),
         
-        if (showColor && colorValue != null && onColorChanged != null)
+        if (showColor && colorValue != null && onColorChanged != null) ...[
+          SizedBox(
+            width: 40,
+            child: Text(
+              AppLocalizations.of(context)!.color,
+              style: const TextStyle(fontSize: 12, color: Colors.white),
+            ),
+          ),
           Expanded(
             flex: 3,
             child: SliderTheme(
@@ -804,18 +786,18 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                 thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
                 activeTrackColor: Colors.white70,
                 inactiveTrackColor: Colors.grey.shade700,
-                thumbColor: colorValue,
+                thumbColor: Colors.white,
               ),
               child: Slider(
                 value: HSVColor.fromColor(colorValue).hue,
                 min: 0,
                 max: 359.99,
-                activeColor: colorValue,
                 onChanged: onColorChanged,
               ),
             ),
           ),
-          
+        ],
+        
         if (showFillOption && onFillChanged != null)
           Row(
             mainAxisSize: MainAxisSize.min,
@@ -832,6 +814,19 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
               ),
             ],
           ),
+        
+        // Add close button at the end of the row
+        IconButton(
+          icon: const Icon(Icons.close, color: Colors.white, size: 18),
+          onPressed: () {
+            hideSettingsPanel();
+            if (textFocusNode.hasFocus) {
+              textFocusNode.unfocus();
+            }
+          },
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+        ),
       ],
     );
   }
