@@ -428,7 +428,7 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                             vertical: 8,
                           ),
                           decoration: BoxDecoration(
-                            color: toolbarBackgroundColor.withOpacity(0.6),
+                            color: toolbarBackgroundColor.withAlpha((0.6 * 255).round()),
                             borderRadius: const BorderRadius.all(Radius.circular(8)),
                             boxShadow: [
                               BoxShadow(
