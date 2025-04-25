@@ -22,4 +22,16 @@ class Diagrams extends _$Diagrams {
         .watch(apiServiceProvider)
         .createDiagram(Diagram(bridgeId: bridgeId, photoId: diagramPhoto.id!));
   }
+  
+  Future<Diagram> updateDiagram(Diagram diagram) async {
+    final updatedDiagram = await ref.watch(apiServiceProvider).updateDiagram(diagram);
+    
+    // Update the state with the new diagram
+    final currentState = await future;
+    state = AsyncData(currentState.map((d) => 
+      d.id == updatedDiagram.id ? updatedDiagram : d
+    ).toList());
+    
+    return updatedDiagram;
+  }
 }

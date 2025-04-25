@@ -343,51 +343,51 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get editDiagram => '図面を編集';
-  
+
   @override
   String failedToSaveSketch(Object error) {
     return 'スケッチの保存に失敗しました: $error';
   }
-  
+
   @override
   String get brushSettings => 'ブラシ設定';
-  
+
   @override
   String get textSettings => 'テキスト設定';
-  
+
   @override
   String get shapeSettings => '図形設定';
-  
+
   @override
   String get width => '太さ:';
-  
+
   @override
   String get color => '色:';
-  
+
   @override
   String get size => 'サイズ:';
-  
+
   @override
   String get fill => '塗りつぶし:';
-  
+
   @override
   String get addShape => '図形を追加';
-  
+
   @override
   String get none => 'なし';
-  
+
   @override
   String get line => '線';
-  
+
   @override
   String get arrow => '矢印';
-  
+
   @override
   String get doubleArrow => '双方向矢印';
-  
+
   @override
   String get rectangle => '長方形';
-  
+
   @override
   String get oval => '楕円';
 }

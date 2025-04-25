@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +11,7 @@ import 'package:kyoryo/src/models/marking.dart';
 import 'package:kyoryo/src/providers/current_bridge.provider.dart';
 import 'package:kyoryo/src/providers/damage_inspection.provider.dart';
 import 'package:kyoryo/src/providers/diagram_inspection.provider.dart';
+import 'package:kyoryo/src/providers/diagrams.provider.dart';
 import 'package:kyoryo/src/providers/inspection_points.provider.dart';
 import 'package:kyoryo/src/routing/router.dart';
 import 'package:kyoryo/src/ui/diagram_bottom_app_bar.dart';
@@ -26,19 +29,136 @@ class DiagramInspectionScreen extends ConsumerStatefulWidget {
   }
 }
 
-class DiagramInspectionScreenState
-    extends ConsumerState<DiagramInspectionScreen> {
+class DiagramInspectionScreenState extends ConsumerState<DiagramInspectionScreen> {
   late PhotoViewController controller;
-  late CachedNetworkImageProvider imageProvider;
   late Marking newMarking;
   int imageWidth = 0;
   int imageHeight = 0;
   double scale = 1.0;
   Offset position = Offset.zero;
   bool newMarkingMode = false;
+  bool isLoading = true;
   Future<void>? pendingSubmission;
+  String imageUrl = '';
+  String uniqueKey = DateTime.now().millisecondsSinceEpoch.toString();
+  Diagram currentDiagram;
+  
+  // Constructor initialization
+  DiagramInspectionScreenState() : currentDiagram = Diagram(bridgeId: 0, photoId: 0);
 
   GlobalKey<DiagramBottomAppBarState> bottomAppBarKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    currentDiagram = widget.diagram;
+    newMarking = const Marking(x: 0, y: 0);
+    imageUrl = currentDiagram.photo!.photoLink;
+    
+    // Force clear all caches at start
+    _clearAllCaches();
+    
+    controller = PhotoViewController()
+      ..outputStateStream.listen((value) {
+        setState(() {
+          scale = value.scale ?? 1.0;
+          position = value.position;
+        });
+      });
+      
+    // Preload the image dimensions
+    _loadImageDimensions();
+  }
+  
+  Future<void> _loadImageDimensions() async {
+    setState(() {
+      isLoading = true;
+    });
+    
+    try {
+      // Create a fresh network image without caching
+      final networkImage = NetworkImage(imageUrl);
+      
+      final completer = Completer<ImageInfo>();
+      final stream = networkImage.resolve(ImageConfiguration.empty);
+      final listener = ImageStreamListener((info, _) {
+        completer.complete(info);
+      }, onError: (exception, stackTrace) {
+        completer.completeError(exception);
+      });
+      
+      stream.addListener(listener);
+      
+      final imageInfo = await completer.future;
+      
+      setState(() {
+        imageWidth = imageInfo.image.width;
+        imageHeight = imageInfo.image.height;
+        isLoading = false;
+      });
+      
+      stream.removeListener(listener);
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading image: $e')),
+        );
+      }
+    }
+  }
+  
+  void _clearAllCaches() {
+    // Clear image cache
+    PaintingBinding.instance.imageCache.clear();
+    PaintingBinding.instance.imageCache.clearLiveImages();
+    
+    // Clear specific URL
+    CachedNetworkImage.evictFromCache(imageUrl);
+  }
+  
+  Future<void> _refreshDiagram() async {
+    final currentBridge = ref.read(currentBridgeProvider);
+    if (currentBridge == null) return;
+    
+    // Clear caches
+    _clearAllCaches();
+    
+    try {
+      // Re-fetch the diagram from API to get fresh data
+      final refreshedDiagrams = await ref.read(diagramsProvider(currentBridge.id).future);
+      final refreshedDiagram = refreshedDiagrams.firstWhere(
+        (d) => d.id == currentDiagram.id,
+        orElse: () => currentDiagram,
+      );
+      
+      setState(() {
+        currentDiagram = refreshedDiagram;
+        imageUrl = refreshedDiagram.photo!.photoLink;
+        uniqueKey = DateTime.now().millisecondsSinceEpoch.toString();
+        isLoading = false;
+      });
+      
+      // Reload dimensions with the new image
+      _loadImageDimensions();
+      
+      // Refresh all related providers
+      ref.invalidate(inspectionPointsProvider(currentBridge.id));
+      ref.invalidate(diagramInspectionProvider(refreshedDiagram));
+      ref.invalidate(damageInspectionProvider(currentBridge.id));
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error refreshing diagram: $e')),
+        );
+      }
+    }
+  }
 
   void createInspecitonPoint() {
     final currentBridge = ref.watch(currentBridgeProvider);
@@ -57,36 +177,13 @@ class DiagramInspectionScreenState
                   bottomAppBarKey.currentState!.elementNumberController.text,
               diagramMarkingX: newMarking.x,
               diagramMarkingY: newMarking.y,
-              diagramId: widget.diagram.id))
+              diagramId: currentDiagram.id))
           .then((_) {
         newMarkingMode = false;
         bottomAppBarKey.currentState!.elementNumberController.clear();
         bottomAppBarKey.currentState!.setShowNewPointForm(false);
       });
     });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    newMarking = const Marking(x: 0, y: 0);
-    imageProvider = CachedNetworkImageProvider(widget.diagram.photo!.photoLink);
-    imageProvider.resolve(const ImageConfiguration()).addListener(
-      ImageStreamListener((info, _) {
-        setState(() {
-          imageWidth = info.image.width;
-          imageHeight = info.image.height;
-        });
-      }),
-    );
-
-    controller = PhotoViewController()
-      ..outputStateStream.listen((value) {
-        setState(() {
-          scale = value.scale ?? 1.0;
-          position = value.position;
-        });
-      });
   }
 
   @override
@@ -100,40 +197,44 @@ class DiagramInspectionScreenState
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    final state = ref.watch(diagramInspectionProvider(widget.diagram));
+    // Watch the diagram inspection state using the current diagram
+    final diagramInspectionState = ref.watch(diagramInspectionProvider(currentDiagram));
 
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         actions: [
+          // Add a refresh button
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _refreshDiagram,
+          ),
           Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: Material(
-              elevation: 4,
-              borderRadius: BorderRadius.circular(16),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE8E6FF),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: IconButton(
-                  icon: const Icon(
-                    Icons.edit,
-                    size: 24,
-                    color: Color(0xFF6C63FF),
-                  ),
-                  onPressed: () async {
-                    final result = await context.router.push<bool>(
-                      DiagramSketchRoute(diagram: widget.diagram),
-                    );
-                    if (result == true) {
-                      // Refresh the diagram data
-                      ref.invalidate(diagramInspectionProvider(widget.diagram));
-                    }
-                  },
-                ),
-              ),
+            padding: const EdgeInsets.only(right: 16),
+            child: FloatingActionButton(
+              heroTag: 'edit_diagram',
+              child: const Icon(Icons.edit),
+              onPressed: () async {
+                // Clear caches before navigating
+                _clearAllCaches();
+                
+                final result = await context.router.push<Diagram>(
+                  DiagramSketchRoute(diagram: currentDiagram),
+                );
+                
+                if (result != null) {
+                  setState(() {
+                    currentDiagram = result;
+                    imageUrl = result.photo!.photoLink;
+                    uniqueKey = DateTime.now().millisecondsSinceEpoch.toString();
+                  });
+                  
+                  // Force manual refresh after returning with updated diagram
+                  _clearAllCaches();
+                  await _refreshDiagram();
+                }
+              },
             ),
           ),
         ],
@@ -217,34 +318,69 @@ class DiagramInspectionScreenState
       ),
       body: Stack(
         children: [
-          GestureDetector(
-            onLongPressEnd: (details) {
-              if (!newMarkingMode) return;
+          if (isLoading)
+            const Center(
+              child: CircularProgressIndicator(),
+            )
+          else
+            GestureDetector(
+              onLongPressEnd: (details) {
+                if (!newMarkingMode) return;
 
-              setState(() {
-                final adjustedX = details.localPosition.dx / scale -
-                    position.dx / scale -
-                    screenWidth / 2 / scale +
-                    imageWidth / 2;
-                final adjustedY = details.localPosition.dy / scale -
-                    position.dy / scale -
-                    screenHeight / 2 / scale +
-                    imageHeight / 2;
+                setState(() {
+                  final adjustedX = details.localPosition.dx / scale -
+                      position.dx / scale -
+                      screenWidth / 2 / scale +
+                      imageWidth / 2;
+                  final adjustedY = details.localPosition.dy / scale -
+                      position.dy / scale -
+                      screenHeight / 2 / scale +
+                      imageHeight / 2;
 
-                newMarking =
-                    Marking(x: adjustedX.toInt(), y: adjustedY.toInt());
+                  newMarking =
+                      Marking(x: adjustedX.toInt(), y: adjustedY.toInt());
 
-                bottomAppBarKey.currentState!.maximize();
-              });
-            },
-            child: PhotoView(
-              controller: controller,
-              imageProvider:
-                  CachedNetworkImageProvider(widget.diagram.photo!.photoLink),
-              enablePanAlways: true,
+                  bottomAppBarKey.currentState!.maximize();
+                });
+              },
+              child: PhotoView(
+                key: ValueKey('diagram_$uniqueKey'),
+                controller: controller,
+                // Use NetworkImage directly instead of CachedNetworkImageProvider
+                imageProvider: NetworkImage(imageUrl),
+                enablePanAlways: true,
+                initialScale: PhotoViewComputedScale.contained,
+                minScale: PhotoViewComputedScale.contained * 0.8,
+                maxScale: PhotoViewComputedScale.covered * 3,
+                errorBuilder: (context, error, stackTrace) {
+                  return Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.error_outline, color: Colors.red, size: 40),
+                        SizedBox(height: 16),
+                        Text('Error loading image', style: TextStyle(color: Colors.red)),
+                        SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: _refreshDiagram,
+                          child: Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                loadingBuilder: (context, event) {
+                  return Center(
+                    child: CircularProgressIndicator(
+                      value: event == null
+                          ? 0
+                          : event.cumulativeBytesLoaded / (event.expectedTotalBytes ?? 1),
+                    ),
+                  );
+                },
+              ),
             ),
-          ),
-          if (newMarkingMode)
+          if (newMarkingMode && !isLoading)
             Positioned(
               top: (newMarking.y * scale) +
                   (screenHeight - scale * imageHeight) / 2 +
@@ -261,10 +397,10 @@ class DiagramInspectionScreenState
               ),
             ),
           ...renderMarkers(
-              state.maybeWhen(orElse: () => [], data: (data) => data.points)),
+              diagramInspectionState.maybeWhen(orElse: () => [], data: (data) => data.points)),
           DiagramBottomAppBar(
             key: bottomAppBarKey,
-            diagram: widget.diagram,
+            diagram: currentDiagram,
           )
         ],
       ),
@@ -321,7 +457,7 @@ class DiagramInspectionScreenState
         .length;
 
     final diagramInspection =
-        ref.watch(diagramInspectionProvider(widget.diagram)).value;
+        ref.watch(diagramInspectionProvider(currentDiagram)).value;
 
     return Positioned(
       left: ((group.first.diagramMarkingX ?? 0) * scale) +
@@ -338,11 +474,11 @@ class DiagramInspectionScreenState
 
           if (diagramInspection.isPointSelected(group.first)) {
             ref
-                .read(diagramInspectionProvider(widget.diagram).notifier)
+                .read(diagramInspectionProvider(currentDiagram).notifier)
                 .setSelectedPoints(null);
           } else {
             ref
-                .read(diagramInspectionProvider(widget.diagram).notifier)
+                .read(diagramInspectionProvider(currentDiagram).notifier)
                 .setSelectedPoints(group);
           }
         },

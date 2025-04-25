@@ -3,11 +3,17 @@ import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:auto_route/auto_route.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_painter_v2/flutter_painter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kyoryo/src/models/diagram.dart';
 import 'package:kyoryo/src/providers/api.provider.dart';
+import 'package:kyoryo/src/providers/current_bridge.provider.dart';
+import 'package:kyoryo/src/providers/damage_inspection.provider.dart';
+import 'package:kyoryo/src/providers/diagram_inspection.provider.dart';
+import 'package:kyoryo/src/providers/diagrams.provider.dart';
+import 'package:kyoryo/src/providers/inspection_points.provider.dart';
 import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -18,7 +24,8 @@ class DiagramSketchScreen extends ConsumerStatefulWidget {
   const DiagramSketchScreen({super.key, required this.diagram});
 
   @override
-  ConsumerState<DiagramSketchScreen> createState() => _DiagramSketchScreenState();
+  ConsumerState<DiagramSketchScreen> createState() =>
+      _DiagramSketchScreenState();
 }
 
 class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
@@ -34,7 +41,7 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
     ..strokeCap = StrokeCap.round;
 
   static const Color defaultColor = Colors.red;
-    
+
   // Define sticker image links
   /* 
   static const List<String> imageLinks = [
@@ -135,7 +142,7 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
   void flipSelectedImageDrawable() {
     final imageDrawable = controller.selectedObjectDrawable;
     if (imageDrawable is! ImageDrawable) return;
-    
+
     controller.replaceDrawable(
       imageDrawable,
       imageDrawable.copyWith(flipped: !imageDrawable.flipped),
@@ -203,13 +210,13 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
     final imageProvider = NetworkImage(widget.diagram.photo!.photoLink);
     final imageStream = imageProvider.resolve(ImageConfiguration.empty);
     final completer = Completer<ui.Image>();
-    
+
     imageStream.addListener(ImageStreamListener((info, _) {
       completer.complete(info.image);
     }));
 
     backgroundImage = await completer.future;
-    
+
     setState(() {
       controller.background = backgroundImage.backgroundDrawable;
       isLoading = false;
@@ -229,28 +236,53 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
         backgroundImage.width.toDouble(),
         backgroundImage.height.toDouble(),
       ));
-      
+
       // Save to temporary file
       final tempDir = await getTemporaryDirectory();
-      final tempPath = '${tempDir.path}/sketch_${DateTime.now().millisecondsSinceEpoch}.png';
+      final tempPath =
+          '${tempDir.path}/sketch_${DateTime.now().millisecondsSinceEpoch}.png';
       final file = File(tempPath);
-      
-      await file.writeAsBytes((await renderedImage.toByteData(format: ui.ImageByteFormat.png))!.buffer.asUint8List());
 
+      await file.writeAsBytes(
+          (await renderedImage.toByteData(format: ui.ImageByteFormat.png))!
+              .buffer
+              .asUint8List());
+
+      // First, explicitly evict the old image from cache
+      await CachedNetworkImage.evictFromCache(widget.diagram.photo!.photoLink);
+      
       // Upload the new photo
       final photo = await ref.read(apiServiceProvider).uploadPhoto(tempPath);
-
+      
       // Update the diagram with the new photo
       final updatedDiagram = widget.diagram.copyWith(photoId: photo.id!);
-      await ref.read(apiServiceProvider).updateDiagram(updatedDiagram);
-
+      
+      // Use direct API call to update the diagram
+      final updatedDiagramFromApi = await ref.read(apiServiceProvider).updateDiagram(updatedDiagram);
+      
+      // IMPORTANT: Ensure we completely clear all caches for the new image URL
+      await CachedNetworkImage.evictFromCache(updatedDiagramFromApi.photo!.photoLink);
+      PaintingBinding.instance.imageCache.clear();
+      PaintingBinding.instance.imageCache.clearLiveImages();
+      
+      // Invalidate all providers to force complete refresh
+      ref.invalidate(diagramsProvider(widget.diagram.bridgeId));
+      ref.invalidate(inspectionPointsProvider(widget.diagram.bridgeId));
+      ref.invalidate(damageInspectionProvider(widget.diagram.bridgeId));
+      
+      // Add a small delay to ensure cache clearing completes
+      await Future.delayed(const Duration(milliseconds: 500));
+      
       if (mounted) {
-        Navigator.of(context).pop(true); // Return true to indicate success
+        // Return the updated diagram to the previous screen
+        Navigator.of(context).pop(updatedDiagramFromApi);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.failedToSaveSketch(e.toString()))),
+          SnackBar(
+              content: Text(AppLocalizations.of(context)!
+                  .failedToSaveSketch(e.toString()))),
         );
       }
     } finally {
@@ -265,7 +297,7 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
-    
+
     return Scaffold(
       appBar: AppBar(
         title: Text(localizations.editDiagram),
@@ -275,7 +307,9 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
             valueListenable: controller,
             builder: (context, _, __) => IconButton(
               icon: const Icon(Icons.delete),
-              onPressed: controller.selectedObjectDrawable == null ? null : removeSelectedDrawable,
+              onPressed: controller.selectedObjectDrawable == null
+                  ? null
+                  : removeSelectedDrawable,
             ),
           ),
           // Flip selected image
@@ -283,7 +317,9 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
             valueListenable: controller,
             builder: (context, _, __) => IconButton(
               icon: const Icon(Icons.flip),
-              onPressed: controller.selectedObjectDrawable is ImageDrawable ? flipSelectedImageDrawable : null,
+              onPressed: controller.selectedObjectDrawable is ImageDrawable
+                  ? flipSelectedImageDrawable
+                  : null,
             ),
           ),
           // Undo
@@ -333,7 +369,8 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
             child: ValueListenableBuilder(
               valueListenable: controller,
               builder: (context, _, __) => Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   boxShadow: [
@@ -358,12 +395,16 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          SizedBox(width: 45, child: Text(localizations.width, style: const TextStyle(fontSize: 13))),
+                          SizedBox(
+                              width: 45,
+                              child: Text(localizations.width,
+                                  style: const TextStyle(fontSize: 13))),
                           Expanded(
                             child: SliderTheme(
                               data: SliderTheme.of(context).copyWith(
                                 trackHeight: 2,
-                                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                                thumbShape: const RoundSliderThumbShape(
+                                    enabledThumbRadius: 6),
                               ),
                               child: Slider(
                                 value: controller.freeStyleStrokeWidth,
@@ -378,15 +419,21 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                       if (controller.freeStyleMode == FreeStyleMode.draw)
                         Row(
                           children: [
-                            SizedBox(width: 45, child: Text(localizations.color, style: const TextStyle(fontSize: 13))),
+                            SizedBox(
+                                width: 45,
+                                child: Text(localizations.color,
+                                    style: const TextStyle(fontSize: 13))),
                             Expanded(
                               child: SliderTheme(
                                 data: SliderTheme.of(context).copyWith(
                                   trackHeight: 2,
-                                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                                  thumbShape: const RoundSliderThumbShape(
+                                      enabledThumbRadius: 6),
                                 ),
                                 child: Slider(
-                                  value: HSVColor.fromColor(controller.freeStyleColor).hue,
+                                  value: HSVColor.fromColor(
+                                          controller.freeStyleColor)
+                                      .hue,
                                   min: 0,
                                   max: 359.99,
                                   activeColor: controller.freeStyleColor,
@@ -408,12 +455,16 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          SizedBox(width: 45, child: Text(localizations.size, style: const TextStyle(fontSize: 13))),
+                          SizedBox(
+                              width: 45,
+                              child: Text(localizations.size,
+                                  style: const TextStyle(fontSize: 13))),
                           Expanded(
                             child: SliderTheme(
                               data: SliderTheme.of(context).copyWith(
                                 trackHeight: 2,
-                                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                                thumbShape: const RoundSliderThumbShape(
+                                    enabledThumbRadius: 6),
                               ),
                               child: Slider(
                                 value: controller.textStyle.fontSize ?? 14,
@@ -427,15 +478,22 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                       ),
                       Row(
                         children: [
-                          SizedBox(width: 45, child: Text(localizations.color, style: const TextStyle(fontSize: 13))),
+                          SizedBox(
+                              width: 45,
+                              child: Text(localizations.color,
+                                  style: const TextStyle(fontSize: 13))),
                           Expanded(
                             child: SliderTheme(
                               data: SliderTheme.of(context).copyWith(
                                 trackHeight: 2,
-                                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                                thumbShape: const RoundSliderThumbShape(
+                                    enabledThumbRadius: 6),
                               ),
                               child: Slider(
-                                value: HSVColor.fromColor(controller.textStyle.color ?? defaultColor).hue,
+                                value: HSVColor.fromColor(
+                                        controller.textStyle.color ??
+                                            defaultColor)
+                                    .hue,
                                 min: 0,
                                 max: 359.99,
                                 activeColor: controller.textStyle.color,
@@ -457,19 +515,25 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          SizedBox(width: 45, child: Text(localizations.width, style: const TextStyle(fontSize: 13))),
+                          SizedBox(
+                              width: 45,
+                              child: Text(localizations.width,
+                                  style: const TextStyle(fontSize: 13))),
                           Expanded(
                             child: SliderTheme(
                               data: SliderTheme.of(context).copyWith(
                                 trackHeight: 2,
-                                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                                thumbShape: const RoundSliderThumbShape(
+                                    enabledThumbRadius: 6),
                               ),
                               child: Slider(
-                                value: controller.shapePaint?.strokeWidth ?? shapePaint.strokeWidth,
+                                value: controller.shapePaint?.strokeWidth ??
+                                    shapePaint.strokeWidth,
                                 min: 2,
                                 max: 25,
                                 onChanged: (value) => setShapeFactoryPaint(
-                                  (controller.shapePaint ?? shapePaint).copyWith(
+                                  (controller.shapePaint ?? shapePaint)
+                                      .copyWith(
                                     strokeWidth: value,
                                   ),
                                 ),
@@ -480,21 +544,31 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                       ),
                       Row(
                         children: [
-                          SizedBox(width: 45, child: Text(localizations.color, style: const TextStyle(fontSize: 13))),
+                          SizedBox(
+                              width: 45,
+                              child: Text(localizations.color,
+                                  style: const TextStyle(fontSize: 13))),
                           Expanded(
                             child: SliderTheme(
                               data: SliderTheme.of(context).copyWith(
                                 trackHeight: 2,
-                                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                                thumbShape: const RoundSliderThumbShape(
+                                    enabledThumbRadius: 6),
                               ),
                               child: Slider(
-                                value: HSVColor.fromColor((controller.shapePaint ?? shapePaint).color).hue,
+                                value: HSVColor.fromColor(
+                                        (controller.shapePaint ?? shapePaint)
+                                            .color)
+                                    .hue,
                                 min: 0,
                                 max: 359.99,
-                                activeColor: (controller.shapePaint ?? shapePaint).color,
+                                activeColor:
+                                    (controller.shapePaint ?? shapePaint).color,
                                 onChanged: (hue) => setShapeFactoryPaint(
-                                  (controller.shapePaint ?? shapePaint).copyWith(
-                                    color: HSVColor.fromAHSV(1, hue, 1, 1).toColor(),
+                                  (controller.shapePaint ?? shapePaint)
+                                      .copyWith(
+                                    color: HSVColor.fromAHSV(1, hue, 1, 1)
+                                        .toColor(),
                                   ),
                                 ),
                               ),
@@ -504,13 +578,21 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                       ),
                       Row(
                         children: [
-                          SizedBox(width: 45, child: Text(localizations.fill, style: const TextStyle(fontSize: 13))),
+                          SizedBox(
+                              width: 45,
+                              child: Text(localizations.fill,
+                                  style: const TextStyle(fontSize: 13))),
                           Switch(
-                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            value: (controller.shapePaint ?? shapePaint).style == PaintingStyle.fill,
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                            value:
+                                (controller.shapePaint ?? shapePaint).style ==
+                                    PaintingStyle.fill,
                             onChanged: (value) => setShapeFactoryPaint(
                               (controller.shapePaint ?? shapePaint).copyWith(
-                                style: value ? PaintingStyle.fill : PaintingStyle.stroke,
+                                style: value
+                                    ? PaintingStyle.fill
+                                    : PaintingStyle.stroke,
                               ),
                             ),
                           ),
@@ -536,32 +618,34 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
               IconButton(
                 icon: Icon(Icons.edit),
                 onPressed: () {
-                  controller.freeStyleMode = controller.freeStyleMode != FreeStyleMode.draw
-                      ? FreeStyleMode.draw
-                      : FreeStyleMode.none;
+                  controller.freeStyleMode =
+                      controller.freeStyleMode != FreeStyleMode.draw
+                          ? FreeStyleMode.draw
+                          : FreeStyleMode.none;
                   // Clear shape factory when switching to drawing
                   if (controller.shapeFactory != null) {
                     controller.shapeFactory = null;
                   }
                 },
-                color: controller.freeStyleMode == FreeStyleMode.draw 
-                    ? Theme.of(context).primaryColor 
+                color: controller.freeStyleMode == FreeStyleMode.draw
+                    ? Theme.of(context).primaryColor
                     : null,
               ),
               // Eraser
               IconButton(
-                icon: Icon(Icons.auto_fix_high),
+                icon: Icon(Icons.delete_outline),
                 onPressed: () {
-                  controller.freeStyleMode = controller.freeStyleMode != FreeStyleMode.erase
-                      ? FreeStyleMode.erase
-                      : FreeStyleMode.none;
+                  controller.freeStyleMode =
+                      controller.freeStyleMode != FreeStyleMode.erase
+                          ? FreeStyleMode.erase
+                          : FreeStyleMode.none;
                   // Clear shape factory when switching to eraser
                   if (controller.shapeFactory != null) {
                     controller.shapeFactory = null;
                   }
                 },
-                color: controller.freeStyleMode == FreeStyleMode.erase 
-                    ? Theme.of(context).primaryColor 
+                color: controller.freeStyleMode == FreeStyleMode.erase
+                    ? Theme.of(context).primaryColor
                     : null,
               ),
               // Add text
@@ -577,8 +661,8 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                   }
                   controller.addText();
                 },
-                color: textFocusNode.hasFocus 
-                    ? Theme.of(context).primaryColor 
+                color: textFocusNode.hasFocus
+                    ? Theme.of(context).primaryColor
                     : null,
               ),
               /* 
@@ -658,4 +742,4 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
     textFocusNode.dispose();
     super.dispose();
   }
-} 
+}

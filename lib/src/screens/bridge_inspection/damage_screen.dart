@@ -91,10 +91,26 @@ class _DiagramItem extends ConsumerWidget {
     final state = ref
         .watch(damageInspectionProvider(ref.watch(currentBridgeProvider)!.id))
         .maybeWhen(data: (data) => data, orElse: () => null);
+        
+    // Create a unique timestamp for this render to prevent caching issues
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final uniqueCacheKey = 'diagram_${diagram.id}_${diagram.photoId}_$timestamp';
 
     return GestureDetector(
-      onTap: () {
-        context.router.push(DiagramInspectionRoute(diagram: diagram));
+      onTap: () async {
+        // Before navigating, evict the current image from cache to ensure fresh load
+        await CachedNetworkImage.evictFromCache(diagram.photo!.photoLink);
+        
+        await context.router.push(DiagramInspectionRoute(diagram: diagram));
+        
+        // After returning, refresh the damage inspection provider
+        final currentBridge = ref.read(currentBridgeProvider);
+        if (currentBridge != null) {
+          // Clear image cache before invalidating providers
+          await CachedNetworkImage.evictFromCache(diagram.photo!.photoLink);
+          
+          ref.invalidate(damageInspectionProvider(currentBridge.id));
+        }
       },
       child: Flex(
         direction: Axis.vertical,
@@ -109,6 +125,7 @@ class _DiagramItem extends ConsumerWidget {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(20),
                     child: CachedNetworkImage(
+                      key: ValueKey(uniqueCacheKey),
                       fit: BoxFit.cover,
                       placeholder: (context, url) => Container(
                           height: size,
@@ -117,6 +134,14 @@ class _DiagramItem extends ConsumerWidget {
                       width: size,
                       height: size,
                       imageUrl: diagram.photo!.photoLink,
+                      cacheKey: uniqueCacheKey,
+                      // If image fails to load, show an error indicator
+                      errorWidget: (context, url, error) => Container(
+                        color: Colors.grey[300],
+                        child: const Center(
+                          child: Icon(Icons.error_outline, color: Colors.red),
+                        ),
+                      ),
                     ),
                   ),
                 ),

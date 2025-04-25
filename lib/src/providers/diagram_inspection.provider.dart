@@ -88,9 +88,13 @@ class DiagramInspection extends _$DiagramInspection {
         await ref.watch(bridgeInspectionProvider(currentBridge!.id).future);
 
     final allPoints = await ref
-        .watch(damageInspectionPointsProvider(currentBridge.id).future);
-    final points =
-        allPoints.where((point) => point.diagram?.id == diagram.id).toList();
+        .watch(inspectionPointsProvider(currentBridge.id).future);
+    
+    final points = allPoints
+        .where((point) => point.type == InspectionPointType.damage && 
+                         point.diagram?.id == diagram.id)
+        .toList();
+    
     final pointIds = points.map((point) => point.id).toList();
 
     return DiagramInspectionState(
