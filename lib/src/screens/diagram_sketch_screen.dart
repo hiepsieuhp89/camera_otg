@@ -7,14 +7,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_painter_v2/flutter_painter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:kyoryo/src/models/diagram.dart';
 import 'package:kyoryo/src/providers/api.provider.dart';
-import 'package:kyoryo/src/providers/current_bridge.provider.dart';
 import 'package:kyoryo/src/providers/damage_inspection.provider.dart';
-import 'package:kyoryo/src/providers/diagram_inspection.provider.dart';
 import 'package:kyoryo/src/providers/diagrams.provider.dart';
 import 'package:kyoryo/src/providers/inspection_points.provider.dart';
-import 'package:kyoryo/src/localization/app_localizations.dart';
 import 'package:path_provider/path_provider.dart';
 
 @RoutePage()
@@ -33,6 +31,9 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
   late ui.Image backgroundImage;
   bool isLoading = true;
   bool isSaving = false;
+  bool isUIVisible = true;
+  bool isSettingsPanelVisible = false;
+  bool isKeyboardVisible = false;
   FocusNode textFocusNode = FocusNode();
   Paint shapePaint = Paint()
     ..strokeWidth = 5
@@ -41,6 +42,10 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
     ..strokeCap = StrokeCap.round;
 
   static const Color defaultColor = Colors.red;
+  static const Color toolbarBackgroundColor = Color(0xC0424242); // Lighter semi-transparent gray
+
+  // Size of the config panel (compact vs normal)
+  bool isCompactConfig = true;
 
   // Define sticker image links
   /* 
@@ -104,10 +109,57 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
     // Listen to focus events of the text field
     textFocusNode.addListener(onFocus);
     loadImage();
+
+    // Add listener to detect when user starts interacting with canvas
+    controller.addListener(_onControllerChange);
+  }
+
+  void _onControllerChange() {
+    // If any drawing has started, hide the UI unless settings panel is visible
+    if (!isSettingsPanelVisible && 
+        (controller.freeStyleMode != FreeStyleMode.none && controller.value.drawables.isNotEmpty) ||
+        controller.shapeFactory != null) {
+      if (isUIVisible) {
+        setState(() {
+          isUIVisible = false;
+        });
+      }
+    }
+  }
+
+  void toggleUIVisibility() {
+    setState(() {
+      isUIVisible = !isUIVisible;
+      // Reset settings panel visibility if hiding UI
+      if (!isUIVisible) {
+        isSettingsPanelVisible = false;
+      }
+    });
+  }
+  
+  void showSettingsPanel() {
+    setState(() {
+      isSettingsPanelVisible = true;
+      isUIVisible = true;
+    });
+  }
+  
+  void hideSettingsPanel() {
+    setState(() {
+      isSettingsPanelVisible = false;
+    });
   }
 
   void onFocus() {
-    setState(() {});
+    setState(() {
+      isUIVisible = true;
+      isKeyboardVisible = textFocusNode.hasFocus;
+      
+      // If keyboard is shown, we need to ensure the settings panel is visible
+      if (textFocusNode.hasFocus) {
+        isSettingsPanelVisible = true;
+      }
+    });
   }
 
   // Helper methods for UI controls
@@ -297,447 +349,615 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
+    final mediaQuery = MediaQuery.of(context);
+    final topPadding = mediaQuery.padding.top;
+    final bottomPadding = mediaQuery.viewInsets.bottom; // Keyboard height
+    
+    // Update keyboard visibility state
+    final keyboardIsVisible = bottomPadding > 0;
+    if (isKeyboardVisible != keyboardIsVisible) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() {
+          isKeyboardVisible = keyboardIsVisible;
+        });
+      });
+    }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(localizations.editDiagram),
-        actions: [
-          // Delete selected drawable
-          ValueListenableBuilder<PainterControllerValue>(
-            valueListenable: controller,
-            builder: (context, _, __) => IconButton(
-              icon: const Icon(Icons.delete),
-              onPressed: controller.selectedObjectDrawable == null
-                  ? null
-                  : removeSelectedDrawable,
+      extendBodyBehindAppBar: true,
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(kToolbarHeight * 0.4 + topPadding),
+        child: Visibility(
+          visible: isUIVisible,
+          maintainState: true,
+          maintainSize: true,
+          maintainAnimation: true,
+          maintainSemantics: true,
+          child: Container(
+            decoration: BoxDecoration(
+              color: toolbarBackgroundColor,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 4,
+                ),
+              ],
+            ),
+            child: SafeArea(
+              child: AppBar(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                toolbarHeight: kToolbarHeight * 0.4,
+                automaticallyImplyLeading: true,
+                leadingWidth: 40,
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  padding: EdgeInsets.zero,
+                  iconSize: 20,
+                  alignment: Alignment.center,
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+                iconTheme: const IconThemeData(color: Colors.white),
+                title: Text(
+                  localizations.editDiagram,
+                  style: const TextStyle(color: Colors.white),
+                ),
+                titleSpacing: 0,
+                actions: [
+                  // Delete selected drawable
+                  ValueListenableBuilder<PainterControllerValue>(
+                    valueListenable: controller,
+                    builder: (context, _, __) => IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.white),
+                      onPressed: controller.selectedObjectDrawable == null
+                          ? null
+                          : removeSelectedDrawable,
+                      iconSize: 22,
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      constraints: const BoxConstraints(),
+                    ),
+                  ),
+                  // Flip selected image
+                  ValueListenableBuilder<PainterControllerValue>(
+                    valueListenable: controller,
+                    builder: (context, _, __) => IconButton(
+                      icon: const Icon(Icons.flip, color: Colors.white),
+                      onPressed: controller.selectedObjectDrawable is ImageDrawable
+                          ? flipSelectedImageDrawable
+                          : null,
+                      iconSize: 22,
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      constraints: const BoxConstraints(),
+                    ),
+                  ),
+                  // Undo
+                  ValueListenableBuilder<PainterControllerValue>(
+                    valueListenable: controller,
+                    builder: (context, _, __) => IconButton(
+                      icon: const Icon(Icons.undo, color: Colors.white),
+                      onPressed: controller.canUndo ? controller.undo : null,
+                      iconSize: 22,
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      constraints: const BoxConstraints(),
+                    ),
+                  ),
+                  // Redo
+                  ValueListenableBuilder<PainterControllerValue>(
+                    valueListenable: controller,
+                    builder: (context, _, __) => IconButton(
+                      icon: const Icon(Icons.redo, color: Colors.white),
+                      onPressed: controller.canRedo ? controller.redo : null,
+                      iconSize: 22,
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      constraints: const BoxConstraints(),
+                    ),
+                  ),
+                  // Save
+                  ValueListenableBuilder<PainterControllerValue>(
+                    valueListenable: controller,
+                    builder: (context, _, __) => IconButton(
+                      icon: const Icon(Icons.save, color: Colors.white),
+                      onPressed: isSaving ? null : saveSketch,
+                      iconSize: 22,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      constraints: const BoxConstraints(),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-          // Flip selected image
-          ValueListenableBuilder<PainterControllerValue>(
-            valueListenable: controller,
-            builder: (context, _, __) => IconButton(
-              icon: const Icon(Icons.flip),
-              onPressed: controller.selectedObjectDrawable is ImageDrawable
-                  ? flipSelectedImageDrawable
-                  : null,
-            ),
-          ),
-          // Undo
-          ValueListenableBuilder<PainterControllerValue>(
-            valueListenable: controller,
-            builder: (context, _, __) => IconButton(
-              icon: const Icon(Icons.undo),
-              onPressed: controller.canUndo ? controller.undo : null,
-            ),
-          ),
-          // Redo
-          ValueListenableBuilder<PainterControllerValue>(
-            valueListenable: controller,
-            builder: (context, _, __) => IconButton(
-              icon: const Icon(Icons.redo),
-              onPressed: controller.canRedo ? controller.redo : null,
-            ),
-          ),
-          // Save
-          ValueListenableBuilder<PainterControllerValue>(
-            valueListenable: controller,
-            builder: (context, _, __) => IconButton(
-              icon: const Icon(Icons.save),
-              onPressed: isSaving ? null : saveSketch,
-            ),
-          ),
-        ],
+        ),
       ),
       body: Stack(
         children: [
+          // The painter that takes full screen (always visible)
           if (!isLoading)
             Positioned.fill(
-              child: Center(
-                child: AspectRatio(
-                  aspectRatio: backgroundImage.width / backgroundImage.height,
-                  child: FlutterPainter(
-                    controller: controller,
+              child: GestureDetector(
+                onTap: () {
+                  // Only toggle UI if not interacting with settings panel
+                  if (!isSettingsPanelVisible) {
+                    toggleUIVisibility();
+                  }
+                },
+                child: FlutterPainter(
+                  controller: controller,
+                ),
+              ),
+            )
+          else
+            const Center(
+              child: CircularProgressIndicator(),
+            ),
+            
+          // Settings panel - only visible when explicitly shown
+          if (isSettingsPanelVisible)
+            Positioned(
+              bottom: isKeyboardVisible ? bottomPadding : 0, // Position above keyboard or toolbar
+              left: 0,
+              right: 0,
+              child: GestureDetector(
+                // Prevent taps from reaching the canvas
+                onTap: () {},
+                child: ValueListenableBuilder(
+                  valueListenable: controller,
+                  builder: (context, _, __) => Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 16, 
+                      vertical: isCompactConfig ? 0 : 4
+                    ),
+                    margin: EdgeInsets.zero,
+                    decoration: BoxDecoration(
+                      color: toolbarBackgroundColor,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 4,
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              controller.freeStyleMode != FreeStyleMode.none
+                                ? localizations.brushSettings
+                                : controller.shapeFactory != null
+                                  ? localizations.shapeSettings
+                                  : textFocusNode.hasFocus
+                                    ? localizations.textSettings
+                                    : "Settings",
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.white,
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                // Toggle compact/full mode
+                                IconButton(
+                                  icon: Icon(
+                                    isCompactConfig ? Icons.expand_more : Icons.expand_less,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      isCompactConfig = !isCompactConfig;
+                                    });
+                                  },
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                ),
+                                const SizedBox(width: 12),
+                                // Close button
+                                IconButton(
+                                  icon: const Icon(Icons.close, color: Colors.white, size: 20),
+                                  onPressed: () {
+                                    hideSettingsPanel();
+                                    // When closing text settings, unfocus the text field
+                                    if (textFocusNode.hasFocus) {
+                                      textFocusNode.unfocus();
+                                    }
+                                  },
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        if (controller.freeStyleMode != FreeStyleMode.none) ...[
+                          buildCompactSettingsControls(
+                            label: localizations.width,
+                            value: controller.freeStyleStrokeWidth,
+                            min: 2,
+                            max: 25,
+                            onChanged: setFreeStyleStrokeWidth,
+                            showColor: controller.freeStyleMode == FreeStyleMode.draw,
+                            colorValue: controller.freeStyleColor,
+                            onColorChanged: setFreeStyleColor,
+                          ),
+                        ],
+                        if (textFocusNode.hasFocus) ...[
+                          buildCompactSettingsControls(
+                            label: localizations.size,
+                            value: controller.textStyle.fontSize ?? 14,
+                            min: 8,
+                            max: 96,
+                            onChanged: setTextFontSize,
+                            showColor: true,
+                            colorValue: controller.textStyle.color ?? defaultColor,
+                            onColorChanged: setTextColor,
+                          ),
+                        ],
+                        if (controller.shapeFactory != null) ...[
+                          buildCompactSettingsControls(
+                            label: localizations.width,
+                            value: controller.shapePaint?.strokeWidth ?? shapePaint.strokeWidth,
+                            min: 2,
+                            max: 25,
+                            onChanged: (value) => setShapeFactoryPaint(
+                              (controller.shapePaint ?? shapePaint).copyWith(
+                                strokeWidth: value,
+                              ),
+                            ),
+                            showColor: true,
+                            colorValue: (controller.shapePaint ?? shapePaint).color,
+                            onColorChanged: (hue) => setShapeFactoryPaint(
+                              (controller.shapePaint ?? shapePaint).copyWith(
+                                color: HSVColor.fromAHSV(1, hue, 1, 1).toColor(),
+                              ),
+                            ),
+                            showFillOption: true,
+                            isFilled: (controller.shapePaint ?? shapePaint).style == PaintingStyle.fill,
+                            onFillChanged: (value) => setShapeFactoryPaint(
+                              (controller.shapePaint ?? shapePaint).copyWith(
+                                style: value ? PaintingStyle.fill : PaintingStyle.stroke,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          // Style controls panel
-          Positioned(
-            bottom: 0, // Lower position, just above the toolbar
-            left: 0,
-            right: 0,
-            child: ValueListenableBuilder(
-              valueListenable: controller,
-              builder: (context, _, __) => Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 4,
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (controller.freeStyleMode != FreeStyleMode.none) ...[
-                      Text(
-                        localizations.brushSettings,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          SizedBox(
-                              width: 45,
-                              child: Text(localizations.width,
-                                  style: const TextStyle(fontSize: 13))),
-                          Expanded(
-                            child: SliderTheme(
-                              data: SliderTheme.of(context).copyWith(
-                                trackHeight: 2,
-                                thumbShape: const RoundSliderThumbShape(
-                                    enabledThumbRadius: 6),
-                              ),
-                              child: Slider(
-                                value: controller.freeStyleStrokeWidth,
-                                min: 2,
-                                max: 25,
-                                onChanged: setFreeStyleStrokeWidth,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      if (controller.freeStyleMode == FreeStyleMode.draw)
-                        Row(
-                          children: [
-                            SizedBox(
-                                width: 45,
-                                child: Text(localizations.color,
-                                    style: const TextStyle(fontSize: 13))),
-                            Expanded(
-                              child: SliderTheme(
-                                data: SliderTheme.of(context).copyWith(
-                                  trackHeight: 2,
-                                  thumbShape: const RoundSliderThumbShape(
-                                      enabledThumbRadius: 6),
-                                ),
-                                child: Slider(
-                                  value: HSVColor.fromColor(
-                                          controller.freeStyleColor)
-                                      .hue,
-                                  min: 0,
-                                  max: 359.99,
-                                  activeColor: controller.freeStyleColor,
-                                  onChanged: setFreeStyleColor,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                    ],
-                    if (textFocusNode.hasFocus) ...[
-                      Text(
-                        localizations.textSettings,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          SizedBox(
-                              width: 45,
-                              child: Text(localizations.size,
-                                  style: const TextStyle(fontSize: 13))),
-                          Expanded(
-                            child: SliderTheme(
-                              data: SliderTheme.of(context).copyWith(
-                                trackHeight: 2,
-                                thumbShape: const RoundSliderThumbShape(
-                                    enabledThumbRadius: 6),
-                              ),
-                              child: Slider(
-                                value: controller.textStyle.fontSize ?? 14,
-                                min: 8,
-                                max: 96,
-                                onChanged: setTextFontSize,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          SizedBox(
-                              width: 45,
-                              child: Text(localizations.color,
-                                  style: const TextStyle(fontSize: 13))),
-                          Expanded(
-                            child: SliderTheme(
-                              data: SliderTheme.of(context).copyWith(
-                                trackHeight: 2,
-                                thumbShape: const RoundSliderThumbShape(
-                                    enabledThumbRadius: 6),
-                              ),
-                              child: Slider(
-                                value: HSVColor.fromColor(
-                                        controller.textStyle.color ??
-                                            defaultColor)
-                                    .hue,
-                                min: 0,
-                                max: 359.99,
-                                activeColor: controller.textStyle.color,
-                                onChanged: setTextColor,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                    if (controller.shapeFactory != null) ...[
-                      Text(
-                        localizations.shapeSettings,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          SizedBox(
-                              width: 45,
-                              child: Text(localizations.width,
-                                  style: const TextStyle(fontSize: 13))),
-                          Expanded(
-                            child: SliderTheme(
-                              data: SliderTheme.of(context).copyWith(
-                                trackHeight: 2,
-                                thumbShape: const RoundSliderThumbShape(
-                                    enabledThumbRadius: 6),
-                              ),
-                              child: Slider(
-                                value: controller.shapePaint?.strokeWidth ??
-                                    shapePaint.strokeWidth,
-                                min: 2,
-                                max: 25,
-                                onChanged: (value) => setShapeFactoryPaint(
-                                  (controller.shapePaint ?? shapePaint)
-                                      .copyWith(
-                                    strokeWidth: value,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          SizedBox(
-                              width: 45,
-                              child: Text(localizations.color,
-                                  style: const TextStyle(fontSize: 13))),
-                          Expanded(
-                            child: SliderTheme(
-                              data: SliderTheme.of(context).copyWith(
-                                trackHeight: 2,
-                                thumbShape: const RoundSliderThumbShape(
-                                    enabledThumbRadius: 6),
-                              ),
-                              child: Slider(
-                                value: HSVColor.fromColor(
-                                        (controller.shapePaint ?? shapePaint)
-                                            .color)
-                                    .hue,
-                                min: 0,
-                                max: 359.99,
-                                activeColor:
-                                    (controller.shapePaint ?? shapePaint).color,
-                                onChanged: (hue) => setShapeFactoryPaint(
-                                  (controller.shapePaint ?? shapePaint)
-                                      .copyWith(
-                                    color: HSVColor.fromAHSV(1, hue, 1, 1)
-                                        .toColor(),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          SizedBox(
-                              width: 45,
-                              child: Text(localizations.fill,
-                                  style: const TextStyle(fontSize: 13))),
-                          Switch(
-                            materialTapTargetSize:
-                                MaterialTapTargetSize.shrinkWrap,
-                            value:
-                                (controller.shapePaint ?? shapePaint).style ==
-                                    PaintingStyle.fill,
-                            onChanged: (value) => setShapeFactoryPaint(
-                              (controller.shapePaint ?? shapePaint).copyWith(
-                                style: value
-                                    ? PaintingStyle.fill
-                                    : PaintingStyle.stroke,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ],
-                ),
+            
+          // Floating action button to toggle UI
+          if (!isUIVisible)
+            Positioned(
+              bottom: 16,
+              right: 16,
+              child: FloatingActionButton(
+                heroTag: 'toggle_ui',
+                backgroundColor: toolbarBackgroundColor,
+                child: const Icon(Icons.settings),
+                onPressed: toggleUIVisibility,
               ),
             ),
-          ),
         ],
       ),
-      bottomNavigationBar: ValueListenableBuilder(
-        valueListenable: controller,
-        builder: (context, _, __) => Container(
-          color: Colors.white,
-          padding: const EdgeInsets.all(8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              // Free-style drawing
-              IconButton(
-                icon: Icon(Icons.edit),
-                onPressed: () {
-                  controller.freeStyleMode =
-                      controller.freeStyleMode != FreeStyleMode.draw
-                          ? FreeStyleMode.draw
-                          : FreeStyleMode.none;
-                  // Clear shape factory when switching to drawing
-                  if (controller.shapeFactory != null) {
-                    controller.shapeFactory = null;
-                  }
-                },
-                color: controller.freeStyleMode == FreeStyleMode.draw
-                    ? Theme.of(context).primaryColor
-                    : null,
-              ),
-              // Eraser
-              IconButton(
-                icon: Icon(Icons.delete_outline),
-                onPressed: () {
-                  controller.freeStyleMode =
-                      controller.freeStyleMode != FreeStyleMode.erase
-                          ? FreeStyleMode.erase
-                          : FreeStyleMode.none;
-                  // Clear shape factory when switching to eraser
-                  if (controller.shapeFactory != null) {
-                    controller.shapeFactory = null;
-                  }
-                },
-                color: controller.freeStyleMode == FreeStyleMode.erase
-                    ? Theme.of(context).primaryColor
-                    : null,
-              ),
-              // Add text
-              IconButton(
-                icon: Icon(Icons.text_fields),
-                onPressed: () {
-                  if (controller.freeStyleMode != FreeStyleMode.none) {
-                    controller.freeStyleMode = FreeStyleMode.none;
-                  }
-                  // Clear shape factory when adding text
-                  if (controller.shapeFactory != null) {
-                    controller.shapeFactory = null;
-                  }
-                  controller.addText();
-                },
-                color: textFocusNode.hasFocus
-                    ? Theme.of(context).primaryColor
-                    : null,
-              ),
-              /* 
-              // Add sticker
-              IconButton(
-                icon: Icon(Icons.emoji_emotions),
-                onPressed: () {
-                  // Clear shape factory when adding sticker
-                  if (controller.shapeFactory != null) {
-                    controller.shapeFactory = null;
-                  }
-                  addSticker();
-                },
-              ),
-              */
-              // Add shapes
-              PopupMenuButton<ShapeFactory?>(
-                tooltip: localizations.addShape,
-                itemBuilder: (context) => <ShapeFactory?, String>{
-                  null: localizations.none,
-                  LineFactory(): localizations.line,
-                  ArrowFactory(): localizations.arrow,
-                  DoubleArrowFactory(): localizations.doubleArrow,
-                  RectangleFactory(): localizations.rectangle,
-                  OvalFactory(): localizations.oval,
-                }
-                    .entries
-                    .map((e) => PopupMenuItem(
-                        value: e.key,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Icon(
-                              e.key == null
-                                  ? Icons.close
-                                  : e.key is LineFactory
-                                      ? Icons.horizontal_rule
-                                      : e.key is ArrowFactory
-                                          ? Icons.arrow_right_alt
-                                          : e.key is DoubleArrowFactory
-                                              ? Icons.sync_alt
-                                              : e.key is RectangleFactory
-                                                  ? Icons.rectangle_outlined
-                                                  : Icons.circle_outlined,
-                              color: Colors.black,
-                            ),
-                            Text(" ${e.value}")
-                          ],
-                        )))
-                    .toList(),
-                onSelected: (factory) {
-                  if (controller.freeStyleMode != FreeStyleMode.none) {
-                    controller.freeStyleMode = FreeStyleMode.none;
-                  }
-                  controller.shapeFactory = factory;
-                },
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Icon(
+      bottomNavigationBar: Visibility(
+        visible: isUIVisible,
+        maintainSize: true,
+        maintainState: true,
+        maintainAnimation: true,
+        maintainSemantics: true,
+        child: Container(
+          height: 56.0,
+          decoration: const BoxDecoration(
+            color: toolbarBackgroundColor,
+          ),
+          child: ValueListenableBuilder(
+            valueListenable: controller,
+            builder: (context, _, __) => Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                // Free-style drawing
+                IconButton(
+                  icon: const Icon(Icons.edit, color: Colors.white),
+                  onPressed: () {
+                    controller.freeStyleMode =
+                        controller.freeStyleMode != FreeStyleMode.draw
+                            ? FreeStyleMode.draw
+                            : FreeStyleMode.none;
+                    // Clear shape factory when switching to drawing
+                    if (controller.shapeFactory != null) {
+                      controller.shapeFactory = null;
+                    }
+                    // Show settings panel when selecting a drawing tool
+                    showSettingsPanel();
+                  },
+                  color: controller.freeStyleMode == FreeStyleMode.draw
+                      ? Theme.of(context).primaryColor
+                      : Colors.white,
+                ),
+                // Eraser
+                IconButton(
+                  icon: const Icon(Icons.delete_outline, color: Colors.white),
+                  onPressed: () {
+                    controller.freeStyleMode =
+                        controller.freeStyleMode != FreeStyleMode.erase
+                            ? FreeStyleMode.erase
+                            : FreeStyleMode.none;
+                    // Clear shape factory when switching to eraser
+                    if (controller.shapeFactory != null) {
+                      controller.shapeFactory = null;
+                    }
+                    // Show settings panel when selecting eraser
+                    showSettingsPanel();
+                  },
+                  color: controller.freeStyleMode == FreeStyleMode.erase
+                      ? Theme.of(context).primaryColor
+                      : Colors.white,
+                ),
+                // Add text
+                IconButton(
+                  icon: const Icon(Icons.text_fields, color: Colors.white),
+                  onPressed: () {
+                    if (controller.freeStyleMode != FreeStyleMode.none) {
+                      controller.freeStyleMode = FreeStyleMode.none;
+                    }
+                    // Clear shape factory when adding text
+                    if (controller.shapeFactory != null) {
+                      controller.shapeFactory = null;
+                    }
+                    controller.addText();
+                    // Show settings panel when adding text
+                    showSettingsPanel();
+                  },
+                  color: textFocusNode.hasFocus
+                      ? Theme.of(context).primaryColor
+                      : Colors.white,
+                ),
+                // Add shapes
+                PopupMenuButton<ShapeFactory?>(
+                  tooltip: localizations.addShape,
+                  icon: Icon(
                     Icons.shape_line,
                     color: controller.shapeFactory != null
                         ? Theme.of(context).primaryColor
-                        : null,
+                        : Colors.white,
                   ),
+                  color: toolbarBackgroundColor,
+                  itemBuilder: (context) => <ShapeFactory?, String>{
+                    null: localizations.none,
+                    LineFactory(): localizations.line,
+                    ArrowFactory(): localizations.arrow,
+                    DoubleArrowFactory(): localizations.doubleArrow,
+                    RectangleFactory(): localizations.rectangle,
+                    OvalFactory(): localizations.oval,
+                  }
+                      .entries
+                      .map((e) => PopupMenuItem(
+                          value: e.key,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              Icon(
+                                e.key == null
+                                    ? Icons.close
+                                    : e.key is LineFactory
+                                        ? Icons.horizontal_rule
+                                        : e.key is ArrowFactory
+                                            ? Icons.arrow_right_alt
+                                            : e.key is DoubleArrowFactory
+                                                ? Icons.sync_alt
+                                                : e.key is RectangleFactory
+                                                    ? Icons.rectangle_outlined
+                                                    : Icons.circle_outlined,
+                                color: Colors.white,
+                              ),
+                              Text(" ${e.value}", style: const TextStyle(color: Colors.white))
+                            ],
+                          )))
+                      .toList(),
+                  onSelected: (factory) {
+                    if (controller.freeStyleMode != FreeStyleMode.none) {
+                      controller.freeStyleMode = FreeStyleMode.none;
+                    }
+                    controller.shapeFactory = factory;
+                    // Show settings panel when selecting a shape
+                    if (factory != null) {
+                      showSettingsPanel();
+                    } else {
+                      hideSettingsPanel();
+                    }
+                  },
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
+  // Helper widget to build compact or standard settings controls
+  Widget buildCompactSettingsControls({
+    required String label,
+    required double value,
+    required double min,
+    required double max,
+    required ValueChanged<double> onChanged,
+    bool showColor = false,
+    Color? colorValue,
+    ValueChanged<double>? onColorChanged,
+    bool showFillOption = false,
+    bool isFilled = false,
+    ValueChanged<bool>? onFillChanged,
+  }) {
+    if (isCompactConfig) {
+      // Compact version with all controls in one row
+      return Row(
+        children: [
+          // Label
+          SizedBox(
+            width: 45,
+            child: Text(
+              label,
+              style: const TextStyle(fontSize: 12, color: Colors.white),
+            ),
+          ),
+          
+          // Main slider
+          Expanded(
+            flex: 3,
+            child: SliderTheme(
+              data: SliderTheme.of(context).copyWith(
+                trackHeight: 2,
+                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                activeTrackColor: Colors.white70,
+                inactiveTrackColor: Colors.grey.shade700,
+                thumbColor: Colors.white,
+              ),
+              child: Slider(
+                value: value,
+                min: min,
+                max: max,
+                onChanged: onChanged,
+              ),
+            ),
+          ),
+          
+          // Color slider if needed
+          if (showColor && colorValue != null && onColorChanged != null)
+            Expanded(
+              flex: 3,
+              child: SliderTheme(
+                data: SliderTheme.of(context).copyWith(
+                  trackHeight: 2,
+                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                  activeTrackColor: Colors.white70,
+                  inactiveTrackColor: Colors.grey.shade700,
+                  thumbColor: colorValue,
+                ),
+                child: Slider(
+                  value: HSVColor.fromColor(colorValue).hue,
+                  min: 0,
+                  max: 359.99,
+                  activeColor: colorValue,
+                  onChanged: onColorChanged,
+                ),
+              ),
+            ),
+            
+            // Fill switch if needed
+            if (showFillOption && onFillChanged != null)
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    "Fill",
+                    style: TextStyle(fontSize: 12, color: Colors.white),
+                  ),
+                  Switch(
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    value: isFilled,
+                    onChanged: onFillChanged,
+                    activeColor: Colors.white,
+                  ),
+                ],
+              ),
+        ],
+      );
+    } else {
+      // Standard version with controls in separate rows
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              SizedBox(
+                width: 45,
+                child: Text(
+                  label,
+                  style: const TextStyle(fontSize: 13, color: Colors.white),
+                ),
+              ),
+              Expanded(
+                child: SliderTheme(
+                  data: SliderTheme.of(context).copyWith(
+                    trackHeight: 2,
+                    thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                    activeTrackColor: Colors.white70,
+                    inactiveTrackColor: Colors.grey.shade700,
+                    thumbColor: Colors.white,
+                  ),
+                  child: Slider(
+                    value: value,
+                    min: min,
+                    max: max,
+                    onChanged: onChanged,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (showColor && colorValue != null && onColorChanged != null)
+            Row(
+              children: [
+                const SizedBox(
+                  width: 45,
+                  child: Text(
+                    "Color",
+                    style: TextStyle(fontSize: 13, color: Colors.white),
+                  ),
+                ),
+                Expanded(
+                  child: SliderTheme(
+                    data: SliderTheme.of(context).copyWith(
+                      trackHeight: 2,
+                      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                      activeTrackColor: Colors.white70,
+                      inactiveTrackColor: Colors.grey.shade700,
+                      thumbColor: colorValue,
+                    ),
+                    child: Slider(
+                      value: HSVColor.fromColor(colorValue).hue,
+                      min: 0,
+                      max: 359.99,
+                      activeColor: colorValue,
+                      onChanged: onColorChanged,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          if (showFillOption && onFillChanged != null)
+            Row(
+              children: [
+                const SizedBox(
+                  width: 45,
+                  child: Text(
+                    "Fill",
+                    style: TextStyle(fontSize: 13, color: Colors.white),
+                  ),
+                ),
+                Switch(
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  value: isFilled,
+                  onChanged: onFillChanged,
+                  activeColor: Colors.white,
+                ),
+              ],
+            ),
+        ],
+      );
+    }
+  }
+
   @override
   void dispose() {
+    controller.removeListener(_onControllerChange);
     controller.dispose();
     textFocusNode.dispose();
     super.dispose();

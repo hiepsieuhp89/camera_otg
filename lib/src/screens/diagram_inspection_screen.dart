@@ -205,11 +205,6 @@ class DiagramInspectionScreenState extends ConsumerState<DiagramInspectionScreen
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         actions: [
-          // Add a refresh button
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _refreshDiagram,
-          ),
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: FloatingActionButton(
