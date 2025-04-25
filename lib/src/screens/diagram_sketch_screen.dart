@@ -42,46 +42,15 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
     ..strokeCap = StrokeCap.round;
 
   static const Color defaultColor = Colors.red;
-  static const Color toolbarBackgroundColor = Color(0xC0424242); // Lighter semi-transparent gray
+  static const Color toolbarBackgroundColor = Color(0xC0424242);
 
-  // Size of the config panel (compact vs normal)
   bool isCompactConfig = true;
-
-  // Define sticker image links
-  /* 
-  static const List<String> imageLinks = [
-    "https://i.imgur.com/btoI5OX.png",
-    "https://i.imgur.com/EXTQFt7.png",
-    "https://i.imgur.com/EDNjJYL.png",
-    "https://i.imgur.com/uQKD6NL.png",
-    "https://i.imgur.com/cMqVRbl.png",
-    "https://i.imgur.com/1cJBAfI.png",
-    "https://i.imgur.com/eNYfHKL.png",
-    "https://i.imgur.com/c4Ag5yt.png",
-    "https://i.imgur.com/GhpCJuf.png",
-    "https://i.imgur.com/XVMeluF.png",
-    "https://i.imgur.com/mt2yO6Z.png",
-    "https://i.imgur.com/rw9XP1X.png",
-    "https://i.imgur.com/pD7foZ8.png",
-    "https://i.imgur.com/13Y3vp2.png",
-    "https://i.imgur.com/ojv3yw1.png",
-    "https://i.imgur.com/f8ZNJJ7.png",
-    "https://i.imgur.com/BiYkHzw.png",
-    "https://i.imgur.com/snJOcEz.png",
-    "https://i.imgur.com/b61cnhi.png",
-    "https://i.imgur.com/FkDFzYe.png",
-    "https://i.imgur.com/P310x7d.png",
-    "https://i.imgur.com/5AHZpua.png",
-    "https://i.imgur.com/tmvJY4r.png",
-    "https://i.imgur.com/PdVfGkV.png",
-    "https://i.imgur.com/1PRzwBf.png",
-    "https://i.imgur.com/VeeMfBS.png",
-  ];
-  */
 
   @override
   void initState() {
     super.initState();
+    isCompactConfig = true;
+    
     controller = PainterController(
       settings: PainterSettings(
         text: TextSettings(
@@ -106,31 +75,23 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
         ),
       ),
     );
-    // Listen to focus events of the text field
     textFocusNode.addListener(onFocus);
     loadImage();
 
-    // Add listener to detect when user starts interacting with canvas
     controller.addListener(_onControllerChange);
   }
 
   void _onControllerChange() {
-    // If any drawing has started, hide the UI unless settings panel is visible
-    if (!isSettingsPanelVisible && 
-        (controller.freeStyleMode != FreeStyleMode.none && controller.value.drawables.isNotEmpty) ||
-        controller.shapeFactory != null) {
-      if (isUIVisible) {
-        setState(() {
-          isUIVisible = false;
-        });
-      }
+    if (!isAnyToolActive() && isSettingsPanelVisible) {
+      hideSettingsPanel();
+    } else if (isAnyToolActive() && isUIVisible && !isSettingsPanelVisible) {
+      showSettingsPanel();
     }
   }
 
   void toggleUIVisibility() {
     setState(() {
       isUIVisible = !isUIVisible;
-      // Reset settings panel visibility if hiding UI
       if (!isUIVisible) {
         isSettingsPanelVisible = false;
       }
@@ -138,10 +99,15 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
   }
   
   void showSettingsPanel() {
-    setState(() {
-      isSettingsPanelVisible = true;
-      isUIVisible = true;
-    });
+    if (isAnyToolActive()) {
+      setState(() {
+        isSettingsPanelVisible = true;
+        isCompactConfig = true;
+        isUIVisible = true;
+      });
+    } else {
+      hideSettingsPanel();
+    }
   }
   
   void hideSettingsPanel() {
@@ -150,19 +116,38 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
     });
   }
 
+  bool isInDrawingArea(Offset position) {
+    if (!isUIVisible) {
+      return true;
+    }
+
+    final mediaQuery = MediaQuery.of(context);
+    final screenHeight = mediaQuery.size.height;
+    
+    double topBarHeight = kToolbarHeight + mediaQuery.padding.top;
+    double bottomBarHeight = isSettingsPanelVisible ? 180.0 : 56.0;
+    
+    return position.dy > topBarHeight && position.dy < (screenHeight - bottomBarHeight);
+  }
+
+  void onCanvasTap(Offset position) {
+  }
+
+  void onDrawingStart(Offset position) {
+  }
+
   void onFocus() {
     setState(() {
       isUIVisible = true;
       isKeyboardVisible = textFocusNode.hasFocus;
       
-      // If keyboard is shown, we need to ensure the settings panel is visible
       if (textFocusNode.hasFocus) {
         isSettingsPanelVisible = true;
+        Future.microtask(() => setState(() {}));
       }
     });
   }
 
-  // Helper methods for UI controls
   void setFreeStyleStrokeWidth(double value) {
     controller.freeStyleStrokeWidth = value;
   }
@@ -188,6 +173,7 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
   void setShapeFactoryPaint(Paint paint) {
     setState(() {
       controller.shapePaint = paint;
+      shapePaint = paint;
     });
   }
 
@@ -208,57 +194,7 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
     }
   }
 
-  /* 
-  Future<void> addSticker() async {
-    final imageLink = await showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Select sticker"),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: GridView.builder(
-            shrinkWrap: true,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 4,
-              childAspectRatio: 1,
-            ),
-            itemCount: imageLinks.length,
-            itemBuilder: (context, index) => InkWell(
-              onTap: () => Navigator.pop(context, imageLinks[index]),
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Image.network(imageLinks[index]),
-              ),
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
-          ),
-        ],
-      ),
-    );
-
-    if (imageLink == null) return;
-
-    // Load and add the sticker
-    final imageProvider = NetworkImage(imageLink);
-    final imageStream = imageProvider.resolve(ImageConfiguration.empty);
-    final completer = Completer<ui.Image>();
-    
-    imageStream.addListener(ImageStreamListener((info, _) {
-      completer.complete(info.image);
-    }));
-
-    final stickerImage = await completer.future;
-    controller.addImage(stickerImage);
-  }
-  */
-
   Future<void> loadImage() async {
-    // Load the network image
     final imageProvider = NetworkImage(widget.diagram.photo!.photoLink);
     final imageStream = imageProvider.resolve(ImageConfiguration.empty);
     final completer = Completer<ui.Image>();
@@ -283,13 +219,11 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
     });
 
     try {
-      // Get the rendered image
       final renderedImage = await controller.renderImage(Size(
         backgroundImage.width.toDouble(),
         backgroundImage.height.toDouble(),
       ));
 
-      // Save to temporary file
       final tempDir = await getTemporaryDirectory();
       final tempPath =
           '${tempDir.path}/sketch_${DateTime.now().millisecondsSinceEpoch}.png';
@@ -300,33 +234,25 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
               .buffer
               .asUint8List());
 
-      // First, explicitly evict the old image from cache
       await CachedNetworkImage.evictFromCache(widget.diagram.photo!.photoLink);
       
-      // Upload the new photo
       final photo = await ref.read(apiServiceProvider).uploadPhoto(tempPath);
       
-      // Update the diagram with the new photo
       final updatedDiagram = widget.diagram.copyWith(photoId: photo.id!);
       
-      // Use direct API call to update the diagram
       final updatedDiagramFromApi = await ref.read(apiServiceProvider).updateDiagram(updatedDiagram);
       
-      // IMPORTANT: Ensure we completely clear all caches for the new image URL
       await CachedNetworkImage.evictFromCache(updatedDiagramFromApi.photo!.photoLink);
       PaintingBinding.instance.imageCache.clear();
       PaintingBinding.instance.imageCache.clearLiveImages();
       
-      // Invalidate all providers to force complete refresh
       ref.invalidate(diagramsProvider(widget.diagram.bridgeId));
       ref.invalidate(inspectionPointsProvider(widget.diagram.bridgeId));
       ref.invalidate(damageInspectionProvider(widget.diagram.bridgeId));
       
-      // Add a small delay to ensure cache clearing completes
       await Future.delayed(const Duration(milliseconds: 500));
       
       if (mounted) {
-        // Return the updated diagram to the previous screen
         Navigator.of(context).pop(updatedDiagramFromApi);
       }
     } catch (e) {
@@ -351,9 +277,8 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
     final localizations = AppLocalizations.of(context)!;
     final mediaQuery = MediaQuery.of(context);
     final topPadding = mediaQuery.padding.top;
-    final bottomPadding = mediaQuery.viewInsets.bottom; // Keyboard height
+    final bottomPadding = mediaQuery.viewInsets.bottom;
     
-    // Update keyboard visibility state
     final keyboardIsVisible = bottomPadding > 0;
     if (isKeyboardVisible != keyboardIsVisible) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -378,7 +303,7 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
               color: toolbarBackgroundColor,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
+                  color: Colors.black.withAlpha(51),
                   blurRadius: 4,
                 ),
               ],
@@ -404,7 +329,6 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                 ),
                 titleSpacing: 0,
                 actions: [
-                  // Delete selected drawable
                   ValueListenableBuilder<PainterControllerValue>(
                     valueListenable: controller,
                     builder: (context, _, __) => IconButton(
@@ -417,7 +341,6 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                       constraints: const BoxConstraints(),
                     ),
                   ),
-                  // Flip selected image
                   ValueListenableBuilder<PainterControllerValue>(
                     valueListenable: controller,
                     builder: (context, _, __) => IconButton(
@@ -430,7 +353,6 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                       constraints: const BoxConstraints(),
                     ),
                   ),
-                  // Undo
                   ValueListenableBuilder<PainterControllerValue>(
                     valueListenable: controller,
                     builder: (context, _, __) => IconButton(
@@ -441,7 +363,6 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                       constraints: const BoxConstraints(),
                     ),
                   ),
-                  // Redo
                   ValueListenableBuilder<PainterControllerValue>(
                     valueListenable: controller,
                     builder: (context, _, __) => IconButton(
@@ -452,7 +373,6 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                       constraints: const BoxConstraints(),
                     ),
                   ),
-                  // Save
                   ValueListenableBuilder<PainterControllerValue>(
                     valueListenable: controller,
                     builder: (context, _, __) => IconButton(
@@ -471,19 +391,10 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
       ),
       body: Stack(
         children: [
-          // The painter that takes full screen (always visible)
           if (!isLoading)
             Positioned.fill(
-              child: GestureDetector(
-                onTap: () {
-                  // Only toggle UI if not interacting with settings panel
-                  if (!isSettingsPanelVisible) {
-                    toggleUIVisibility();
-                  }
-                },
-                child: FlutterPainter(
-                  controller: controller,
-                ),
+              child: FlutterPainter(
+                controller: controller,
               ),
             )
           else
@@ -491,28 +402,43 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
               child: CircularProgressIndicator(),
             ),
             
-          // Settings panel - only visible when explicitly shown
+          Positioned(
+            bottom: isSettingsPanelVisible ? 112 : 16,
+            right: 16,
+            child: Material(
+              color: Colors.transparent,
+              child: FloatingActionButton(
+                heroTag: 'toggle_ui_always',
+                backgroundColor: toolbarBackgroundColor,
+                onPressed: toggleUIVisibility,
+                child: Icon(
+                  isUIVisible ? Icons.visibility_off : Icons.visibility,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+          
           if (isSettingsPanelVisible)
             Positioned(
-              bottom: isKeyboardVisible ? bottomPadding : 0, // Position above keyboard or toolbar
+              bottom: isKeyboardVisible ? bottomPadding : 0,
               left: 0,
               right: 0,
               child: GestureDetector(
-                // Prevent taps from reaching the canvas
                 onTap: () {},
                 child: ValueListenableBuilder(
                   valueListenable: controller,
                   builder: (context, _, __) => Container(
-                    padding: EdgeInsets.symmetric(
+                    padding: const EdgeInsets.symmetric(
                       horizontal: 16, 
-                      vertical: isCompactConfig ? 0 : 4
+                      vertical: 0,
                     ),
                     margin: EdgeInsets.zero,
                     decoration: BoxDecoration(
                       color: toolbarBackgroundColor,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
+                          color: Colors.black.withAlpha(51),
                           blurRadius: 4,
                         ),
                       ],
@@ -531,45 +457,23 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                                   ? localizations.shapeSettings
                                   : textFocusNode.hasFocus
                                     ? localizations.textSettings
-                                    : "Settings",
+                                    : localizations.brushSettings,
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,
                                 color: Colors.white,
                               ),
                             ),
-                            Row(
-                              children: [
-                                // Toggle compact/full mode
-                                IconButton(
-                                  icon: Icon(
-                                    isCompactConfig ? Icons.expand_more : Icons.expand_less,
-                                    color: Colors.white,
-                                    size: 20,
-                                  ),
-                                  onPressed: () {
-                                    setState(() {
-                                      isCompactConfig = !isCompactConfig;
-                                    });
-                                  },
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(),
-                                ),
-                                const SizedBox(width: 12),
-                                // Close button
-                                IconButton(
-                                  icon: const Icon(Icons.close, color: Colors.white, size: 20),
-                                  onPressed: () {
-                                    hideSettingsPanel();
-                                    // When closing text settings, unfocus the text field
-                                    if (textFocusNode.hasFocus) {
-                                      textFocusNode.unfocus();
-                                    }
-                                  },
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(),
-                                ),
-                              ],
+                            IconButton(
+                              icon: const Icon(Icons.close, color: Colors.white, size: 20),
+                              onPressed: () {
+                                hideSettingsPanel();
+                                if (textFocusNode.hasFocus) {
+                                  textFocusNode.unfocus();
+                                }
+                              },
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
                             ),
                           ],
                         ),
@@ -630,19 +534,6 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                 ),
               ),
             ),
-            
-          // Floating action button to toggle UI
-          if (!isUIVisible)
-            Positioned(
-              bottom: 16,
-              right: 16,
-              child: FloatingActionButton(
-                heroTag: 'toggle_ui',
-                backgroundColor: toolbarBackgroundColor,
-                child: const Icon(Icons.settings),
-                onPressed: toggleUIVisibility,
-              ),
-            ),
         ],
       ),
       bottomNavigationBar: Visibility(
@@ -661,64 +552,77 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
             builder: (context, _, __) => Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                // Free-style drawing
                 IconButton(
-                  icon: const Icon(Icons.edit, color: Colors.white),
+                  icon: const Icon(Icons.edit),
                   onPressed: () {
                     controller.freeStyleMode =
                         controller.freeStyleMode != FreeStyleMode.draw
                             ? FreeStyleMode.draw
                             : FreeStyleMode.none;
-                    // Clear shape factory when switching to drawing
+                    
                     if (controller.shapeFactory != null) {
                       controller.shapeFactory = null;
                     }
-                    // Show settings panel when selecting a drawing tool
-                    showSettingsPanel();
+                    
+                    if (controller.freeStyleMode != FreeStyleMode.none) {
+                      showSettingsPanel();
+                    } else {
+                      if (!isAnyToolActive()) {
+                        hideSettingsPanel();
+                      }
+                    }
                   },
                   color: controller.freeStyleMode == FreeStyleMode.draw
                       ? Theme.of(context).primaryColor
                       : Colors.white,
                 ),
-                // Eraser
                 IconButton(
-                  icon: const Icon(Icons.delete_outline, color: Colors.white),
+                  icon: const Icon(Icons.delete_outline),
                   onPressed: () {
                     controller.freeStyleMode =
                         controller.freeStyleMode != FreeStyleMode.erase
                             ? FreeStyleMode.erase
                             : FreeStyleMode.none;
-                    // Clear shape factory when switching to eraser
+                    
                     if (controller.shapeFactory != null) {
                       controller.shapeFactory = null;
                     }
-                    // Show settings panel when selecting eraser
-                    showSettingsPanel();
+                    
+                    if (controller.freeStyleMode != FreeStyleMode.none) {
+                      showSettingsPanel();
+                    } else {
+                      if (!isAnyToolActive()) {
+                        hideSettingsPanel();
+                      }
+                    }
                   },
                   color: controller.freeStyleMode == FreeStyleMode.erase
                       ? Theme.of(context).primaryColor
                       : Colors.white,
                 ),
-                // Add text
                 IconButton(
-                  icon: const Icon(Icons.text_fields, color: Colors.white),
+                  icon: const Icon(Icons.text_fields),
                   onPressed: () {
                     if (controller.freeStyleMode != FreeStyleMode.none) {
                       controller.freeStyleMode = FreeStyleMode.none;
                     }
-                    // Clear shape factory when adding text
                     if (controller.shapeFactory != null) {
                       controller.shapeFactory = null;
                     }
-                    controller.addText();
-                    // Show settings panel when adding text
+                    
                     showSettingsPanel();
+                    
+                    Future.delayed(const Duration(milliseconds: 50), () {
+                      if (mounted) {
+                        controller.addText();
+                        Future.microtask(() => setState(() {}));
+                      }
+                    });
                   },
                   color: textFocusNode.hasFocus
                       ? Theme.of(context).primaryColor
                       : Colors.white,
                 ),
-                // Add shapes
                 PopupMenuButton<ShapeFactory?>(
                   tooltip: localizations.addShape,
                   icon: Icon(
@@ -764,12 +668,16 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                     if (controller.freeStyleMode != FreeStyleMode.none) {
                       controller.freeStyleMode = FreeStyleMode.none;
                     }
+                    
                     controller.shapeFactory = factory;
-                    // Show settings panel when selecting a shape
+                    
                     if (factory != null) {
+                      controller.shapePaint ??= shapePaint;
                       showSettingsPanel();
                     } else {
-                      hideSettingsPanel();
+                      if (!isAnyToolActive()) {
+                        hideSettingsPanel();
+                      }
                     }
                   },
                 ),
@@ -781,7 +689,6 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
     );
   }
 
-  // Helper widget to build compact or standard settings controls
   Widget buildCompactSettingsControls({
     required String label,
     required double value,
@@ -795,20 +702,36 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
     bool isFilled = false,
     ValueChanged<bool>? onFillChanged,
   }) {
-    if (isCompactConfig) {
-      // Compact version with all controls in one row
-      return Row(
-        children: [
-          // Label
-          SizedBox(
-            width: 45,
-            child: Text(
-              label,
-              style: const TextStyle(fontSize: 12, color: Colors.white),
+    return Row(
+      children: [
+        SizedBox(
+          width: 45,
+          child: Text(
+            label,
+            style: const TextStyle(fontSize: 12, color: Colors.white),
+          ),
+        ),
+        
+        Expanded(
+          flex: 3,
+          child: SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              trackHeight: 2,
+              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+              activeTrackColor: Colors.white70,
+              inactiveTrackColor: Colors.grey.shade700,
+              thumbColor: Colors.white,
+            ),
+            child: Slider(
+              value: value,
+              min: min,
+              max: max,
+              onChanged: onChanged,
             ),
           ),
-          
-          // Main slider
+        ),
+        
+        if (showColor && colorValue != null && onColorChanged != null)
           Expanded(
             flex: 3,
             child: SliderTheme(
@@ -817,142 +740,42 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                 thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
                 activeTrackColor: Colors.white70,
                 inactiveTrackColor: Colors.grey.shade700,
-                thumbColor: Colors.white,
+                thumbColor: colorValue,
               ),
               child: Slider(
-                value: value,
-                min: min,
-                max: max,
-                onChanged: onChanged,
+                value: HSVColor.fromColor(colorValue).hue,
+                min: 0,
+                max: 359.99,
+                activeColor: colorValue,
+                onChanged: onColorChanged,
               ),
             ),
           ),
           
-          // Color slider if needed
-          if (showColor && colorValue != null && onColorChanged != null)
-            Expanded(
-              flex: 3,
-              child: SliderTheme(
-                data: SliderTheme.of(context).copyWith(
-                  trackHeight: 2,
-                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-                  activeTrackColor: Colors.white70,
-                  inactiveTrackColor: Colors.grey.shade700,
-                  thumbColor: colorValue,
-                ),
-                child: Slider(
-                  value: HSVColor.fromColor(colorValue).hue,
-                  min: 0,
-                  max: 359.99,
-                  activeColor: colorValue,
-                  onChanged: onColorChanged,
-                ),
-              ),
-            ),
-            
-            // Fill switch if needed
-            if (showFillOption && onFillChanged != null)
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    "Fill",
-                    style: TextStyle(fontSize: 12, color: Colors.white),
-                  ),
-                  Switch(
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    value: isFilled,
-                    onChanged: onFillChanged,
-                    activeColor: Colors.white,
-                  ),
-                ],
-              ),
-        ],
-      );
-    } else {
-      // Standard version with controls in separate rows
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+        if (showFillOption && onFillChanged != null)
           Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              SizedBox(
-                width: 45,
-                child: Text(
-                  label,
-                  style: const TextStyle(fontSize: 13, color: Colors.white),
-                ),
+              Text(
+                AppLocalizations.of(context)!.fill,
+                style: const TextStyle(fontSize: 12, color: Colors.white),
               ),
-              Expanded(
-                child: SliderTheme(
-                  data: SliderTheme.of(context).copyWith(
-                    trackHeight: 2,
-                    thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-                    activeTrackColor: Colors.white70,
-                    inactiveTrackColor: Colors.grey.shade700,
-                    thumbColor: Colors.white,
-                  ),
-                  child: Slider(
-                    value: value,
-                    min: min,
-                    max: max,
-                    onChanged: onChanged,
-                  ),
-                ),
+              Switch(
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                value: isFilled,
+                onChanged: onFillChanged,
+                activeColor: Colors.white,
               ),
             ],
           ),
-          if (showColor && colorValue != null && onColorChanged != null)
-            Row(
-              children: [
-                const SizedBox(
-                  width: 45,
-                  child: Text(
-                    "Color",
-                    style: TextStyle(fontSize: 13, color: Colors.white),
-                  ),
-                ),
-                Expanded(
-                  child: SliderTheme(
-                    data: SliderTheme.of(context).copyWith(
-                      trackHeight: 2,
-                      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-                      activeTrackColor: Colors.white70,
-                      inactiveTrackColor: Colors.grey.shade700,
-                      thumbColor: colorValue,
-                    ),
-                    child: Slider(
-                      value: HSVColor.fromColor(colorValue).hue,
-                      min: 0,
-                      max: 359.99,
-                      activeColor: colorValue,
-                      onChanged: onColorChanged,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          if (showFillOption && onFillChanged != null)
-            Row(
-              children: [
-                const SizedBox(
-                  width: 45,
-                  child: Text(
-                    "Fill",
-                    style: TextStyle(fontSize: 13, color: Colors.white),
-                  ),
-                ),
-                Switch(
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  value: isFilled,
-                  onChanged: onFillChanged,
-                  activeColor: Colors.white,
-                ),
-              ],
-            ),
-        ],
-      );
-    }
+      ],
+    );
+  }
+
+  bool isAnyToolActive() {
+    return controller.freeStyleMode != FreeStyleMode.none || 
+           controller.shapeFactory != null || 
+           textFocusNode.hasFocus;
   }
 
   @override

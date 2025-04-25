@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -80,34 +82,38 @@ class BridgeInspectionDamageScreenState
   }
 }
 
-class _DiagramItem extends ConsumerWidget {
+class _DiagramItem extends ConsumerStatefulWidget {
   final double size;
   final Diagram diagram;
 
   const _DiagramItem({required this.size, required this.diagram});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_DiagramItem> createState() => _DiagramItemState();
+}
+
+class _DiagramItemState extends ConsumerState<_DiagramItem> {
+  @override
+  Widget build(BuildContext context) {
     final state = ref
         .watch(damageInspectionProvider(ref.watch(currentBridgeProvider)!.id))
         .maybeWhen(data: (data) => data, orElse: () => null);
         
-    // Create a unique timestamp for this render to prevent caching issues
     final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final uniqueCacheKey = 'diagram_${diagram.id}_${diagram.photoId}_$timestamp';
+    final uniqueCacheKey = 'diagram_${widget.diagram.id}_${widget.diagram.photoId}_$timestamp';
 
     return GestureDetector(
       onTap: () async {
-        // Before navigating, evict the current image from cache to ensure fresh load
-        await CachedNetworkImage.evictFromCache(diagram.photo!.photoLink);
+        await CachedNetworkImage.evictFromCache(widget.diagram.photo!.photoLink);
         
-        await context.router.push(DiagramInspectionRoute(diagram: diagram));
-        
-        // After returning, refresh the damage inspection provider
+        final router = context.router;
+        await router.push(DiagramInspectionRoute(diagram: widget.diagram));
+
+        if (!mounted) return;
+
         final currentBridge = ref.read(currentBridgeProvider);
         if (currentBridge != null) {
-          // Clear image cache before invalidating providers
-          await CachedNetworkImage.evictFromCache(diagram.photo!.photoLink);
+          await CachedNetworkImage.evictFromCache(widget.diagram.photo!.photoLink);
           
           ref.invalidate(damageInspectionProvider(currentBridge.id));
         }
@@ -120,20 +126,20 @@ class _DiagramItem extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(
-                  width: size,
-                  height: size,
+                  width: widget.size,
+                  height: widget.size,
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(20),
                     child: CachedNetworkImage(
                       key: ValueKey(uniqueCacheKey),
                       fit: BoxFit.cover,
                       placeholder: (context, url) => Container(
-                          height: size,
-                          width: size,
+                          height: widget.size,
+                          width: widget.size,
                           color: Theme.of(context).secondaryHeaderColor),
-                      width: size,
-                      height: size,
-                      imageUrl: diagram.photo!.photoLink,
+                      width: widget.size,
+                      height: widget.size,
+                      imageUrl: widget.diagram.photo!.photoLink,
                       cacheKey: uniqueCacheKey,
                       // If image fails to load, show an error indicator
                       errorWidget: (context, url, error) => Container(
@@ -157,8 +163,8 @@ class _DiagramItem extends ConsumerWidget {
                       children: [
                         TextSpan(
                           text: AppLocalizations.of(context)!.finishedTasks(
-                              state?.finishCountByDiagramIds[diagram.id] ?? 0,
-                              state?.pointsByDiagramIds[diagram.id]?.length ??
+                              state?.finishCountByDiagramIds[widget.diagram.id] ?? 0,
+                              state?.pointsByDiagramIds[widget.diagram.id]?.length ??
                                   0),
                         ),
                       ],
