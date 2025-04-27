@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_painter_v2/flutter_painter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -50,6 +51,11 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
   @override
   void initState() {
     super.initState();
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+    
     isCompactConfig = true;
     
     controller = PainterController(
@@ -307,46 +313,6 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                   const Center(
                     child: CircularProgressIndicator(),
                   ),
-                  
-                // Top header bar in drawing area - HIDDEN
-                /*
-                if (isUIVisible)
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: toolbarBackgroundColor,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withAlpha(51),
-                            blurRadius: 4,
-                          ),
-                        ],
-                      ),
-                      child: SafeArea(
-                        bottom: false,
-                        child: Row(
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.arrow_back, color: Colors.white),
-                              onPressed: () => Navigator.of(context).pop(),
-                            ),
-                            Expanded(
-                              child: Text(
-                                localizations.editDiagram,
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                */
-
-                // Back button as floating action button 
                 if (isUIVisible)
                   Positioned(
                     top: 16,
@@ -370,26 +336,37 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                   Positioned(
                     top: 16,
                     right: 16,
-                    child: Material(
-                      color: Colors.transparent,
-                      child: FloatingActionButton.small(
-                        heroTag: 'save_button',
-                        backgroundColor: toolbarBackgroundColor,
-                        onPressed: isSaving ? null : saveSketch,
-                        child: isSaving 
-                            ? const SizedBox(
-                                width: 20, 
-                                height: 20, 
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Icon(
-                                Icons.save,
-                                color: Colors.white,
-                              ),
-                      ),
+                    child: ValueListenableBuilder<PainterControllerValue>(
+                      valueListenable: controller,
+                      builder: (context, value, _) {
+                        final bool noChanges = !controller.canUndo;
+                        final bool isDisabled = isSaving || noChanges;
+                        return Material(
+                          color: Colors.transparent,
+                          child: FloatingActionButton.small(
+                            heroTag: 'save_button',
+                            backgroundColor: isDisabled 
+                                ? Colors.grey.shade700
+                                : toolbarBackgroundColor,
+                            onPressed: isDisabled ? null : saveSketch,
+                            child: isSaving 
+                                ? const SizedBox(
+                                    width: 20, 
+                                    height: 20, 
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : Icon(
+                                    Icons.save,
+                                    color: isDisabled 
+                                        ? Colors.grey.shade400
+                                        : Colors.white,
+                                  ),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 
@@ -512,209 +489,198 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
               child: SafeArea(
                 child: LayoutBuilder(
                   builder: (context, constraints) {
-                    return Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    return ListView(
+                      padding: EdgeInsets.zero,
                       children: [
-                        // Top controls
-                        Flexible(
-                          child: ListView(
-                            shrinkWrap: true,
-                            padding: EdgeInsets.zero,
-                            children: [
-                              ValueListenableBuilder<PainterControllerValue>(
-                                valueListenable: controller,
-                                builder: (context, value, __) => IconButton(
-                                  icon: Icon(
-                                    Icons.delete,
-                                    color: value.selectedObjectDrawable == null 
-                                        ? Colors.white.withValues(red: 255, green: 255, blue: 255, alpha: 77) 
-                                        : Colors.white,
-                                  ),
-                                  onPressed: value.selectedObjectDrawable == null
-                                      ? null
-                                      : removeSelectedDrawable,
-                                ),
-                              ),
-                              ValueListenableBuilder<PainterControllerValue>(
-                                valueListenable: controller,
-                                builder: (context, value, __) => IconButton(
-                                  icon: Icon(
-                                    Icons.flip,
-                                    color: value.selectedObjectDrawable is ImageDrawable
-                                        ? Colors.white
-                                        : Colors.white.withValues(red: 255, green: 255, blue: 255, alpha: 77),
-                                  ),
-                                  onPressed: value.selectedObjectDrawable is ImageDrawable
-                                      ? flipSelectedImageDrawable
-                                      : null,
-                                ),
-                              ),
-                              ValueListenableBuilder<PainterControllerValue>(
-                                valueListenable: controller,
-                                builder: (context, _, __) => IconButton(
-                                  icon: const Icon(Icons.undo, color: Colors.white),
-                                  onPressed: controller.canUndo ? controller.undo : null,
-                                ),
-                              ),
-                              ValueListenableBuilder<PainterControllerValue>(
-                                valueListenable: controller,
-                                builder: (context, _, __) => IconButton(
-                                  icon: const Icon(Icons.redo, color: Colors.white),
-                                  onPressed: controller.canRedo ? controller.redo : null,
-                                ),
-                              ),
-                            ],
+                        // Object manipulation controls
+                        ValueListenableBuilder<PainterControllerValue>(
+                          valueListenable: controller,
+                          builder: (context, value, __) => IconButton(
+                            icon: Icon(
+                              Icons.delete,
+                              color: value.selectedObjectDrawable == null 
+                                  ? Colors.white.withValues(red: 255, green: 255, blue: 255, alpha: 77) 
+                                  : Colors.white,
+                            ),
+                            onPressed: value.selectedObjectDrawable == null
+                                ? null
+                                : removeSelectedDrawable,
+                          ),
+                        ),
+                        ValueListenableBuilder<PainterControllerValue>(
+                          valueListenable: controller,
+                          builder: (context, value, __) => IconButton(
+                            icon: Icon(
+                              Icons.flip,
+                              color: value.selectedObjectDrawable is ImageDrawable
+                                  ? Colors.white
+                                  : Colors.white.withValues(red: 255, green: 255, blue: 255, alpha: 77),
+                            ),
+                            onPressed: value.selectedObjectDrawable is ImageDrawable
+                                ? flipSelectedImageDrawable
+                                : null,
+                          ),
+                        ),
+                        ValueListenableBuilder<PainterControllerValue>(
+                          valueListenable: controller,
+                          builder: (context, _, __) => IconButton(
+                            icon: Icon(
+                              Icons.undo,
+                              color: controller.canUndo 
+                                  ? Colors.white 
+                                  : Colors.white.withOpacity(0.3),
+                            ),
+                            onPressed: controller.canUndo ? controller.undo : null,
+                          ),
+                        ),
+                        ValueListenableBuilder<PainterControllerValue>(
+                          valueListenable: controller,
+                          builder: (context, _, __) => IconButton(
+                            icon: const Icon(Icons.redo, color: Colors.white),
+                            onPressed: controller.canRedo ? controller.redo : null,
                           ),
                         ),
                         
-                        // Bottom tool controls
-                        Flexible(
-                          child: ListView(
-                            shrinkWrap: true,
-                            padding: EdgeInsets.zero,
-                            children: [
-                              ValueListenableBuilder(
-                                valueListenable: controller,
-                                builder: (context, _, __) => IconButton(
-                                  icon: const Icon(Icons.brush),
-                                  onPressed: () {
-                                    controller.freeStyleMode =
-                                        controller.freeStyleMode != FreeStyleMode.draw
-                                            ? FreeStyleMode.draw
-                                            : FreeStyleMode.none;
-                                    
-                                    if (controller.shapeFactory != null) {
-                                      controller.shapeFactory = null;
-                                    }
-                                    
-                                    if (controller.freeStyleMode != FreeStyleMode.none) {
-                                      showSettingsPanel();
-                                    } else {
-                                      if (!isAnyToolActive()) {
-                                        hideSettingsPanel();
-                                      }
-                                    }
-                                  },
-                                  color: controller.freeStyleMode == FreeStyleMode.draw
-                                      ? Theme.of(context).primaryColor
-                                      : Colors.white,
-                                ),
-                              ),
-                              ValueListenableBuilder(
-                                valueListenable: controller,
-                                builder: (context, _, __) => IconButton(
-                                  icon: const FaIcon(FontAwesomeIcons.eraser),
-                                  onPressed: () {
-                                    controller.freeStyleMode =
-                                        controller.freeStyleMode != FreeStyleMode.erase
-                                            ? FreeStyleMode.erase
-                                            : FreeStyleMode.none;
-                                    
-                                    if (controller.shapeFactory != null) {
-                                      controller.shapeFactory = null;
-                                    }
-                                    
-                                    if (controller.freeStyleMode != FreeStyleMode.none) {
-                                      showSettingsPanel();
-                                    } else {
-                                      if (!isAnyToolActive()) {
-                                        hideSettingsPanel();
-                                      }
-                                    }
-                                  },
-                                  color: controller.freeStyleMode == FreeStyleMode.erase
-                                      ? Theme.of(context).primaryColor
-                                      : Colors.white,
-                                ),
-                              ),
-                              ValueListenableBuilder(
-                                valueListenable: controller,
-                                builder: (context, _, __) => IconButton(
-                                  icon: const Icon(Icons.text_fields),
-                                  onPressed: () {
-                                    if (controller.freeStyleMode != FreeStyleMode.none) {
-                                      controller.freeStyleMode = FreeStyleMode.none;
-                                    }
-                                    if (controller.shapeFactory != null) {
-                                      controller.shapeFactory = null;
-                                    }
-                                    
-                                    showSettingsPanel();
-                                    
-                                    Future.delayed(const Duration(milliseconds: 50), () {
-                                      if (mounted) {
-                                        controller.addText();
-                                        Future.microtask(() => setState(() {}));
-                                      }
-                                    });
-                                  },
-                                  color: textFocusNode.hasFocus
-                                      ? Theme.of(context).primaryColor
-                                      : Colors.white,
-                                ),
-                              ),
-                              ValueListenableBuilder(
-                                valueListenable: controller,
-                                builder: (context, _, __) => PopupMenuButton<ShapeFactory?>(
-                                  tooltip: localizations.addShape,
-                                  icon: Icon(
-                                    Icons.shape_line,
-                                    color: controller.shapeFactory != null
-                                        ? Theme.of(context).primaryColor
-                                        : Colors.white,
-                                  ),
-                                  color: toolbarBackgroundColor,
-                                  itemBuilder: (context) => <ShapeFactory?, String>{
-                                    null: localizations.none,
-                                    LineFactory(): localizations.line,
-                                    ArrowFactory(): localizations.arrow,
-                                    DoubleArrowFactory(): localizations.doubleArrow,
-                                    RectangleFactory(): localizations.rectangle,
-                                    OvalFactory(): localizations.oval,
-                                  }
-                                      .entries
-                                      .map((e) => PopupMenuItem(
-                                          value: e.key,
-                                          child: Row(
-                                            mainAxisAlignment: MainAxisAlignment.start,
-                                            children: [
-                                              Icon(
-                                                e.key == null
-                                                    ? Icons.close
-                                                    : e.key is LineFactory
-                                                        ? Icons.horizontal_rule
-                                                        : e.key is ArrowFactory
-                                                            ? Icons.arrow_right_alt
-                                                            : e.key is DoubleArrowFactory
-                                                                ? Icons.sync_alt
-                                                                : e.key is RectangleFactory
-                                                                    ? Icons.rectangle_outlined
-                                                                    : Icons.circle_outlined,
-                                                color: Colors.white,
-                                              ),
-                                              Text(" ${e.value}", style: const TextStyle(color: Colors.white))
-                                            ],
-                                          )))
-                                      .toList(),
-                                  onSelected: (factory) {
-                                    if (controller.freeStyleMode != FreeStyleMode.none) {
-                                      controller.freeStyleMode = FreeStyleMode.none;
-                                    }
-                                    
-                                    controller.shapeFactory = factory;
-                                    
-                                    if (factory != null) {
-                                      controller.shapePaint ??= shapePaint;
-                                      showSettingsPanel();
-                                    } else {
-                                      if (!isAnyToolActive()) {
-                                        hideSettingsPanel();
-                                      }
-                                    }
-                                  },
-                                ),
-                              ),
-                            ],
+                        // Drawing tools
+                        ValueListenableBuilder(
+                          valueListenable: controller,
+                          builder: (context, _, __) => IconButton(
+                            icon: const Icon(Icons.brush),
+                            onPressed: () {
+                              controller.freeStyleMode =
+                                  controller.freeStyleMode != FreeStyleMode.draw
+                                      ? FreeStyleMode.draw
+                                      : FreeStyleMode.none;
+                              
+                              if (controller.shapeFactory != null) {
+                                controller.shapeFactory = null;
+                              }
+                              
+                              if (controller.freeStyleMode != FreeStyleMode.none) {
+                                showSettingsPanel();
+                              } else {
+                                if (!isAnyToolActive()) {
+                                  hideSettingsPanel();
+                                }
+                              }
+                            },
+                            color: controller.freeStyleMode == FreeStyleMode.draw
+                                ? Theme.of(context).primaryColor
+                                : Colors.white,
+                          ),
+                        ),
+                        ValueListenableBuilder(
+                          valueListenable: controller,
+                          builder: (context, _, __) => IconButton(
+                            icon: const FaIcon(FontAwesomeIcons.eraser),
+                            onPressed: () {
+                              controller.freeStyleMode =
+                                  controller.freeStyleMode != FreeStyleMode.erase
+                                      ? FreeStyleMode.erase
+                                      : FreeStyleMode.none;
+                              
+                              if (controller.shapeFactory != null) {
+                                controller.shapeFactory = null;
+                              }
+                              
+                              if (controller.freeStyleMode != FreeStyleMode.none) {
+                                showSettingsPanel();
+                              } else {
+                                if (!isAnyToolActive()) {
+                                  hideSettingsPanel();
+                                }
+                              }
+                            },
+                            color: controller.freeStyleMode == FreeStyleMode.erase
+                                ? Theme.of(context).primaryColor
+                                : Colors.white,
+                          ),
+                        ),
+                        ValueListenableBuilder(
+                          valueListenable: controller,
+                          builder: (context, _, __) => IconButton(
+                            icon: const Icon(Icons.text_fields),
+                            onPressed: () {
+                              if (controller.freeStyleMode != FreeStyleMode.none) {
+                                controller.freeStyleMode = FreeStyleMode.none;
+                              }
+                              if (controller.shapeFactory != null) {
+                                controller.shapeFactory = null;
+                              }
+                              
+                              showSettingsPanel();
+                              
+                              Future.delayed(const Duration(milliseconds: 50), () {
+                                if (mounted) {
+                                  controller.addText();
+                                  Future.microtask(() => setState(() {}));
+                                }
+                              });
+                            },
+                            color: textFocusNode.hasFocus
+                                ? Theme.of(context).primaryColor
+                                : Colors.white,
+                          ),
+                        ),
+                        ValueListenableBuilder(
+                          valueListenable: controller,
+                          builder: (context, _, __) => PopupMenuButton<ShapeFactory?>(
+                            tooltip: localizations.addShape,
+                            icon: Icon(
+                              Icons.shape_line,
+                              color: controller.shapeFactory != null
+                                  ? Theme.of(context).primaryColor
+                                  : Colors.white,
+                            ),
+                            color: toolbarBackgroundColor,
+                            itemBuilder: (context) => <ShapeFactory?, String>{
+                              null: localizations.none,
+                              LineFactory(): localizations.line,
+                              ArrowFactory(): localizations.arrow,
+                              DoubleArrowFactory(): localizations.doubleArrow,
+                              RectangleFactory(): localizations.rectangle,
+                              OvalFactory(): localizations.oval,
+                            }
+                                .entries
+                                .map((e) => PopupMenuItem(
+                                    value: e.key,
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      children: [
+                                        Icon(
+                                          e.key == null
+                                              ? Icons.close
+                                              : e.key is LineFactory
+                                                  ? Icons.horizontal_rule
+                                                  : e.key is ArrowFactory
+                                                      ? Icons.arrow_right_alt
+                                                      : e.key is DoubleArrowFactory
+                                                          ? Icons.sync_alt
+                                                          : e.key is RectangleFactory
+                                                              ? Icons.rectangle_outlined
+                                                              : Icons.circle_outlined,
+                                          color: Colors.white,
+                                        ),
+                                        Text(" ${e.value}", style: const TextStyle(color: Colors.white))
+                                      ],
+                                    )))
+                                .toList(),
+                            onSelected: (factory) {
+                              if (controller.freeStyleMode != FreeStyleMode.none) {
+                                controller.freeStyleMode = FreeStyleMode.none;
+                              }
+                              
+                              controller.shapeFactory = factory;
+                              
+                              if (factory != null) {
+                                controller.shapePaint ??= shapePaint;
+                                showSettingsPanel();
+                              } else {
+                                if (!isAnyToolActive()) {
+                                  hideSettingsPanel();
+                                }
+                              }
+                            },
                           ),
                         ),
                       ],
@@ -839,6 +805,13 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
 
   @override
   void dispose() {
+    // Reset orientation settings
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
     controller.removeListener(_onControllerChange);
     controller.dispose();
     textFocusNode.dispose();

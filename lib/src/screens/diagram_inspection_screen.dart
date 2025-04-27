@@ -202,38 +202,6 @@ class DiagramInspectionScreenState extends ConsumerState<DiagramInspectionScreen
 
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: FloatingActionButton(
-              heroTag: 'edit_diagram',
-              child: const Icon(Icons.edit),
-              onPressed: () async {
-                // Clear caches before navigating
-                _clearAllCaches();
-                
-                final result = await context.router.push<Diagram>(
-                  DiagramSketchRoute(diagram: currentDiagram),
-                );
-                
-                if (result != null) {
-                  setState(() {
-                    currentDiagram = result;
-                    imageUrl = result.photo!.photoLink;
-                    uniqueKey = DateTime.now().millisecondsSinceEpoch.toString();
-                  });
-                  
-                  // Force manual refresh after returning with updated diagram
-                  _clearAllCaches();
-                  await _refreshDiagram();
-                }
-              },
-            ),
-          ),
-        ],
-      ),
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -375,6 +343,35 @@ class DiagramInspectionScreenState extends ConsumerState<DiagramInspectionScreen
                 },
               ),
             ),
+          // Edit button at top right corner
+          Positioned(
+            top: 16,
+            right: 16,
+            child: FloatingActionButton.small(
+              heroTag: 'edit_diagram',
+              child: const Icon(Icons.edit),
+              onPressed: () async {
+                // Clear caches before navigating
+                _clearAllCaches();
+                
+                final result = await context.router.push<Diagram>(
+                  DiagramSketchRoute(diagram: currentDiagram),
+                );
+                
+                if (result != null) {
+                  setState(() {
+                    currentDiagram = result;
+                    imageUrl = result.photo!.photoLink;
+                    uniqueKey = DateTime.now().millisecondsSinceEpoch.toString();
+                  });
+                  
+                  // Force manual refresh after returning with updated diagram
+                  _clearAllCaches();
+                  await _refreshDiagram();
+                }
+              },
+            ),
+          ),
           if (newMarkingMode && !isLoading)
             Positioned(
               top: (newMarking.y * scale) +
