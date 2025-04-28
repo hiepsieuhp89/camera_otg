@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
@@ -181,16 +183,6 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
       controller.shapePaint = paint;
       shapePaint = paint;
     });
-  }
-
-  void flipSelectedImageDrawable() {
-    final imageDrawable = controller.selectedObjectDrawable;
-    if (imageDrawable is! ImageDrawable) return;
-
-    controller.replaceDrawable(
-      imageDrawable,
-      imageDrawable.copyWith(flipped: !imageDrawable.flipped),
-    );
   }
 
   void removeSelectedDrawable() {
@@ -505,20 +497,6 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                             onPressed: value.selectedObjectDrawable == null
                                 ? null
                                 : removeSelectedDrawable,
-                          ),
-                        ),
-                        ValueListenableBuilder<PainterControllerValue>(
-                          valueListenable: controller,
-                          builder: (context, value, __) => IconButton(
-                            icon: Icon(
-                              Icons.flip,
-                              color: value.selectedObjectDrawable is ImageDrawable
-                                  ? Colors.white
-                                  : Colors.white.withValues(red: 255, green: 255, blue: 255, alpha: 77),
-                            ),
-                            onPressed: value.selectedObjectDrawable is ImageDrawable
-                                ? flipSelectedImageDrawable
-                                : null,
                           ),
                         ),
                         ValueListenableBuilder<PainterControllerValue>(
