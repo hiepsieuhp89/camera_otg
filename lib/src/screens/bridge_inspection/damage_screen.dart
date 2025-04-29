@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -103,20 +101,26 @@ class _DiagramItemState extends ConsumerState<_DiagramItem> {
     final uniqueCacheKey = 'diagram_${widget.diagram.id}_${widget.diagram.photoId}_$timestamp';
 
     return GestureDetector(
-      onTap: () async {
-        await CachedNetworkImage.evictFromCache(widget.diagram.photo!.photoLink);
+      onTap: () {
+        if (!mounted) return;
         
         final router = context.router;
-        await router.push(DiagramInspectionRoute(diagram: widget.diagram));
-
-        if (!mounted) return;
-
         final currentBridge = ref.read(currentBridgeProvider);
-        if (currentBridge != null) {
-          await CachedNetworkImage.evictFromCache(widget.diagram.photo!.photoLink);
+        
+        CachedNetworkImage.evictFromCache(widget.diagram.photo!.photoLink).then((_) {
+          if (!mounted) return;
           
-          ref.invalidate(damageInspectionProvider(currentBridge.id));
-        }
+          router.push(DiagramInspectionRoute(diagram: widget.diagram)).then((_) {
+            if (!mounted) return;
+            
+            if (currentBridge != null) {
+              CachedNetworkImage.evictFromCache(widget.diagram.photo!.photoLink).then((_) {
+                if (!mounted) return;
+                ref.invalidate(damageInspectionProvider(currentBridge.id));
+              });
+            }
+          });
+        });
       },
       child: Flex(
         direction: Axis.vertical,

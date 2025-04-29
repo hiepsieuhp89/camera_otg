@@ -70,6 +70,9 @@ class KyoryoAppRouter extends RootStackRouter {
               page: BridgeInspectionPresentConditionRoute.page,
               guards: [_authGuard]),
         ]),
+        AutoRoute(
+            page: InspectionPointDiagramSelectRoute.page, guards: [_authGuard]),
+        AutoRoute(page: TakePictureRoute.page, guards: [_authGuard]),
         AutoRoute(page: PointsInspectionRoute.page, guards: [_authGuard]),
         AutoRoute(page: AppUpdateRoute.page, guards: [_authGuard]),
         AutoRoute(page: InspectionPointRoute.page, guards: [_authGuard]),
