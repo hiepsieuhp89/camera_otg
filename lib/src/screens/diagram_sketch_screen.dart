@@ -383,9 +383,9 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                 // Settings panel - Floating at the top center
                 if (isUIVisible && isSettingsPanelVisible)
                   Positioned(
-                    left: MediaQuery.of(context).size.width * 0.25, // Center by using 25% left margin
+                    left: MediaQuery.of(context).size.width * 0.15,
+                    right: 100,
                     top: 4,
-                    width: MediaQuery.of(context).size.width * 0.5, // 50% of screen width
                     child: GestureDetector(
                       onTap: () {},
                       behavior: HitTestBehavior.translucent,
@@ -685,43 +685,19 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
     bool isFilled = false,
     ValueChanged<bool>? onFillChanged,
   }) {
-    return Row(
-      children: [
-        SizedBox(
-          width: 45,
-          child: Text(
-            label,
-            style: const TextStyle(fontSize: 12, color: Colors.white),
-          ),
-        ),
-        
-        Expanded(
-          flex: 3,
-          child: SliderTheme(
-            data: SliderTheme.of(context).copyWith(
-              trackHeight: 2,
-              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-              activeTrackColor: Colors.white70,
-              inactiveTrackColor: Colors.grey.shade700,
-              thumbColor: Colors.white,
-            ),
-            child: Slider(
-              value: value,
-              min: min,
-              max: max,
-              onChanged: onChanged,
-            ),
-          ),
-        ),
-        
-        if (showColor && colorValue != null && onColorChanged != null) ...[
+    final bool needsWrap = showColor && showFillOption;
+    
+    Widget buildControls() {
+      return Row(
+        children: [
           SizedBox(
-            width: 40,
+            width: 45,
             child: Text(
-              AppLocalizations.of(context)!.color,
+              label,
               style: const TextStyle(fontSize: 12, color: Colors.white),
             ),
           ),
+          
           Expanded(
             flex: 3,
             child: SliderTheme(
@@ -733,44 +709,102 @@ class _DiagramSketchScreenState extends ConsumerState<DiagramSketchScreen> {
                 thumbColor: Colors.white,
               ),
               child: Slider(
-                value: HSVColor.fromColor(colorValue).hue,
-                min: 0,
-                max: 359.99,
-                onChanged: onColorChanged,
+                value: value,
+                min: min,
+                max: max,
+                onChanged: onChanged,
               ),
             ),
           ),
-        ],
-        
-        if (showFillOption && onFillChanged != null)
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                AppLocalizations.of(context)!.fill,
+          
+          if (showColor && colorValue != null && onColorChanged != null) ...[
+            SizedBox(
+              width: 40,
+              child: Text(
+                AppLocalizations.of(context)!.color,
                 style: const TextStyle(fontSize: 12, color: Colors.white),
               ),
-              Switch(
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                value: isFilled,
-                onChanged: onFillChanged,
-                activeColor: Colors.white,
+            ),
+            Expanded(
+              flex: 3,
+              child: SliderTheme(
+                data: SliderTheme.of(context).copyWith(
+                  trackHeight: 2,
+                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                  activeTrackColor: Colors.white70,
+                  inactiveTrackColor: Colors.grey.shade700,
+                  thumbColor: Colors.white,
+                ),
+                child: Slider(
+                  value: HSVColor.fromColor(colorValue).hue,
+                  min: 0,
+                  max: 359.99,
+                  onChanged: onColorChanged,
+                ),
               ),
-            ],
+            ),
+          ],
+          
+          if (!needsWrap && showFillOption && onFillChanged != null)
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  AppLocalizations.of(context)!.fill,
+                  style: const TextStyle(fontSize: 12, color: Colors.white),
+                ),
+                Switch(
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  value: isFilled,
+                  onChanged: onFillChanged,
+                  activeColor: Colors.white,
+                ),
+              ],
+            ),
+        ],
+      );
+    }
+
+    Widget buildFillControl() {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Text(
+            AppLocalizations.of(context)!.fill,
+            style: const TextStyle(fontSize: 12, color: Colors.white),
           ),
-        
-        // Add close button at the end of the row
-        IconButton(
-          icon: const Icon(Icons.close, color: Colors.white, size: 18),
-          onPressed: () {
-            hideSettingsPanel();
-            if (textFocusNode.hasFocus) {
-              textFocusNode.unfocus();
-            }
-          },
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(),
+          Switch(
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            value: isFilled,
+            onChanged: onFillChanged,
+            activeColor: Colors.white,
+          ),
+        ],
+      );
+    }
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          children: [
+            Expanded(child: buildControls()),
+            // Add close button at the end of the row
+            IconButton(
+              icon: const Icon(Icons.close, color: Colors.white, size: 18),
+              onPressed: () {
+                hideSettingsPanel();
+                if (textFocusNode.hasFocus) {
+                  textFocusNode.unfocus();
+                }
+              },
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            ),
+          ],
         ),
+        if (needsWrap && showFillOption && onFillChanged != null)
+          buildFillControl(),
       ],
     );
   }
