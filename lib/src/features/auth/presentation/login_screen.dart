@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lavie/src/features/auth/data/auth_service.dart';
+import 'package:lavie/src/features/auth/domain/user_model.dart';
 import 'package:lavie/src/routes/app_router.dart';
 import 'package:lavie/src/theme/app_theme.dart';
 
@@ -18,13 +19,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   // Fill sẵn user: tungcan2000@gmail.com/123123123
   final _emailController = TextEditingController(text: 'tungcan2000@gmail.com');
   final _passwordController = TextEditingController(text: '123123123');
+  final _nameController = TextEditingController();
   bool _isLoading = false;
   String? _errorMessage;
+  bool _isRegisterMode = false;
+  UserRole _selectedRole = UserRole.viewer;
+  
+  // Added for email selection
+  String _selectedEmail = 'tungcan2000@gmail.com'; // Default selected email
+  final List<String> _availableEmails = ['tungcan2000@gmail.com', 'tungcan2001@gmail.com'];
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _nameController.dispose();
     super.dispose();
   }
 
@@ -89,6 +98,60 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       }
     }
   }
+  
+  Future<void> _register() async {
+    if (!_formKey.currentState!.validate()) return;
+    
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+    
+    try {
+      print('Step 1: Attempting registration...');
+      await ref.read(currentUserProvider.notifier).createUser(
+        _emailController.text.trim(),
+        _passwordController.text,
+        _nameController.text.trim(),
+        _selectedRole,
+      );
+      
+      print('Step 2: Registration successful, logging in...');
+      await ref.read(currentUserProvider.notifier).login(
+        _emailController.text.trim(),
+        _passwordController.text,
+      );
+      
+      if (mounted) {
+        final currentUser = ref.read(currentUserProvider);
+        print('Step 3: Current user after registration: $currentUser');
+        
+        if (currentUser != null) {
+          // New users always need to pair first
+          print('Step 4: New user, navigating to DevicePairingRoute');
+          context.router.replace(const DevicePairingRoute());
+        } else {
+          print('Step 5: currentUser is null after registration');
+          _errorMessage = 'Registration successful but failed to log in. Please log in manually.';
+          setState(() {
+            _isRegisterMode = false;
+          });
+        }
+      }
+    } catch (e, stack) {
+      print('REGISTRATION ERROR: $e');
+      print('STACKTRACE: $stack');
+      setState(() {
+        _errorMessage = 'Failed to register: ${e.toString()}';
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -125,18 +188,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   const SizedBox(height: 40),
                   
                   // Title
-                  const Text(
-                    'Welcome Back',
-                    style: TextStyle(
+                  Text(
+                    _isRegisterMode ? 'Create Account' : 'Welcome Back',
+                    style: const TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
                     ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Sign in to continue',
-                    style: TextStyle(
+                  Text(
+                    _isRegisterMode ? 'Sign up to get started' : 'Sign in to continue',
+                    style: const TextStyle(
                       fontSize: 16,
                       color: Colors.grey,
                     ),
@@ -160,6 +223,51 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
+                  ],
+                  
+                  // Name field (only in register mode)
+                  if (_isRegisterMode) ...[
+                    TextFormField(
+                      controller: _nameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Full Name',
+                        prefixIcon: Icon(Icons.person_outlined),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your name';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  
+                  // Email selection radio buttons
+                  if (!_isRegisterMode) ...[ // Only show in login mode
+                    const Text(
+                      'Select email:',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: _availableEmails.map((email) => RadioListTile<String>(
+                        title: Text(email),
+                        value: email,
+                        groupValue: _selectedEmail,
+                        onChanged: (String? value) {
+                          setState(() {
+                            _selectedEmail = value ?? _availableEmails.first;
+                            _emailController.text = _selectedEmail; // Update text field
+                          });
+                        },
+                      )).toList(),
+                    ),
+                    const SizedBox(height: 16),
                   ],
                   
                   // Email field
@@ -194,14 +302,97 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       if (value == null || value.isEmpty) {
                         return 'Please enter your password';
                       }
+                      if (_isRegisterMode && value.length < 6) {
+                        return 'Password must be at least 6 characters';
+                      }
                       return null;
                     },
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 16),
                   
-                  // Login button
+                  // Role selection (only in register mode)
+                  if (_isRegisterMode) ...[
+                    const Text(
+                      'Select your role:',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: RadioListTile<UserRole>(
+                            title: const Text('Viewer'),
+                            subtitle: const Text('Can view camera feed'),
+                            value: UserRole.viewer,
+                            groupValue: _selectedRole,
+                            contentPadding: EdgeInsets.zero,
+                            onChanged: (UserRole? value) {
+                              setState(() {
+                                _selectedRole = value ?? UserRole.viewer;
+                              });
+                            },
+                          ),
+                        ),
+                        Expanded(
+                          child: RadioListTile<UserRole>(
+                            title: const Text('Broadcaster'),
+                            subtitle: const Text('Can broadcast camera'),
+                            value: UserRole.broadcaster,
+                            groupValue: _selectedRole,
+                            contentPadding: EdgeInsets.zero,
+                            onChanged: (UserRole? value) {
+                              setState(() {
+                                _selectedRole = value ?? UserRole.broadcaster;
+                              });
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Note about device requirements
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.blue.shade200),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _selectedRole == UserRole.broadcaster
+                                ? 'Broadcaster Requirements:'
+                                : 'Viewer Information:',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blue.shade800,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            _selectedRole == UserRole.broadcaster
+                                ? '• Connect a USB camera via OTG adapter\n• Camera will be used for broadcasting\n• Your device will vibrate when a viewer sends a notification'
+                                : '• Will receive video from broadcaster\n• Can send vibration notifications to broadcaster\n• Does not require a camera connection',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.blue.shade800,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  
+                  // Login/Register button
                   ElevatedButton(
-                    onPressed: _isLoading ? null : _login,
+                    onPressed: _isLoading ? null : (_isRegisterMode ? _register : _login),
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
@@ -214,12 +405,32 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               color: Colors.white,
                             ),
                           )
-                        : const Text(
-                            'SIGN IN',
-                            style: TextStyle(fontSize: 16),
+                        : Text(
+                            _isRegisterMode ? 'SIGN UP' : 'SIGN IN',
+                            style: const TextStyle(fontSize: 16),
                           ),
                   ),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 24),
+                  
+                  // Toggle between login and register
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        _isRegisterMode = !_isRegisterMode;
+                        _errorMessage = null;
+                        // Reset selected email to default when switching modes
+                        _selectedEmail = _availableEmails.first;
+                        _emailController.text = _selectedEmail;
+                      });
+                    },
+                    child: Text(
+                      _isRegisterMode
+                          ? 'Already have an account? Sign In'
+                          : 'Don\'t have an account? Sign Up',
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 16),
                   
                   // App version
                   const Text(
@@ -229,6 +440,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       color: Colors.grey,
                     ),
                     textAlign: TextAlign.center,
+                  ),
+                  
+                  const SizedBox(height: 24),
+                  
+                  // Add UVC Camera Test Button
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      context.router.push(const UVCCameraRoute());
+                    },
+                    icon: const Icon(Icons.camera_alt),
+                    label: const Text('Test UVC Camera'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                    ),
                   ),
                 ],
               ),

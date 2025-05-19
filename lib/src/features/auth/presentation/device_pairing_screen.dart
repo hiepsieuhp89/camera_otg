@@ -80,25 +80,50 @@ class _DevicePairingScreenState extends ConsumerState<DevicePairingScreen> {
       if (ref.read(authServiceProvider).isBroadcaster(currentUser)) {
         broadcasterId = currentUser.id;
         viewerId = _selectedUserId!;
+        debugPrint('Current user is broadcaster. Broadcaster ID: $broadcasterId, Viewer ID: $viewerId');
       } else {
         broadcasterId = _selectedUserId!;
         viewerId = currentUser.id;
+        debugPrint('Current user is viewer. Broadcaster ID: $broadcasterId, Viewer ID: $viewerId');
       }
 
+      debugPrint('Initiating device pairing via DevicePairingService...');
       await pairingService.pairDevices(broadcasterId, viewerId);
       
+      debugPrint('Device pairing successful. Updating current user state...');
       // Update the current user state
       await ref.read(currentUserProvider.notifier).pairWithDevice(_selectedUserId!);
+      
+      // Verify the pairing was updated in the current user state
+      final updatedUser = ref.read(currentUserProvider);
+      debugPrint('Updated user: $updatedUser');
+      debugPrint('Paired Device ID after update: ${updatedUser?.pairedDeviceId}');
+      
+      if (updatedUser?.pairedDeviceId == null || updatedUser!.pairedDeviceId!.isEmpty) {
+        debugPrint('WARNING: pairedDeviceId is still null or empty after update!');
+        // Force refresh from Firestore
+        await ref.refresh(currentUserProvider);
+        final refreshedUser = ref.read(currentUserProvider);
+        debugPrint('Refreshed user: $refreshedUser');
+        debugPrint('Paired Device ID after refresh: ${refreshedUser?.pairedDeviceId}');
+        
+        if (refreshedUser?.pairedDeviceId == null || refreshedUser!.pairedDeviceId!.isEmpty) {
+          throw Exception('Failed to update paired device ID');
+        }
+      }
 
       if (mounted) {
         // Navigate to the appropriate screen based on user role
         if (ref.read(authServiceProvider).isBroadcaster(currentUser)) {
+          debugPrint('Navigating to BroadcastRoute...');
           context.router.replace(const BroadcastRoute());
         } else {
+          debugPrint('Navigating to ViewerRoute...');
           context.router.replace(const ViewerRoute());
         }
       }
     } catch (e) {
+      debugPrint('ERROR during pairing: $e');
       setState(() {
         _errorMessage = 'Failed to pair with user: ${e.toString()}';
         _isLoading = false;

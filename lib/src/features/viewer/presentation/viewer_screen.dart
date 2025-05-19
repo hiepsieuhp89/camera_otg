@@ -8,342 +8,290 @@ import 'package:lavie/src/features/broadcast/data/webrtc_connection_service.dart
 import 'package:lavie/src/routes/app_router.dart';
 import 'package:lavie/src/theme/app_theme.dart';
 import 'package:vibration/vibration.dart';
+import 'package:lavie/src/core/constants/ui_constants.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 @RoutePage()
 class ViewerScreen extends ConsumerStatefulWidget {
-  const ViewerScreen({super.key});
+  const ViewerScreen({Key? key}) : super(key: key);
 
   @override
   ConsumerState<ViewerScreen> createState() => _ViewerScreenState();
 }
 
 class _ViewerScreenState extends ConsumerState<ViewerScreen> {
-  RTCVideoRenderer? _remoteRenderer;
-  WebRTCConnectionService? _webRTCService;
-  VibrationHandler? _vibrationHandler;
+  final _remoteRenderer = RTCVideoRenderer();
+  bool _isInitialized = false;
   bool _isConnected = false;
-  String? _connectionStatus;
-  bool _isVibrationSupported = false;
+  bool _isVibrating = false;
+  String? _selectedBroadcasterId;
+  String? _selectedBroadcasterName;
+  List<Map<String, dynamic>> _activeBroadcasters = [];
+  late WebRTCConnectionService _webRTCService;
 
   @override
   void initState() {
     super.initState();
-    _initializeServices();
+    _initialize();
   }
 
   @override
   void dispose() {
-    _disposeServices();
+    _webRTCService.dispose();
+    _remoteRenderer.dispose();
     super.dispose();
   }
 
-  Future<void> _checkVibrationSupport() async {
-    final isSupported = await Vibration.hasVibrator();
-    setState(() {
-      _isVibrationSupported = isSupported == true;
-    });
-  }
-
-  Future<void> _initializeServices() async {
-    // Initialize remote renderer
-    _remoteRenderer = RTCVideoRenderer();
-    await _remoteRenderer!.initialize();
-    
-    // Check vibration support
-    await _checkVibrationSupport();
-    
-    final currentUser = ref.read(currentUserProvider);
-    if (currentUser != null && currentUser.pairedDeviceId != null) {
+  Future<void> _initialize() async {
+    try {
+      await _remoteRenderer.initialize();
+      
+      final currentUser = ref.read(currentUserProvider);
+      if (currentUser == null) {
+        debugPrint('Error: No user logged in');
+        return;
+      }
+      
       // Initialize WebRTC service
-      final params = WebRTCConnectionParams(
+      _webRTCService = WebRTCConnectionService(
         userId: currentUser.id,
-        pairedUserId: currentUser.pairedDeviceId,
         isBroadcaster: false,
       );
       
-      _webRTCService = ref.read(webRTCConnectionServiceProvider(params));
-      
-      _webRTCService!.onConnectionStateChange = (state) {
-        setState(() {
-          _connectionStatus = state.toString().split('.').last;
-          _isConnected = state == RTCPeerConnectionState.RTCPeerConnectionStateConnected;
-        });
-      };
-      
-      _webRTCService!.onRemoteStreamAvailable = (stream) {
-        if (_remoteRenderer != null) {
-          _remoteRenderer!.srcObject = stream;
-          setState(() {});
-        }
-      };
-      
-      // Initialize vibration handler
-      _vibrationHandler = ref.read(vibrationHandlerProvider(currentUser.id));
-      
-      setState(() {});
-    }
-  }
-
-  void _disposeServices() {
-    _webRTCService?.dispose();
-    _remoteRenderer?.dispose();
-    _remoteRenderer = null;
-    _webRTCService = null;
-    _vibrationHandler?.dispose();
-    _vibrationHandler = null;
-  }
-
-  Future<void> _startViewing() async {
-    if (_webRTCService == null || _remoteRenderer == null) return;
-    
-    try {
-      await _webRTCService!.startViewing();
-      if (mounted) {
+      // Setup callback for receiving remote stream
+      _webRTCService.onRemoteStreamAvailable = (stream) {
+        _remoteRenderer.srcObject = stream;
         setState(() {
           _isConnected = true;
         });
-      }
+      };
+      
+      // Setup callback for connection state changes
+      _webRTCService.onConnectionStateChange = (state) {
+        debugPrint('WebRTC connection state changed: $state');
+        if (state == RTCPeerConnectionState.RTCPeerConnectionStateDisconnected || 
+            state == RTCPeerConnectionState.RTCPeerConnectionStateFailed || 
+            state == RTCPeerConnectionState.RTCPeerConnectionStateClosed) {
+          setState(() {
+            _isConnected = false;
+          });
+        }
+      };
+      
+      // Setup callback for active broadcasters
+      _webRTCService.onAvailableStreamsChanged = (broadcasters) {
+        setState(() {
+          _activeBroadcasters = broadcasters;
+        });
+      };
+      
+      // Start listening for active broadcasters
+      _webRTCService.listenForActiveStreams();
+      
+      setState(() {
+        _isInitialized = true;
+      });
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to connect: $e')),
-        );
-      }
+      debugPrint('Error initializing viewer screen: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error initializing viewer: $e')),
+      );
     }
   }
 
-  Future<void> _stopViewing() async {
-    if (_webRTCService == null) return;
+  Future<void> _connectToBroadcaster(String broadcasterId, String broadcasterName) async {
+    if (_isConnected) {
+      await _disconnectFromBroadcaster();
+    }
+    
+    setState(() {
+      _selectedBroadcasterId = broadcasterId;
+      _selectedBroadcasterName = broadcasterName;
+    });
     
     try {
-      await _webRTCService!.stopViewing();
-      if (mounted) {
-        setState(() {
-          _isConnected = false;
-        });
-      }
+      await _webRTCService.startViewing(broadcasterId);
+      // The connection will be established asynchronously and onRemoteStreamReceived will be called
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to disconnect: $e')),
-        );
-      }
+      debugPrint('Error connecting to broadcaster: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error connecting to broadcast: $e')),
+      );
+    }
+  }
+  
+  Future<void> _disconnectFromBroadcaster() async {
+    if (_isConnected) {
+      await _webRTCService.stopViewing();
+      _remoteRenderer.srcObject = null;
+      setState(() {
+        _isConnected = false;
+        _selectedBroadcasterId = null;
+        _selectedBroadcasterName = null;
+      });
     }
   }
 
   Future<void> _sendVibration(int pattern) async {
-    if (!_isVibrationSupported) return;
+    if (_selectedBroadcasterId == null) return;
     
-    final currentUser = ref.read(currentUserProvider);
-    if (currentUser == null || currentUser.pairedDeviceId == null || _vibrationHandler == null) return;
+    setState(() {
+      _isVibrating = true;
+    });
     
     try {
-      // Send vibration to paired device
-      await _vibrationHandler!.sendVibration(currentUser.pairedDeviceId!, pattern);
-      
-      // Also vibrate the current device for feedback
-      if (pattern == 1) {
-        Vibration.vibrate(duration: 300);
-      } else if (pattern == 2) {
-        Vibration.vibrate(pattern: [0, 300, 100, 300]);
-      }
+      await _webRTCService.sendVibrationToBroadcaster(
+        _selectedBroadcasterId!,
+        pattern,
+      );
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to send vibration: $e')),
-        );
-      }
-    }
-  }
-
-  Future<void> _logout() async {
-    if (_isConnected) {
-      await _webRTCService?.stopViewing();
-    }
-    await ref.read(currentUserProvider.notifier).logout();
-    if (mounted) {
-      context.router.replace(const LoginRoute());
+      debugPrint('Error sending vibration: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error sending vibration: $e')),
+      );
+    } finally {
+      setState(() {
+        _isVibrating = false;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final currentUser = ref.watch(currentUserProvider);
-    final isPaired = currentUser?.pairedDeviceId != null;
-    
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Viewer'),
+        title: Text('Xem trực tiếp'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: _logout,
-            tooltip: 'Logout',
-          ),
+          if (_isConnected)
+            IconButton(
+              icon: Icon(Icons.call_end),
+              onPressed: _disconnectFromBroadcaster,
+            ),
         ],
       ),
-      body: SafeArea(
+      body: !_isInitialized
+          ? const Center(child: CircularProgressIndicator())
+          : _isConnected
+              ? _buildConnectedView()
+              : _buildBroadcastersList(),
+    );
+  }
+  
+  Widget _buildBroadcastersList() {
+    if (_activeBroadcasters.isEmpty) {
+      return Center(
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Status bar
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              color: _isConnected ? Colors.green.shade100 : Colors.grey.shade200,
-              child: Row(
-                children: [
-                  Icon(
-                    _isConnected ? Icons.connected_tv : Icons.tv_off,
-                    color: _isConnected ? Colors.green.shade800 : Colors.grey.shade700,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      _isConnected
-                          ? 'Connected to broadcast'
-                          : isPaired
-                              ? 'Ready to connect'
-                              : 'Not paired with a broadcaster',
-                      style: TextStyle(
-                        color: _isConnected
-                            ? Colors.green.shade800
-                            : Colors.grey.shade700,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  if (_connectionStatus != null)
-                    Text(
-                      _connectionStatus!,
-                      style: TextStyle(
-                        color: Colors.grey.shade700,
-                        fontSize: 12,
-                      ),
-                    ),
-                ],
-              ),
+            Icon(Icons.videocam_off, size: 64, color: Colors.grey),
+            SizedBox(height: 16),
+            Text(
+              'Không có phát trực tiếp nào đang hoạt động',
+              style: TextStyle(fontSize: 16),
             ),
-            
-            // Video stream
-            Expanded(
-              child: Container(
-                width: double.infinity,
-                color: Colors.black,
-                child: _isConnected && _remoteRenderer != null
-                    ? RTCVideoView(
-                        _remoteRenderer!,
-                        objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                      )
-                    : Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              isPaired ? Icons.videocam_off : Icons.link_off,
-                              size: 64,
-                              color: Colors.white54,
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              isPaired
-                                  ? 'Not connected to broadcast'
-                                  : 'Not paired with a broadcaster',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            if (isPaired && !_isConnected)
-                              ElevatedButton(
-                                onPressed: _startViewing,
-                                child: const Text('Connect to Broadcast'),
-                              ),
-                          ],
-                        ),
-                      ),
-              ),
+            SizedBox(height: 32),
+            ElevatedButton.icon(
+              icon: Icon(Icons.refresh),
+              label: Text('Làm mới'),
+              onPressed: () => _webRTCService.listenForActiveStreams(),
             ),
-            
-            // Vibration controls
-            Container(
-              padding: const EdgeInsets.all(16),
-              color: _isVibrationSupported ? Colors.white : Colors.grey.shade200,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Vibration Controls',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: _isVibrationSupported && _isConnected
-                              ? () => _sendVibration(1)
-                              : null,
-                          icon: const Icon(Icons.vibration),
-                          label: const Text('Vibrate Once'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.primaryColor,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: _isVibrationSupported && _isConnected
-                              ? () => _sendVibration(2)
-                              : null,
-                          icon: const Icon(Icons.vibration),
-                          label: const Text('Vibrate Twice'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.secondaryColor,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (!_isVibrationSupported) ...[
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Vibration is not supported on this device.',
-                      style: TextStyle(
-                        color: Colors.red,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            
-            // Connection controls
-            if (_isConnected)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                color: Colors.red.shade50,
-                child: ElevatedButton.icon(
-                  onPressed: _stopViewing,
-                  icon: const Icon(Icons.close),
-                  label: const Text('Disconnect'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                ),
-              ),
           ],
         ),
+      );
+    }
+    
+    return ListView.builder(
+      padding: EdgeInsets.all(16),
+      itemCount: _activeBroadcasters.length,
+      itemBuilder: (context, index) {
+        final broadcaster = _activeBroadcasters[index];
+        final id = broadcaster['broadcasterId'] as String;
+        final name = broadcaster['broadcasterName'] as String? ?? 'Broadcaster';
+        final timestamp = broadcaster['timestamp'] as Timestamp?;
+        final startTime = timestamp?.toDate() ?? DateTime.now();
+        
+        return Card(
+          margin: EdgeInsets.only(bottom: 12),
+          child: ListTile(
+            leading: CircleAvatar(
+              child: Icon(Icons.videocam),
+            ),
+            title: Text(name),
+            subtitle: Text('Live since ${_formatDateTime(startTime)}'),
+            trailing: ElevatedButton(
+              child: Text('Xem'),
+              onPressed: () => _connectToBroadcaster(id, name),
+            ),
+          ),
+        );
+      },
+    );
+  }
+  
+  String _formatDateTime(DateTime dateTime) {
+    final duration = DateTime.now().difference(dateTime);
+    if (duration.inMinutes < 60) {
+      return '${duration.inMinutes} phút';
+    } else {
+      return '${duration.inHours} giờ ${duration.inMinutes % 60} phút';
+    }
+  }
+
+  Widget _buildConnectedView() {
+    return Column(
+      children: [
+        Expanded(
+          child: Container(
+            color: Colors.black,
+            child: RTCVideoView(
+              _remoteRenderer,
+              objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+            ),
+          ),
+        ),
+        if (_selectedBroadcasterName != null)
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              'Đang xem: $_selectedBroadcasterName',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ),
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildVibrationButton(
+                icon: Icons.vibration,
+                label: 'Nhẹ',
+                pattern: 1,
+              ),
+              _buildVibrationButton(
+                icon: Icons.tap_and_play,
+                label: 'Mạnh',
+                pattern: 2,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildVibrationButton({
+    required IconData icon,
+    required String label,
+    required int pattern,
+  }) {
+    return ElevatedButton.icon(
+      icon: Icon(icon),
+      label: Text(label),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.blue,
+        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       ),
+      onPressed: _isVibrating ? null : () => _sendVibration(pattern),
     );
   }
 }

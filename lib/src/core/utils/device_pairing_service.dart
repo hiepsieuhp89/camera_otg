@@ -79,6 +79,29 @@ class DevicePairingService {
   Future<void> pairDevices(String broadcasterId, String viewerId) async {
     try {
       debugPrint('Pairing devices: Broadcaster=$broadcasterId, Viewer=$viewerId');
+      
+      // Validate inputs
+      if (broadcasterId.isEmpty || viewerId.isEmpty) {
+        debugPrint('Error: Empty ID detected');
+        throw Exception('Broadcaster ID or Viewer ID cannot be empty');
+      }
+      
+      // First check if broadcaster exists
+      final broadcasterDoc = await _firestore.collection('users').doc(broadcasterId).get();
+      if (!broadcasterDoc.exists) {
+        debugPrint('Error: Broadcaster not found: $broadcasterId');
+        throw Exception('Broadcaster not found');
+      }
+      
+      // Check if viewer exists
+      final viewerDoc = await _firestore.collection('users').doc(viewerId).get();
+      if (!viewerDoc.exists) {
+        debugPrint('Error: Viewer not found: $viewerId');
+        throw Exception('Viewer not found');
+      }
+      
+      debugPrint('Both users found. Proceeding with pairing...');
+      
       // Create a transaction to ensure both updates happen or none
       await _firestore.runTransaction((transaction) async {
         // Update broadcaster
@@ -93,6 +116,22 @@ class DevicePairingService {
           'pairedDeviceId': broadcasterId,
         });
       });
+      
+      // Verify the pairing was successful
+      final updatedBroadcasterDoc = await _firestore.collection('users').doc(broadcasterId).get();
+      final updatedViewerDoc = await _firestore.collection('users').doc(viewerId).get();
+      
+      final broadcasterPairedId = updatedBroadcasterDoc.data()?['pairedDeviceId'] as String?;
+      final viewerPairedId = updatedViewerDoc.data()?['pairedDeviceId'] as String?;
+      
+      debugPrint('Verification - Broadcaster paired with: $broadcasterPairedId');
+      debugPrint('Verification - Viewer paired with: $viewerPairedId');
+      
+      if (broadcasterPairedId != viewerId || viewerPairedId != broadcasterId) {
+        debugPrint('Warning: Pairing verification failed');
+        throw Exception('Pairing verification failed');
+      }
+      
       debugPrint('Devices paired successfully');
     } catch (e) {
       debugPrint('Error pairing devices: $e');

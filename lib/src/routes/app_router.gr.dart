@@ -91,6 +91,22 @@ class SplashRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [UVCCameraScreen]
+class UVCCameraRoute extends PageRouteInfo<void> {
+  const UVCCameraRoute({List<PageRouteInfo>? children})
+    : super(UVCCameraRoute.name, initialChildren: children);
+
+  static const String name = 'UVCCameraRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const UVCCameraScreen();
+    },
+  );
+}
+
+/// generated route for
 /// [ViewerScreen]
 class ViewerRoute extends PageRouteInfo<void> {
   const ViewerRoute({List<PageRouteInfo>? children})

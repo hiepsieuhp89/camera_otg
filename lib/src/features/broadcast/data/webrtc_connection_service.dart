@@ -1,11 +1,13 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
+import 'package:vibration/vibration.dart';
 
-/// Service to manage WebRTC connections for screen sharing
+/// Service to manage WebRTC connections for video streaming
 class WebRTCConnectionService {
   final String userId;
   final String? pairedUserId;
@@ -17,114 +19,223 @@ class WebRTCConnectionService {
   StreamSubscription? _offerSubscription;
   StreamSubscription? _answerSubscription;
   StreamSubscription? _iceCandidatesSubscription;
+  StreamSubscription? _activeStreamsSubscription;
   
   /// Connection state change callback
   Function(RTCPeerConnectionState)? onConnectionStateChange;
   
   /// Remote stream available callback
   Function(MediaStream)? onRemoteStreamAvailable;
+  
+  /// Available streams callback
+  Function(List<Map<String, dynamic>>)? onAvailableStreamsChanged;
 
   WebRTCConnectionService({
     required this.userId,
     this.pairedUserId,
     required this.isBroadcaster,
-  });
+  }) {
+    // Log initialization for debugging
+    debugPrint('WebRTCConnectionService initialized:');
+    debugPrint(' - User ID: $userId');
+    debugPrint(' - Is Broadcaster: $isBroadcaster');
+    
+    // Validate parameters
+    if (userId.isEmpty) {
+      debugPrint('WARNING: User ID is empty');
+    }
+  }
 
   /// Start broadcasting from the broadcaster device
-  Future<void> startBroadcast(MediaStream localStream) async {
-    if (pairedUserId == null) {
-      throw Exception('Not paired with any device');
-    }
+  Future<void> startBroadcast(MediaStream localStream, String broadcasterName) async {
+    debugPrint('Starting broadcast as $broadcasterName...');
 
     _localStream = localStream;
+    debugPrint('Initializing peer connection...');
     await _initPeerConnection();
     
     // Add tracks to peer connection
+    debugPrint('Adding media tracks to peer connection...');
     _localStream!.getTracks().forEach((track) {
       _peerConnection!.addTrack(track, _localStream!);
     });
 
-    // Create and send offer
+    // Create offer
+    debugPrint('Creating WebRTC offer...');
     RTCSessionDescription offer = await _peerConnection!.createOffer();
     await _peerConnection!.setLocalDescription(offer);
     
-    await _firestore.collection('webrtc').doc(pairedUserId).set({
+    // Add broadcast to active streams collection
+    debugPrint('Registering broadcast in active streams...');
+    await _firestore.collection('activeStreams').doc(userId).set({
+      'broadcasterName': broadcasterName,
+      'broadcasterId': userId,
       'offer': {
         'type': offer.type,
         'sdp': offer.sdp,
       },
-      'fromUserId': userId,
       'timestamp': FieldValue.serverTimestamp(),
+      'isActive': true,
     });
 
-    // Listen for answer
+    // Listen for answer from any viewer
+    debugPrint('Listening for answers from viewers...');
     _answerSubscription = _firestore
-        .collection('webrtc')
+        .collection('broadcasters')
         .doc(userId)
+        .collection('answers')
         .snapshots()
         .listen((snapshot) async {
-      if (snapshot.exists && snapshot.data()?['answer'] != null) {
-        final answer = RTCSessionDescription(
-          snapshot.data()!['answer']['sdp'],
-          snapshot.data()!['answer']['type'],
-        );
-        
-        await _peerConnection!.setRemoteDescription(answer);
-      }
-    });
-
-    // Listen for ICE candidates
-    _listenForIceCandidates();
-  }
-
-  /// Start viewing from the viewer device
-  Future<void> startViewing() async {
-    if (pairedUserId == null) {
-      throw Exception('Not paired with any device');
-    }
-
-    await _initPeerConnection();
-    
-    // Listen for offer
-    _offerSubscription = _firestore
-        .collection('webrtc')
-        .doc(userId)
-        .snapshots()
-        .listen((snapshot) async {
-      if (snapshot.exists && snapshot.data()?['offer'] != null) {
-        final offer = RTCSessionDescription(
-          snapshot.data()!['offer']['sdp'],
-          snapshot.data()!['offer']['type'],
-        );
-        
-        await _peerConnection!.setRemoteDescription(offer);
-        
-        // Create and send answer
-        RTCSessionDescription answer = await _peerConnection!.createAnswer();
-        await _peerConnection!.setLocalDescription(answer);
-        
-        await _firestore.collection('webrtc').doc(pairedUserId).set({
-          'answer': {
-            'type': answer.type,
-            'sdp': answer.sdp,
-          },
-          'fromUserId': userId,
-          'timestamp': FieldValue.serverTimestamp(),
-        });
-      }
-    });
-
-    // Set remote stream handler
-    _peerConnection!.onTrack = (RTCTrackEvent event) {
-      if (event.streams.isNotEmpty) {
-        if (onRemoteStreamAvailable != null) {
-          onRemoteStreamAvailable!(event.streams[0]);
+      for (final change in snapshot.docChanges) {
+        if (change.type == DocumentChangeType.added) {
+          final data = change.doc.data();
+          if (data != null) {
+            debugPrint('Answer received from viewer: ${data['viewerId']}');
+            final answer = RTCSessionDescription(
+              data['answer']['sdp'],
+              data['answer']['type'],
+            );
+            
+            await _peerConnection!.setRemoteDescription(answer);
+            debugPrint('Remote description set');
+          }
         }
       }
-    };
+    });
 
     // Listen for ICE candidates
+    debugPrint('Listening for ICE candidates...');
     _listenForIceCandidates();
+    debugPrint('Broadcast setup complete');
+  }
+
+  /// Get list of active broadcasts
+  Future<List<Map<String, dynamic>>> getActiveStreams() async {
+    debugPrint('Getting active streams...');
+    
+    final snapshot = await _firestore
+        .collection('activeStreams')
+        .where('isActive', isEqualTo: true)
+        .get();
+    
+    final streams = snapshot.docs.map((doc) {
+      final data = doc.data();
+      return {
+        'broadcasterId': data['broadcasterId'],
+        'broadcasterName': data['broadcasterName'],
+        'timestamp': data['timestamp'],
+      };
+    }).toList();
+    
+    debugPrint('Found ${streams.length} active streams');
+    return streams;
+  }
+
+  /// Listen for active broadcasts changes
+  void listenForActiveStreams() {
+    debugPrint('Starting to listen for active streams...');
+    
+    _activeStreamsSubscription = _firestore
+        .collection('activeStreams')
+        .where('isActive', isEqualTo: true)
+        .snapshots()
+        .listen((snapshot) {
+      final streams = snapshot.docs.map((doc) {
+        final data = doc.data();
+        return {
+          'broadcasterId': data['broadcasterId'],
+          'broadcasterName': data['broadcasterName'],
+          'timestamp': data['timestamp'],
+        };
+      }).toList();
+      
+      debugPrint('Active streams updated, count: ${streams.length}');
+      if (onAvailableStreamsChanged != null) {
+        onAvailableStreamsChanged!(streams);
+      }
+    });
+  }
+
+  /// Start viewing a specific broadcaster's stream
+  Future<void> startViewing(String broadcasterId) async {
+    debugPrint('Starting to view broadcast from: $broadcasterId');
+
+    try {
+      // Clean up any existing connection first
+      await _cleanup();
+      
+      // Get the broadcaster's offer
+      final broadcasterDoc = await _firestore.collection('activeStreams').doc(broadcasterId).get();
+      if (!broadcasterDoc.exists) {
+        debugPrint('Error: Broadcast not found');
+        throw Exception('Broadcast not found');
+      }
+      
+      final broadcastData = broadcasterDoc.data();
+      if (broadcastData == null || !broadcastData['isActive']) {
+        debugPrint('Error: Broadcast is not active');
+        throw Exception('Broadcast is not active');
+      }
+
+      debugPrint('Initializing peer connection...');
+      await _initPeerConnection();
+      
+      // Set remote stream handler first
+      debugPrint('Setting up remote stream handler...');
+      _peerConnection!.onTrack = (RTCTrackEvent event) {
+        if (event.streams.isNotEmpty) {
+          debugPrint('Remote stream received from broadcaster');
+          if (onRemoteStreamAvailable != null) {
+            onRemoteStreamAvailable!(event.streams[0]);
+          }
+        }
+      };
+      
+      // Set remote description (offer from broadcaster)
+      final offer = RTCSessionDescription(
+        broadcastData['offer']['sdp'],
+        broadcastData['offer']['type'],
+      );
+      
+      debugPrint('Setting remote description (broadcaster offer)...');
+      await _peerConnection!.setRemoteDescription(offer);
+      
+      // Create answer
+      debugPrint('Creating answer...');
+      RTCSessionDescription answer = await _peerConnection!.createAnswer();
+      
+      // Set local description
+      debugPrint('Setting local description...');
+      await _peerConnection!.setLocalDescription(answer);
+      
+      // Wait a moment to ensure the connection state is updated
+      await Future.delayed(const Duration(milliseconds: 500));
+      
+      // Send answer to broadcaster
+      debugPrint('Sending answer to broadcaster: $broadcasterId');
+      await _firestore
+          .collection('broadcasters')
+          .doc(broadcasterId)
+          .collection('answers')
+          .doc(userId)
+          .set({
+        'viewerId': userId, 
+        'answer': {
+          'type': answer.type,
+          'sdp': answer.sdp,
+        },
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+
+      // Listen for ICE candidates
+      debugPrint('Listening for ICE candidates...');
+      _listenForIceCandidates(broadcasterId);
+      debugPrint('Viewing setup complete');
+    } catch (e) {
+      debugPrint('Error in startViewing: $e');
+      await _cleanup();
+      throw Exception('Unable to connect to broadcast: $e');
+    }
   }
 
   /// Initialize the peer connection
@@ -140,10 +251,25 @@ class WebRTCConnectionService {
     _peerConnection = await createPeerConnection(configuration);
 
     _peerConnection!.onIceCandidate = (RTCIceCandidate candidate) async {
-      if (pairedUserId != null) {
+      if (isBroadcaster) {
+        // Store ICE candidate for potential viewers
         await _firestore
-            .collection('webrtc')
+            .collection('broadcasters')
+            .doc(userId)
+            .collection('candidates')
+            .add({
+          'candidate': candidate.candidate,
+          'sdpMid': candidate.sdpMid,
+          'sdpMLineIndex': candidate.sdpMLineIndex,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+      } else if (pairedUserId != null && pairedUserId!.isNotEmpty) {
+        // Store viewer's ICE candidate for broadcaster
+        await _firestore
+            .collection('broadcasters')
             .doc(pairedUserId)
+            .collection('viewerCandidates')
+            .doc(userId)
             .collection('candidates')
             .add({
           'candidate': candidate.candidate,
@@ -155,6 +281,7 @@ class WebRTCConnectionService {
     };
 
     _peerConnection!.onConnectionState = (RTCPeerConnectionState state) {
+      debugPrint('WebRTC connection state changed: ${state.toString()}');
       if (onConnectionStateChange != null) {
         onConnectionStateChange!(state);
       }
@@ -162,31 +289,80 @@ class WebRTCConnectionService {
   }
 
   /// Listen for ICE candidates
-  void _listenForIceCandidates() {
-    _iceCandidatesSubscription = _firestore
-        .collection('webrtc')
-        .doc(userId)
-        .collection('candidates')
-        .snapshots()
-        .listen((snapshot) {
-      for (final change in snapshot.docChanges) {
-        if (change.type == DocumentChangeType.added) {
-          final data = change.doc.data();
-          if (data != null && _peerConnection != null) {
-            final candidate = RTCIceCandidate(
-              data['candidate'],
-              data['sdpMid'],
-              data['sdpMLineIndex'],
-            );
-            _peerConnection!.addCandidate(candidate);
+  void _listenForIceCandidates([String? targetBroadcasterId]) {
+    if (isBroadcaster) {
+      // Broadcaster listens for ICE candidates from all viewers
+      _iceCandidatesSubscription = _firestore
+          .collection('broadcasters')
+          .doc(userId)
+          .collection('viewerCandidates')
+          .snapshots()
+          .listen((viewersSnapshot) {
+        for (final viewerDoc in viewersSnapshot.docs) {
+          final viewerId = viewerDoc.id;
+          _firestore
+              .collection('broadcasters')
+              .doc(userId)
+              .collection('viewerCandidates')
+              .doc(viewerId)
+              .collection('candidates')
+              .snapshots()
+              .listen((candidatesSnapshot) {
+            for (final change in candidatesSnapshot.docChanges) {
+              if (change.type == DocumentChangeType.added) {
+                final data = change.doc.data();
+                if (data != null && _peerConnection != null) {
+                  final candidate = RTCIceCandidate(
+                    data['candidate'],
+                    data['sdpMid'],
+                    data['sdpMLineIndex'],
+                  );
+                  _peerConnection!.addCandidate(candidate);
+                }
+              }
+            }
+          });
+        }
+      });
+    } else if (targetBroadcasterId != null) {
+      // Viewer listens for ICE candidates from a specific broadcaster
+      _iceCandidatesSubscription = _firestore
+          .collection('broadcasters')
+          .doc(targetBroadcasterId)
+          .collection('candidates')
+          .snapshots()
+          .listen((snapshot) {
+        for (final change in snapshot.docChanges) {
+          if (change.type == DocumentChangeType.added) {
+            final data = change.doc.data();
+            if (data != null && _peerConnection != null) {
+              final candidate = RTCIceCandidate(
+                data['candidate'],
+                data['sdpMid'],
+                data['sdpMLineIndex'],
+              );
+              _peerConnection!.addCandidate(candidate);
+            }
           }
         }
-      }
-    });
+      });
+    }
   }
 
   /// Stop broadcasting
   Future<void> stopBroadcast() async {
+    if (isBroadcaster) {
+      // Mark stream as inactive
+      try {
+        await _firestore.collection('activeStreams').doc(userId).update({
+          'isActive': false,
+        });
+        debugPrint('Broadcast marked as inactive');
+      } catch (e) {
+        debugPrint('Error marking broadcast as inactive: $e');
+      }
+    }
+    
     await _localStream?.dispose();
     _localStream = null;
     await _cleanup();
@@ -202,46 +378,77 @@ class WebRTCConnectionService {
     _offerSubscription?.cancel();
     _answerSubscription?.cancel();
     _iceCandidatesSubscription?.cancel();
+    _activeStreamsSubscription?.cancel();
     
     await _peerConnection?.close();
     _peerConnection = null;
-    
-    if (pairedUserId != null) {
-      try {
-        await _firestore.collection('webrtc').doc(pairedUserId).delete();
-        await _firestore.collection('webrtc').doc(userId).delete();
-        
-        // Delete ICE candidates
-        final candidatesDocs = await _firestore
-            .collection('webrtc')
-            .doc(pairedUserId)
-            .collection('candidates')
-            .get();
-        
-        for (var doc in candidatesDocs.docs) {
-          await doc.reference.delete();
-        }
-        
-        final myCandidatesDocs = await _firestore
-            .collection('webrtc')
-            .doc(userId)
-            .collection('candidates')
-            .get();
-        
-        for (var doc in myCandidatesDocs.docs) {
-          await doc.reference.delete();
-        }
-      } catch (e) {
-        // Log error but continue
-        debugPrint('Error cleaning up WebRTC data: $e');
-      }
+  }
+
+  /// Send vibration to broadcaster
+  Future<void> sendVibrationToBroadcaster(String broadcasterId, int pattern) async {
+    debugPrint('Sending vibration pattern $pattern to broadcaster $broadcasterId');
+    try {
+      await _firestore.collection('vibrations').add({
+        'toBroadcasterId': broadcasterId,
+        'fromViewerId': userId,
+        'pattern': pattern,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+      debugPrint('Vibration notification sent successfully');
+    } catch (e) {
+      debugPrint('Error sending vibration: $e');
+      throw Exception('Failed to send vibration: $e');
     }
+  }
+  
+  /// Start listening for vibrations (for broadcasters)
+  void startListeningForVibrations() {
+    if (!isBroadcaster) return;
+    
+    debugPrint('Starting to listen for vibrations from viewers...');
+    
+    _firestore
+        .collection('vibrations')
+        .where('toBroadcasterId', isEqualTo: userId)
+        .orderBy('timestamp', descending: true)
+        .limit(10)
+        .snapshots()
+        .listen((snapshot) async {
+      for (final change in snapshot.docChanges) {
+        if (change.type == DocumentChangeType.added) {
+          final data = change.doc.data();
+          if (data != null) {
+            debugPrint('Received vibration from viewer: ${data['fromViewerId']}');
+            
+            // Vibrate the device based on pattern
+            try {
+              if (data.containsKey('pattern')) {
+                final pattern = data['pattern'] as int;
+                if (pattern == 1) {
+                  await Vibration.vibrate(duration: 300);
+                } else if (pattern == 2) {
+                  await Vibration.vibrate(pattern: [0, 300, 100, 300]);
+                }
+              }
+              
+              // Delete the processed vibration request
+              await change.doc.reference.delete();
+            } catch (e) {
+              debugPrint('Error processing vibration: $e');
+            }
+          }
+        }
+      }
+    });
   }
 
   /// Dispose resources
   void dispose() {
-    stopBroadcast();
-    stopViewing();
+    if (isBroadcaster) {
+      stopBroadcast();
+    } else {
+      stopViewing();
+    }
   }
 }
 

@@ -34,13 +34,14 @@ Lavie is a Flutter application that enables OTG camera connectivity and screen s
 - WebRTC (peer-to-peer communication)
 - Camera plugin (camera access)
 - Vibration plugin (haptic feedback)
+- UvcCamera plugin (external OTG camera support)
 
 ## Getting Started
 
 ### To run automatic build on code changes
 
 ``` bash
-dart run build_runner watch
+dart run build_runner --delete-conflicting-outputs watch 
 ```
 
 ### To build localization file
@@ -48,6 +49,27 @@ dart run build_runner watch
 ``` bash
 flutter gen-l10n
 ```
+
+### USB Camera (OTG) Integration
+
+This app supports external USB cameras through the UVC standard using the `uvccamera` plugin:
+
+1. Connect a UVC-compatible camera to your Android device using an OTG adapter
+2. Android will prompt for permission to use the USB device - grant it
+3. Launch the app and navigate to the Broadcast screen
+4. The app will automatically detect and use the OTG camera for broadcasting
+
+#### Supported USB Camera Types
+
+The app supports UVC (USB Video Class) compliant cameras, including:
+- Most webcams (Logitech, Microsoft, etc.)
+- USB microscopes
+- Document cameras
+- Other UVC-compliant camera devices
+
+#### USB Camera Permissions
+
+The app includes a USB device filter in the Android manifest that automatically recognizes common UVC cameras. If your camera isn't detected, you may need to add its vendor ID to the device_filter.xml file.
 
 ## Setup Instructions
 

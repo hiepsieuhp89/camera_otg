@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lavie/src/features/auth/domain/user_model.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter/foundation.dart';
 
 part 'auth_service.g.dart';
 
@@ -198,6 +199,47 @@ class CurrentUser extends _$CurrentUser {
     
     final authService = ref.read(authServiceProvider);
     await authService.pairDevices(state!.id, otherDeviceId);
-    state = state!.copyWith(pairedDeviceId: otherDeviceId);
+    
+    // Get updated user data from Firestore to ensure it has pairedDeviceId
+    final updatedUser = await authService.getUserData(state!.id);
+    if (updatedUser != null) {
+      state = updatedUser;
+    } else {
+      // Manually update state if needed
+      state = state!.copyWith(pairedDeviceId: otherDeviceId);
+    }
+    
+    // Log the updated state for debugging
+    debugPrint('Updated user state after pairing:');
+    debugPrint('User ID: ${state!.id}');
+    debugPrint('Paired Device ID: ${state!.pairedDeviceId}');
+  }
+  
+  // Update the current user state with data from Firestore
+  Future<void> updateFromFirestore(UserModel updatedUser) async {
+    if (state == null) return;
+    
+    debugPrint('Updating user state from Firestore:');
+    debugPrint('Previous state - pairedDeviceId: ${state!.pairedDeviceId}');
+    debugPrint('New state - pairedDeviceId: ${updatedUser.pairedDeviceId}');
+    
+    state = updatedUser;
+  }
+  
+  // Force refresh the current user data from Firestore
+  Future<void> refreshUserData() async {
+    if (state == null) return;
+    
+    final authService = ref.read(authServiceProvider);
+    final updatedUser = await authService.getUserData(state!.id);
+    
+    if (updatedUser != null) {
+      debugPrint('Refreshed user data from Firestore:');
+      debugPrint('Previous pairedDeviceId: ${state!.pairedDeviceId}');
+      debugPrint('Updated pairedDeviceId: ${updatedUser.pairedDeviceId}');
+      state = updatedUser;
+    } else {
+      debugPrint('Failed to refresh user data from Firestore');
+    }
   }
 }

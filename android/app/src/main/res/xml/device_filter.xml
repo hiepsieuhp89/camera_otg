@@ -1,31 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- USB Video Class (UVC) -->
-    <usb-device class="14" /> <!-- Video class code (0x0E = 14) -->
+    <!-- USB Camera filters - these are common USB webcam VIDs -->
+    <usb-device vendor-id="0x0403" /> <!-- FTDI -->
+    <usb-device vendor-id="0x045E" /> <!-- Microsoft -->
+    <usb-device vendor-id="0x046D" /> <!-- Logitech -->
+    <usb-device vendor-id="0x04F2" /> <!-- Chicony -->
+    <usb-device vendor-id="0x054C" /> <!-- Sony -->
+    <usb-device vendor-id="0x05A9" /> <!-- OmniVision -->
+    <usb-device vendor-id="0x0AC8" /> <!-- Z-Star Microelectronics -->
+    <usb-device vendor-id="0x1871" /> <!-- AVeo -->
+    <usb-device vendor-id="0x18EC" /> <!-- Arkmicro -->
+    <usb-device vendor-id="0x1E4E" /> <!-- USB2.0 PC CAMERA -->
+    <usb-device vendor-id="0x2000" /> <!-- STK -->
+    <usb-device vendor-id="0x058F" /> <!-- Alcor Micro -->
+    <usb-device vendor-id="0x0C45" /> <!-- Sonix -->
+    <usb-device vendor-id="0x0B95" /> <!-- ASIX -->
+    <usb-device vendor-id="0x0AC8" /> <!-- Z-Star -->
+    <usb-device vendor-id="0x041E" /> <!-- Creative -->
+    <usb-device vendor-id="0x07D0" /> <!-- Aiptek -->
+    <usb-device vendor-id="0x075D" /> <!-- Aitech -->
+    <usb-device vendor-id="0x1A40" /> <!-- Terminus Technology -->
+    <usb-device vendor-id="0x0B62" /> <!-- Orange Micro -->
+
+    <!-- Thiết bị USB2.0 PC Camera cụ thể trong hình ảnh -->
+    <usb-device product-name="USB2.0 PC CAMERA" />
+    <usb-device product-name="USB2.0 Camera" />
+    <usb-device product-name="USB Camera" />
+    <usb-device product-name="USB PC Camera" />
     
-    <!-- USB Cameras frequently have interface class 14 (Video) -->
-    <usb-device class="14" subclass="1" /> <!-- Video control interface -->
-    <usb-device class="14" subclass="2" /> <!-- Video streaming interface -->
+    <!-- Generic UVC (USB Video Class) devices -->
+    <usb-device class="239" subclass="2" /> <!-- UVC control -->
+    <usb-device class="14" subclass="1" /> <!-- Video streaming -->
+    <usb-device class="14" subclass="2" /> <!-- Video control -->
     
-    <!-- Generic filter that matches any USB device (as a fallback) -->
-    <usb-device class="239" /> <!-- Vendor specific class (0xEF = 239) -->
-    <usb-device class="255" /> <!-- Vendor specific class (0xFF = 255) -->
+    <!-- Custom USB device configuration -->
+    <usb-device vendor-id="1234" product-id="5678" class="255" subclass="66" protocol="1" />
+
+    <!-- Thêm tất cả các thiết bị UVC -->
+    <usb-device class="239" />
+    <usb-device class="14" />
     
-    <!-- Common UVC camera vendors -->
-    <usb-device vendor-id="1133"/> <!-- Logitech -->
-    <usb-device vendor-id="1452"/> <!-- Apple -->
-    <usb-device vendor-id="2760"/> <!-- Z-Star Microelectronics -->
-    <usb-device vendor-id="1054"/> <!-- Creative -->
-    <usb-device vendor-id="1118"/> <!-- Microsoft -->
-    <usb-device vendor-id="1112"/> <!-- KYE/Genius -->
-    <usb-device vendor-id="6257"/> <!-- Aveo -->
-    <usb-device vendor-id="1137"/> <!-- Philips -->
-    <usb-device vendor-id="3034"/> <!-- Realtek -->
-    <usb-device vendor-id="3141"/> <!-- Microdia/Sonix -->
-    <usb-device vendor-id="1614"/> <!-- Suyin -->
-    <usb-device vendor-id="5075"/> <!-- IMC Networks/Azurewave -->
-    <usb-device vendor-id="22918"/> <!-- Acer/AzureWave -->
-    <usb-device vendor-id="5769"/> <!-- Razer -->
-    <usb-device vendor-id="2830"/> <!-- GN Netcom -->
-    <usb-device vendor-id="10291"/> <!-- MACROSILICON -->
+    <!-- Any USB device that matches UVC -->
+    <usb-device />
 </resources> 
