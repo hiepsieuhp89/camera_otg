@@ -178,7 +178,7 @@ class WebRTCConnectionService {
               data['sdpMid'],
               data['sdpMLineIndex'],
             );
-            _peerConnection!.addIceCandidate(candidate);
+            _peerConnection!.addCandidate(candidate);
           }
         }
       }

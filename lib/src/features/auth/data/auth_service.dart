@@ -1,9 +1,7 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lavie/src/features/auth/domain/user_model.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'auth_service.g.dart';
 
@@ -28,6 +26,27 @@ class AuthService {
       );
       
       if (userCredential.user != null) {
+        // Check if user exists in Firestore
+        final userDoc = await _firestore.collection('users').doc(userCredential.user!.uid).get();
+        
+        if (!userDoc.exists) {
+          // Create new user document in Firestore
+          final newUser = UserModel(
+            id: userCredential.user!.uid,
+            email: email,
+            role: UserRole.viewer, // Default role
+            displayName: email.split('@')[0], // Use email username as display name
+            isLoggedIn: true,
+          );
+          
+          await _firestore
+              .collection('users')
+              .doc(userCredential.user!.uid)
+              .set(newUser.toJson());
+              
+          return newUser;
+        }
+        
         return getUserData(userCredential.user!.uid);
       }
       return null;

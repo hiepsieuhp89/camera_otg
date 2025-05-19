@@ -1,4 +1,4 @@
-package com.delqui.kyoryo
+package com.lavie.app
 
 import io.flutter.embedding.android.FlutterActivity
 

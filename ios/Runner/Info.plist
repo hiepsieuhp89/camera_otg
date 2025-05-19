@@ -28,10 +28,10 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>com.delqui.kyoryo</string>
+			<string>com.lavie.app</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.delqui.kyoryo</string>
+				<string>com.lavie.app</string>
 			</array>
 		</dict>
 	</array>

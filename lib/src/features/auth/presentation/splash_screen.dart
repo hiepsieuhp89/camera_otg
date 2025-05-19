@@ -22,21 +22,23 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   Future<void> _checkUserStatus() async {
     await Future.delayed(const Duration(seconds: 2));
-    
     if (context.mounted) {
       final currentUser = ref.read(currentUserProvider);
-      
+      print('DEBUG: currentUser = $currentUser');
       if (currentUser != null) {
-        if (ref.read(authServiceProvider).isAdmin(currentUser)) {
+        final authService = ref.read(authServiceProvider);
+        print('DEBUG: user roles: admin=${authService.isAdmin(currentUser)}, broadcaster=${authService.isBroadcaster(currentUser)}, viewer=${authService.isViewer(currentUser)}');
+        if (authService.isAdmin(currentUser)) {
           context.router.replace(const AdminDashboardRoute());
-        } else if (ref.read(authServiceProvider).isBroadcaster(currentUser)) {
+        } else if (authService.isBroadcaster(currentUser)) {
           context.router.replace(const BroadcastRoute());
-        } else if (ref.read(authServiceProvider).isViewer(currentUser)) {
+        } else if (authService.isViewer(currentUser)) {
           context.router.replace(const ViewerRoute());
         } else {
           context.router.replace(const LoginRoute());
         }
       } else {
+        print('DEBUG: No user, go to login');
         context.router.replace(const LoginRoute());
       }
     }

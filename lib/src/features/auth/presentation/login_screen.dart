@@ -2,7 +2,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lavie/src/features/auth/data/auth_service.dart';
-import 'package:lavie/src/features/auth/domain/user_model.dart';
 import 'package:lavie/src/routes/app_router.dart';
 import 'package:lavie/src/theme/app_theme.dart';
 
@@ -16,8 +15,9 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+  // Fill sẵn user: tungcan2000@gmail.com/123123123
+  final _emailController = TextEditingController(text: 'tungcan2000@gmail.com');
+  final _passwordController = TextEditingController(text: '123123123');
   bool _isLoading = false;
   String? _errorMessage;
 
@@ -37,33 +37,47 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     });
 
     try {
+      print('Step 1: Attempting login...');
       await ref.read(currentUserProvider.notifier).login(
-            _emailController.text.trim(),
-            _passwordController.text,
-          );
-
+        _emailController.text.trim(),
+        _passwordController.text,
+      );
+      print('Step 2: Login successful, checking mounted...');
       if (mounted) {
         final currentUser = ref.read(currentUserProvider);
+        print('Step 3: Current user: $currentUser');
         if (currentUser != null) {
           if (ref.read(authServiceProvider).isAdmin(currentUser)) {
+            print('Step 4: User is admin, navigating to AdminDashboardRoute');
             context.router.replace(const AdminDashboardRoute());
           } else {
             // For non-admin users, check if they are already paired
+            print('Step 5: User is not admin, checking pairedDeviceId...');
             if (currentUser.pairedDeviceId != null) {
-              // If already paired, go directly to the appropriate screen
+              print('Step 6: User is paired, checking role...');
               if (ref.read(authServiceProvider).isBroadcaster(currentUser)) {
+                print('Step 7: User is broadcaster, navigating to BroadcastRoute');
                 context.router.replace(const BroadcastRoute());
               } else if (ref.read(authServiceProvider).isViewer(currentUser)) {
+                print('Step 8: User is viewer, navigating to ViewerRoute');
                 context.router.replace(const ViewerRoute());
+              } else {
+                print('Step 9: User is paired but role is unknown');
               }
             } else {
-              // If not paired, go to the pairing screen
+              print('Step 10: User is not paired, navigating to DevicePairingRoute');
               context.router.replace(const DevicePairingRoute());
             }
           }
+        } else {
+          print('Step 11: currentUser is null after login');
         }
+      } else {
+        print('Step 12: Widget is not mounted');
       }
-    } catch (e) {
+    } catch (e, stack) {
+      print('LOGIN ERROR: $e');
+      print('STACKTRACE: $stack');
       setState(() {
         _errorMessage = 'Invalid email or password. Please try again.';
       });

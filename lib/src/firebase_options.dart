@@ -38,20 +38,21 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyDLavie123456789WebApiKey',
-    appId: '1:123456789012:web:abc123def456ghi789',
-    messagingSenderId: '123456789012',
-    projectId: 'lavie-app',
-    authDomain: 'lavie-app.firebaseapp.com',
-    storageBucket: 'lavie-app.appspot.com',
+    apiKey: 'AIzaSyDbyPtD6BVEbefBieILYeBjLCS35abN7aM',
+    appId: '1:631172388937:web:3de000ee30131caeba4798',
+    messagingSenderId: '631172388937',
+    projectId: 'lavie-196cd',
+    authDomain: 'lavie-196cd.firebaseapp.com',
+    storageBucket: 'lavie-196cd.firebasestorage.app',
+    measurementId: 'G-HVM047V56C',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDLavie123456789AndroidApiKey',
-    appId: '1:123456789012:android:abc123def456ghi789',
-    messagingSenderId: '123456789012',
-    projectId: 'lavie-app',
-    storageBucket: 'lavie-app.appspot.com',
+    apiKey: 'AIzaSyDbyPtD6BVEbefBieILYeBjLCS35abN7aM',
+    appId: '1:631172388937:android:3de000ee30131caeba4798',
+    messagingSenderId: '631172388937',
+    projectId: 'lavie-196cd',
+    storageBucket: 'lavie-196cd.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
