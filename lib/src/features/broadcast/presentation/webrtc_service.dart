@@ -48,9 +48,9 @@ class WebRTCService {
     localRenderer.srcObject = _localStream;
     
     // Add tracks to peer connection
-    _localStream!.getTracks().forEach((track) {
+    for (final track in _localStream!.getTracks()) {
       _peerConnection!.addTrack(track, _localStream!);
-    });
+    }
 
     // Create and send offer
     RTCSessionDescription offer = await _peerConnection!.createOffer();
@@ -88,7 +88,7 @@ class WebRTCService {
         .collection('candidates')
         .snapshots()
         .listen((snapshot) {
-      snapshot.docChanges.forEach((change) {
+      for (final change in snapshot.docChanges) {
         if (change.type == DocumentChangeType.added) {
           final data = change.doc.data();
           if (data != null) {
@@ -100,7 +100,7 @@ class WebRTCService {
             _peerConnection!.addCandidate(candidate);
           }
         }
-      });
+      }
     });
   }
 
@@ -154,7 +154,7 @@ class WebRTCService {
         .collection('candidates')
         .snapshots()
         .listen((snapshot) {
-      snapshot.docChanges.forEach((change) {
+      for (final change in snapshot.docChanges) {
         if (change.type == DocumentChangeType.added) {
           final data = change.doc.data();
           if (data != null) {
@@ -166,7 +166,7 @@ class WebRTCService {
             _peerConnection!.addCandidate(candidate);
           }
         }
-      });
+      }
     });
   }
 

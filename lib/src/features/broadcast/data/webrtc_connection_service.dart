@@ -169,7 +169,7 @@ class WebRTCConnectionService {
         .collection('candidates')
         .snapshots()
         .listen((snapshot) {
-      snapshot.docChanges.forEach((change) {
+      for (final change in snapshot.docChanges) {
         if (change.type == DocumentChangeType.added) {
           final data = change.doc.data();
           if (data != null && _peerConnection != null) {
@@ -181,7 +181,7 @@ class WebRTCConnectionService {
             _peerConnection!.addIceCandidate(candidate);
           }
         }
-      });
+      }
     });
   }
 
