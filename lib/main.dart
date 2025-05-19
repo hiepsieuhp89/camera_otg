@@ -3,11 +3,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 import 'src/app.dart';
+import 'src/firebase_options.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
   await dotenv.load();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  
   Logger.root.level = Level.ALL;
   Logger.root.onRecord.listen((record) {
     debugPrint(
@@ -31,6 +39,6 @@ void main() async {
   };
 
   runApp(const ProviderScope(
-    child: KyoryoApp(),
+    child: LavieApp(),
   ));
 }

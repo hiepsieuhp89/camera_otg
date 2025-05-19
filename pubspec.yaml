@@ -1,5 +1,5 @@
-name: kyoryo
-description: "A new Flutter project."
+name: lavie
+description: "A camera OTG app with screen sharing capabilities."
 
 publish_to: "none"
 
@@ -31,7 +31,6 @@ dependencies:
   riverpod_annotation: ^2.3.4
   shared_preferences: ^2.2.2
   audioplayers: ^6.0.0
-  auth0_flutter: ^1.7.2
   auto_route: ^9.2.2
   logging: ^1.2.0
   dio: ^5.7.0
@@ -41,6 +40,15 @@ dependencies:
   scrollable_positioned_list: ^0.3.8
   flutter_typeahead: ^5.1.0
   flutter_painter_v2: ^2.0.1
+  # Firebase dependencies
+  firebase_core: ^2.27.1
+  firebase_auth: ^4.17.9
+  cloud_firestore: ^4.15.9
+  firebase_storage: ^11.6.10
+  # WebRTC for screen sharing
+  flutter_webrtc: ^0.9.47
+  # Vibration for remote control
+  vibration: ^1.8.4
 
 dev_dependencies:
   flutter_test:
@@ -77,4 +85,4 @@ flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
   remove_alpha_ios: true
-  image_path: "assets/images/tsunagu.png"
+  image_path: "assets/images/lavie_logo.png"
