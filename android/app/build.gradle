@@ -1,3 +1,9 @@
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+    id 'dev.flutter.flutter-gradle-plugin'
+}
+
 def localProperties = new Properties()
 def localPropertiesFile = rootProject.file('local.properties')
 if (localPropertiesFile.exists()) {
@@ -25,12 +31,6 @@ def keystoreProperties = new Properties()
 def keystorePropertiesFile = rootProject.file('key.properties')
 if (keystorePropertiesFile.exists()) {
     keystorePropertiesFile.withInputStream { keystoreProperties.load(it) }
-}
-
-plugins {
-    id 'com.android.application'
-    id 'kotlin-android'
-    id 'dev.flutter.flutter-gradle-plugin'
 }
 
 android {
@@ -67,7 +67,7 @@ android {
 
             keyAlias keyAliasVal ? keyAliasVal : keystoreProperties["keyAlias"]
             keyPassword keyPasswordVal ? keyPasswordVal : keystoreProperties["keyPassword"]
-            storeFile file("../key.jks") ? file("../key.jks") : file(keystoreProperties["storeFile"])
+            storeFile file("../key.jks")
             storePassword storePasswordVal ? storePasswordVal : keystoreProperties["storePassword"]
         }
     }
@@ -82,6 +82,10 @@ android {
             signingConfig signingConfigs.release
         }
     }
+}
+
+flutter {
+    source = "../.."
 }
 
 dependencies {
