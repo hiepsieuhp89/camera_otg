@@ -64,7 +64,7 @@ class AppTheme {
         secondary: secondaryColor,
         error: errorColor,
         onSurface: Colors.white,
-        background: darkBackgroundColor,
+        surfaceContainerHighest: darkBackgroundColor,
         surface: const Color(0xFF1E1E1E),
       ),
       appBarTheme: const AppBarTheme(

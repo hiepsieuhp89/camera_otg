@@ -1,24 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lavie/src/routes/app_router.dart';
 import 'package:lavie/src/theme/app_theme.dart';
-import 'package:auto_route/auto_route.dart';
+import 'package:lavie/src/features/auth/presentation/splash_screen.dart';
 
 class LavieApp extends ConsumerWidget {
   const LavieApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final appRouter = AppRouter();
-    
-    return MaterialApp.router(
+    return MaterialApp(
       title: 'Lavie',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
-      routerDelegate: appRouter.delegate(),
-      routeInformationParser: appRouter.defaultRouteParser(),
+      home: Navigator(onGenerateRoute: (settings) {
+        return MaterialPageRoute(
+          builder: (context) => const SplashScreen(),
+        );
+      }),
     );
   }
 }
