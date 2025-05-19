@@ -3,9 +3,10 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:lavie/src/core/utils/vibration_handler.dart';
 import 'package:lavie/src/features/auth/data/auth_service.dart';
-import 'package:lavie/src/features/broadcast/presentation/webrtc_service.dart';
+import 'package:lavie/src/features/broadcast/data/camera_controller_service.dart';
+import 'package:lavie/src/features/broadcast/data/webrtc_connection_service.dart';
 import 'package:lavie/src/routes/app_router.dart';
 import 'package:lavie/src/theme/app_theme.dart';
 
@@ -18,130 +19,118 @@ class BroadcastScreen extends ConsumerStatefulWidget {
 }
 
 class _BroadcastScreenState extends ConsumerState<BroadcastScreen> with WidgetsBindingObserver {
-  CameraController? _cameraController;
-  List<CameraDescription>? _cameras;
-  bool _isCameraInitialized = false;
-  bool _isRearCameraSelected = true;
   bool _isStreaming = false;
   RTCVideoRenderer? _localRenderer;
-  WebRTCService? _webRTCService;
   String? _connectionStatus;
-  bool _isCameraPermissionGranted = false;
+  WebRTCConnectionService? _webRTCService;
+  VibrationHandler? _vibrationHandler;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _initializeWebRTC();
-    _initializeCamera();
+    _initializeServices();
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _disposeCamera();
-    _disposeWebRTC();
+    _disposeServices();
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.inactive) {
-      _disposeCamera();
-      _disposeWebRTC();
+      _disposeServices();
     } else if (state == AppLifecycleState.resumed) {
-      _initializeCamera();
-      _initializeWebRTC();
+      _initializeServices();
     }
   }
 
-  Future<void> _initializeWebRTC() async {
+  Future<void> _initializeServices() async {
+    // Initialize WebRTC renderer
     _localRenderer = RTCVideoRenderer();
     await _localRenderer!.initialize();
     
     final currentUser = ref.read(currentUserProvider);
     if (currentUser != null) {
-      _webRTCService = WebRTCService(
+      // Initialize WebRTC service
+      final params = WebRTCConnectionParams(
         userId: currentUser.id,
         pairedUserId: currentUser.pairedDeviceId,
         isBroadcaster: true,
       );
-
+      
+      _webRTCService = ref.read(webRTCConnectionServiceProvider(params));
       _webRTCService!.onConnectionStateChange = (state) {
         setState(() {
-          _connectionStatus = state;
+          _connectionStatus = state.toString().split('.').last;
         });
       };
-
+      
+      // Initialize vibration handler
+      _vibrationHandler = ref.read(vibrationHandlerProvider(currentUser.id));
+      _vibrationHandler!.startListening();
+      
       setState(() {});
     }
   }
 
-  void _disposeWebRTC() {
-    _webRTCService?.dispose();
+  void _disposeServices() {
     _localRenderer?.dispose();
     _localRenderer = null;
     _webRTCService = null;
+    _vibrationHandler?.dispose();
+    _vibrationHandler = null;
   }
 
-  Future<void> _initializeCamera() async {
-    try {
-      _cameras = await availableCameras();
-      if (_cameras != null && _cameras!.isNotEmpty) {
-        final camera = _isRearCameraSelected
-            ? _cameras!.firstWhere(
-                (camera) => camera.lensDirection == CameraLensDirection.back,
-                orElse: () => _cameras!.first)
-            : _cameras!.firstWhere(
-                (camera) => camera.lensDirection == CameraLensDirection.front,
-                orElse: () => _cameras!.first);
 
-        _cameraController = CameraController(
-          camera,
-          ResolutionPreset.high,
-          enableAudio: true,
-        );
-
-        await _cameraController!.initialize();
-        
-        setState(() {
-          _isCameraInitialized = true;
-          _isCameraPermissionGranted = true;
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _isCameraPermissionGranted = false;
-      });
-      print('Error initializing camera: $e');
-    }
-  }
-
-  void _disposeCamera() {
-    if (_cameraController != null) {
-      _cameraController!.dispose();
-      _cameraController = null;
-    }
-    _isCameraInitialized = false;
-  }
 
   void _toggleCameraDirection() {
-    if (_cameras == null || _cameras!.length < 2) return;
-    
-    _disposeCamera();
-    setState(() {
-      _isRearCameraSelected = !_isRearCameraSelected;
-    });
-    _initializeCamera();
+    final cameraService = ref.read(cameraControllerServiceProvider);
+    cameraService.toggleCamera();
+    setState(() {});
   }
 
   Future<void> _toggleStreaming() async {
     if (_webRTCService == null || _localRenderer == null) return;
     
+    final cameraService = ref.read(cameraControllerServiceProvider);
+    if (!cameraService.isInitialized) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Camera not initialized')),
+      );
+      return;
+    }
+    
     if (!_isStreaming) {
       // Start streaming
       try {
-        await _webRTCService!.startBroadcast(_localRenderer!);
+        // Get camera stream
+        final cameraController = cameraService.controller;
+        if (cameraController == null) throw Exception('Camera controller is null');
+        
+        // Create a local stream for WebRTC
+        final localStream = await navigator.mediaDevices.getUserMedia({
+          'audio': true,
+          'video': {
+            'mandatory': {
+              'minWidth': '640',
+              'minHeight': '480',
+              'minFrameRate': '30',
+            },
+            'facingMode': cameraService.isRearCameraSelected ? 'environment' : 'user',
+            'optional': [],
+          }
+        });
+        
+        // Assign the stream to the local renderer
+        _localRenderer!.srcObject = localStream;
+        
+        // Start broadcasting
+        await _webRTCService!.startBroadcast(localStream);
+        
         setState(() {
           _isStreaming = true;
         });
@@ -154,6 +143,15 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> with WidgetsB
       // Stop streaming
       try {
         await _webRTCService!.stopBroadcast();
+        
+        // Stop the local renderer
+        if (_localRenderer?.srcObject != null) {
+          _localRenderer!.srcObject!.getTracks().forEach((track) {
+            track.stop();
+          });
+          _localRenderer!.srcObject = null;
+        }
+        
         setState(() {
           _isStreaming = false;
         });
@@ -179,6 +177,8 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> with WidgetsB
   Widget build(BuildContext context) {
     final currentUser = ref.watch(currentUserProvider);
     final isPaired = currentUser?.pairedDeviceId != null;
+    final cameraService = ref.watch(cameraControllerServiceProvider);
+    final cameraController = cameraService.controller;
     
     return Scaffold(
       appBar: AppBar(
@@ -237,62 +237,63 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> with WidgetsB
               child: Container(
                 width: double.infinity,
                 color: Colors.black,
-                child: _isCameraPermissionGranted
-                    ? _isCameraInitialized
-                        ? Stack(
-                            children: [
-                              // Camera preview
-                              Center(
-                                child: AspectRatio(
-                                  aspectRatio: _cameraController!.value.aspectRatio,
-                                  child: CameraPreview(_cameraController!),
+                child: ref.watch(cameraInitializationProvider).when(
+                  data: (initialized) {
+                    if (initialized && cameraController != null) {
+                      return Stack(
+                        children: [
+                          // Camera preview
+                          Center(
+                            child: AspectRatio(
+                              aspectRatio: cameraController.value.aspectRatio,
+                              child: CameraPreview(cameraController),
+                            ),
+                          ),
+                          
+                          // Camera controls overlay
+                          Positioned(
+                            bottom: 16,
+                            left: 0,
+                            right: 0,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                // Flip camera button
+                                FloatingActionButton(
+                                  heroTag: 'flipCamera',
+                                  mini: true,
+                                  onPressed: _toggleCameraDirection,
+                                  backgroundColor: Colors.white.withOpacity(0.7),
+                                  child: const Icon(
+                                    Icons.flip_camera_ios,
+                                    color: Colors.black,
+                                  ),
                                 ),
-                              ),
-                              
-                              // Camera controls overlay
-                              Positioned(
-                                bottom: 16,
-                                left: 0,
-                                right: 0,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    // Flip camera button
-                                    FloatingActionButton(
-                                      heroTag: 'flipCamera',
-                                      mini: true,
-                                      onPressed: _toggleCameraDirection,
-                                      backgroundColor: Colors.white.withOpacity(0.7),
-                                      child: const Icon(
-                                        Icons.flip_camera_ios,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                    
-                                    // Stream button
-                                    FloatingActionButton.large(
-                                      heroTag: 'stream',
-                                      onPressed: isPaired ? _toggleStreaming : null,
-                                      backgroundColor: _isStreaming
-                                          ? Colors.red
-                                          : isPaired
-                                              ? AppTheme.primaryColor
-                                              : Colors.grey,
-                                      child: Icon(
-                                        _isStreaming ? Icons.stop : Icons.play_arrow,
-                                        size: 32,
-                                      ),
-                                    ),
-                                    
-                                    // Placeholder for symmetry
-                                    const SizedBox(width: 40, height: 40),
-                                  ],
+                                
+                                // Stream button
+                                FloatingActionButton.large(
+                                  heroTag: 'stream',
+                                  onPressed: isPaired ? _toggleStreaming : null,
+                                  backgroundColor: _isStreaming
+                                      ? Colors.red
+                                      : isPaired
+                                          ? AppTheme.primaryColor
+                                          : Colors.grey,
+                                  child: Icon(
+                                    _isStreaming ? Icons.stop : Icons.play_arrow,
+                                    size: 32,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          )
-                        : const Center(child: CircularProgressIndicator())
-                    : Center(
+                                
+                                // Placeholder for symmetry
+                                const SizedBox(width: 40, height: 40),
+                              ],
+                            ),
+                          ),
+                        ],
+                      );
+                    } else {
+                      return Center(
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -303,7 +304,7 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> with WidgetsB
                             ),
                             const SizedBox(height: 16),
                             const Text(
-                              'Camera permission denied',
+                              'Camera initialization failed',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 18,
@@ -311,12 +312,42 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> with WidgetsB
                             ),
                             const SizedBox(height: 24),
                             ElevatedButton(
-                              onPressed: _initializeCamera,
-                              child: const Text('Request Permission'),
+                              onPressed: () => ref.refresh(cameraInitializationProvider),
+                              child: const Text('Retry'),
                             ),
                           ],
                         ),
-                      ),
+                      );
+                    }
+                  },
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (error, stack) => Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.error_outline,
+                          size: 64,
+                          color: Colors.red,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Error: ${error.toString()}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 24),
+                        ElevatedButton(
+                          onPressed: () => ref.refresh(cameraInitializationProvider),
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
             

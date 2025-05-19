@@ -47,10 +47,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         if (currentUser != null) {
           if (ref.read(authServiceProvider).isAdmin(currentUser)) {
             context.router.replace(const AdminDashboardRoute());
-          } else if (ref.read(authServiceProvider).isBroadcaster(currentUser)) {
-            context.router.replace(const BroadcastRoute());
-          } else if (ref.read(authServiceProvider).isViewer(currentUser)) {
-            context.router.replace(const ViewerRoute());
+          } else {
+            // For non-admin users, check if they are already paired
+            if (currentUser.pairedDeviceId != null) {
+              // If already paired, go directly to the appropriate screen
+              if (ref.read(authServiceProvider).isBroadcaster(currentUser)) {
+                context.router.replace(const BroadcastRoute());
+              } else if (ref.read(authServiceProvider).isViewer(currentUser)) {
+                context.router.replace(const ViewerRoute());
+              }
+            } else {
+              // If not paired, go to the pairing screen
+              context.router.replace(const DevicePairingRoute());
+            }
           }
         }
       }

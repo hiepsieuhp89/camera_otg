@@ -63,6 +63,7 @@ class AppTheme {
         primary: primaryColor,
         secondary: secondaryColor,
         error: errorColor,
+        onSurface: Colors.white,
         background: darkBackgroundColor,
         surface: const Color(0xFF1E1E1E),
       ),
