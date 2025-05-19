@@ -1,5 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- This is a generic filter that will match any USB device -->
-    <usb-device class="255" />
+    <!-- USB Video Class (UVC) -->
+    <usb-device class="14" /> <!-- Video class code (0x0E = 14) -->
+    
+    <!-- USB Cameras frequently have interface class 14 (Video) -->
+    <usb-device class="14" subclass="1" /> <!-- Video control interface -->
+    <usb-device class="14" subclass="2" /> <!-- Video streaming interface -->
+    
+    <!-- Generic filter that matches any USB device (as a fallback) -->
+    <usb-device class="239" /> <!-- Vendor specific class (0xEF = 239) -->
+    <usb-device class="255" /> <!-- Vendor specific class (0xFF = 255) -->
+    
+    <!-- Common UVC camera vendors -->
+    <usb-device vendor-id="1133"/> <!-- Logitech -->
+    <usb-device vendor-id="1452"/> <!-- Apple -->
+    <usb-device vendor-id="2760"/> <!-- Z-Star Microelectronics -->
+    <usb-device vendor-id="1054"/> <!-- Creative -->
+    <usb-device vendor-id="1118"/> <!-- Microsoft -->
+    <usb-device vendor-id="1112"/> <!-- KYE/Genius -->
+    <usb-device vendor-id="6257"/> <!-- Aveo -->
+    <usb-device vendor-id="1137"/> <!-- Philips -->
+    <usb-device vendor-id="3034"/> <!-- Realtek -->
+    <usb-device vendor-id="3141"/> <!-- Microdia/Sonix -->
+    <usb-device vendor-id="1614"/> <!-- Suyin -->
+    <usb-device vendor-id="5075"/> <!-- IMC Networks/Azurewave -->
+    <usb-device vendor-id="22918"/> <!-- Acer/AzureWave -->
+    <usb-device vendor-id="5769"/> <!-- Razer -->
+    <usb-device vendor-id="2830"/> <!-- GN Netcom -->
+    <usb-device vendor-id="10291"/> <!-- MACROSILICON -->
 </resources> 

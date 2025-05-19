@@ -16,12 +16,37 @@ class DevicePairingService {
       final List<dynamic> devices = await platform.invokeMethod('getUsbDevices');
       debugPrint('Found ${devices.length} USB devices:');
       for (var device in devices) {
-        debugPrint('Device: ${device['name']} (VID: ${device['vid']}, PID: ${device['pid']})');
+        debugPrint('Device: ${device['name']} (VID: ${device['vid']}, PID: ${device['pid']}, Source: ${device['source']})');
       }
       return devices.cast<Map<String, dynamic>>();
     } catch (e) {
       debugPrint('Error getting USB devices: $e');
+      // Try requesting permission if the error might be permission-related
+      if (e is PlatformException) {
+        await _requestUsbPermission();
+        // Try again after requesting permission
+        try {
+          final List<dynamic> devices = await platform.invokeMethod('getUsbDevices');
+          debugPrint('After permission request, found ${devices.length} USB devices');
+          return devices.cast<Map<String, dynamic>>();
+        } catch (retryError) {
+          debugPrint('Still failed after permission request: $retryError');
+        }
+      }
       throw Exception('Failed to get connected devices: $e');
+    }
+  }
+  
+  /// Request USB permission for connected devices
+  Future<bool> _requestUsbPermission() async {
+    try {
+      debugPrint('Requesting USB permission...');
+      final bool result = await platform.invokeMethod('requestUsbPermission');
+      debugPrint('USB permission request result: $result');
+      return result;
+    } catch (e) {
+      debugPrint('Error requesting USB permission: $e');
+      return false;
     }
   }
 
@@ -35,7 +60,18 @@ class DevicePairingService {
       return isConnected;
     } catch (e) {
       debugPrint('Error checking device connection: $e');
-      throw Exception('Failed to check device connection: $e');
+      // If there was an error getting devices, try requesting permission and check again
+      await _requestUsbPermission();
+      // Try one more time
+      try {
+        final devices = await getConnectedDevices();
+        final isConnected = devices.isNotEmpty;
+        debugPrint('After permission request - Device connected: $isConnected');
+        return isConnected;
+      } catch (retryError) {
+        debugPrint('Still failed after permission request: $retryError');
+        throw Exception('Failed to check device connection: $e');
+      }
     }
   }
   
@@ -111,11 +147,22 @@ class DevicePairingService {
   Future<List<Map<String, dynamic>>> findAvailableUsers(UserRole targetRole) async {
     try {
       debugPrint('Finding available users with role: ${targetRole.toString().split('.').last}');
+      
       // First check if any USB devices are connected
       final isDeviceConnected = await this.isDeviceConnected();
       if (!isDeviceConnected) {
-        debugPrint('No USB devices connected');
-        throw Exception('No USB devices connected. Please connect your camera via OTG.');
+        // Before giving up, explicitly request permission which might trigger camera detection
+        await _requestUsbPermission();
+        
+        // Check once more after permission request
+        final deviceList = await getConnectedDevices();
+        if (deviceList.isEmpty) {
+          debugPrint('No USB devices connected after permission request');
+          throw Exception(
+            'Không tìm thấy thiết bị USB nào. '
+            'Vui lòng kiểm tra kết nối camera hoặc thiết bị OTG của bạn và thử lại.'
+          );
+        }
       }
 
       debugPrint('Querying Firestore for available users...');

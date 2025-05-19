@@ -22,7 +22,13 @@ class MainActivity: FlutterActivity() {
         override fun onReceive(context: Context, intent: Intent) {
             if (ACTION_USB_PERMISSION == intent.action) {
                 synchronized(this) {
-                    val device: UsbDevice? = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE)
+                    val device: UsbDevice? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        intent.getParcelableExtra(UsbManager.EXTRA_DEVICE, UsbDevice::class.java)
+                    } else {
+                        @Suppress("DEPRECATION")
+                        intent.getParcelableExtra(UsbManager.EXTRA_DEVICE)
+                    }
+                    
                     if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
                         device?.apply {
                             Log.d("USB", "Permission granted for device: $deviceName")
@@ -39,36 +45,78 @@ class MainActivity: FlutterActivity() {
         super.configureFlutterEngine(flutterEngine)
         
         usbManager = getSystemService(Context.USB_SERVICE) as UsbManager
+        
+        // Create an explicit intent for the broadcast receiver
+        val intent = Intent(ACTION_USB_PERMISSION)
+        intent.setPackage(packageName)
+        
         permissionIntent = PendingIntent.getBroadcast(
             this,
             0,
-            Intent(ACTION_USB_PERMISSION),
+            intent,
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+                PendingIntent.FLAG_IMMUTABLE
             } else {
-                PendingIntent.FLAG_UPDATE_CURRENT
+                0
             }
         )
         
         val filter = IntentFilter(ACTION_USB_PERMISSION)
-        registerReceiver(usbReceiver, filter)
+        
+        // Register the receiver with the correct flags
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(usbReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(usbReceiver, filter)
+        }
 
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
                 "getUsbDevices" -> {
                     try {
+                        // Use native USB manager API
                         val deviceList = usbManager.deviceList
                         val devices = deviceList.values.map { device ->
                             mapOf(
                                 "name" to (device.deviceName ?: "Unknown Device"),
                                 "vid" to device.vendorId,
-                                "pid" to device.productId
+                                "pid" to device.productId,
+                                "source" to "native"
                             )
                         }
+                        
+                        Log.d("USB", "Found ${devices.size} USB devices")
+                        for (device in devices) {
+                            Log.d("USB", "USB device: ${device["name"]}, VID: ${device["vid"]}, PID: ${device["pid"]}")
+                        }
+                        
                         result.success(devices)
                     } catch (e: Exception) {
                         Log.e("USB", "Error getting USB devices", e)
-                        result.error("USB_ERROR", "Failed to get USB devices", e.message)
+                        result.error("USB_ERROR", "Failed to get USB devices: ${e.message}", e.message)
+                    }
+                }
+                "requestUsbPermission" -> {
+                    try {
+                        // Request permission for all devices
+                        val deviceList = usbManager.deviceList
+                        if (deviceList.isEmpty()) {
+                            result.error("NO_DEVICE", "No USB devices found", null)
+                            return@setMethodCallHandler
+                        }
+                        
+                        for (device in deviceList.values) {
+                            if (!usbManager.hasPermission(device)) {
+                                usbManager.requestPermission(device, permissionIntent)
+                                Log.d("USB", "Requesting permission for: ${device.deviceName}")
+                            } else {
+                                Log.d("USB", "Already has permission for: ${device.deviceName}")
+                            }
+                        }
+                        result.success(true)
+                    } catch (e: Exception) {
+                        Log.e("USB", "Error requesting permission", e)
+                        result.error("PERMISSION_ERROR", "Failed to request USB permission", e.message)
                     }
                 }
                 else -> {
@@ -83,7 +131,7 @@ class MainActivity: FlutterActivity() {
         try {
             unregisterReceiver(usbReceiver)
         } catch (e: Exception) {
-            Log.e("USB", "Error unregistering receiver", e)
+            Log.e("USB", "Error on destroy", e)
         }
     }
 } 

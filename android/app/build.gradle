@@ -80,7 +80,17 @@ android {
 
         release {
             signingConfig signingConfigs.release
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+    }
+    
+    packagingOptions {
+        pickFirst 'lib/*/libUVCCamera.so'
+        pickFirst 'lib/*/libjpeg-turbo1500.so'
+        pickFirst 'lib/*/libuvc.so'
+        pickFirst 'lib/*/libusb100.so'
     }
 }
 
