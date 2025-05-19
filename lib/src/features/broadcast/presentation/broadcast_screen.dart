@@ -131,13 +131,17 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> with WidgetsB
         // Start broadcasting
         await _webRTCService!.startBroadcast(localStream);
         
-        setState(() {
-          _isStreaming = true;
-        });
+        if (mounted) {
+          setState(() {
+            _isStreaming = true;
+          });
+        }
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to start streaming: $e')),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to start streaming: $e')),
+          );
+        }
       }
     } else {
       // Stop streaming
@@ -152,13 +156,17 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> with WidgetsB
           _localRenderer!.srcObject = null;
         }
         
-        setState(() {
-          _isStreaming = false;
-        });
+        if (mounted) {
+          setState(() {
+            _isStreaming = false;
+          });
+        }
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to stop streaming: $e')),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to stop streaming: $e')),
+          );
+        }
       }
     }
   }

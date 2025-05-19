@@ -10,6 +10,9 @@ part 'app_router.gr.dart';
 
 @AutoRouterConfig()
 class AppRouter extends RootStackRouter {
+  AppRouter() : super();
+  
+  @override
   List<AutoRoute> get routes => [
         AutoRoute(page: SplashRoute.page, initial: true),
         AutoRoute(page: LoginRoute.page),

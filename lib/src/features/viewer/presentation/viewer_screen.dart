@@ -98,13 +98,17 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     
     try {
       await _webRTCService!.startViewing();
-      setState(() {
-        _isConnected = true;
-      });
+      if (mounted) {
+        setState(() {
+          _isConnected = true;
+        });
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to connect: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to connect: $e')),
+        );
+      }
     }
   }
 
@@ -113,13 +117,17 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     
     try {
       await _webRTCService!.stopViewing();
-      setState(() {
-        _isConnected = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isConnected = false;
+        });
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to disconnect: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to disconnect: $e')),
+        );
+      }
     }
   }
 
@@ -140,9 +148,11 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         Vibration.vibrate(pattern: [0, 300, 100, 300]);
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to send vibration: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to send vibration: $e')),
+        );
+      }
     }
   }
 

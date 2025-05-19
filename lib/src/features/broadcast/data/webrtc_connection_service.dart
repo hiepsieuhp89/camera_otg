@@ -1,5 +1,7 @@
 import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
@@ -230,7 +232,8 @@ class WebRTCConnectionService {
           await doc.reference.delete();
         }
       } catch (e) {
-        print('Error cleaning up WebRTC data: $e');
+        // Log error but continue
+        debugPrint('Error cleaning up WebRTC data: $e');
       }
     }
   }
