@@ -1,0 +1,25 @@
+[versions]
+# Android SDK Versions
+compileSdk = "34"
+minSdk = "21"
+targetSdk = "34"
+
+# Dependencies versions
+kotlin = "1.9.0"
+androidGradlePlugin = "8.1.0"
+agp = "8.1.0"
+androidx-core = "1.12.0"
+androidx-appcompat = "1.6.1"
+androidx-annotation = "1.7.0"
+androidx-multidex = "2.0.1"
+
+[libraries]
+androidx-core = { group = "androidx.core", name = "core-ktx", version.ref = "androidx-core" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidx-appcompat" }
+androidx-annotation = { group = "androidx.annotation", name = "annotation", version.ref = "androidx-annotation" }
+androidx-multidex = { group = "androidx.multidex", name = "multidex", version.ref = "androidx-multidex" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" } 

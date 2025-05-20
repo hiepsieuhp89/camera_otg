@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- UVC Camera with vendor ID and product ID -->
+    <!-- This filter will match any device with USB Video Class (UVC) -->
+    <usb-device class="14" />
+    
+    <!-- If you want to filter for specific UVC cameras, you can add them here with vendor-id and product-id -->
+    <!-- Example: <usb-device vendor-id="1234" product-id="5678" /> -->
+</resources> 
