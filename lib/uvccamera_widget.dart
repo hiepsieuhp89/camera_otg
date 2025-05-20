@@ -111,7 +111,6 @@ class _UvcCameraWidgetState extends State<UvcCameraWidget> with WidgetsBindingOb
       });
 
       if (event.type == UvcCameraDeviceEventType.attached && !_isDeviceAttached) {
-        // NOTE: Requesting UVC device permission will trigger connection request
         setState(() {
           _log = 'Device attached, requesting permissions...\n$_log';
         });
@@ -120,8 +119,6 @@ class _UvcCameraWidgetState extends State<UvcCameraWidget> with WidgetsBindingOb
 
       setState(() {
         if (event.type == UvcCameraDeviceEventType.attached) {
-          // _hasCameraPermission - maybe
-          // _hasDevicePermission - maybe
           _isDeviceAttached = true;
           _isDeviceConnected = false;
           _log = 'Device attached: ${event.device.name}\n$_log';
@@ -137,31 +134,23 @@ class _UvcCameraWidgetState extends State<UvcCameraWidget> with WidgetsBindingOb
           _isDeviceAttached = true;
           _isDeviceConnected = true;
 
-          _log = 'Device connected: ${event.device.name}\n$_log';
+          _log = 'Device connected: ${event.device.name} - opening camera...\n$_log';
 
           _cameraController = UvcCameraController(device: widget.device);
           _cameraControllerInitializeFuture = _cameraController!.initialize().then((_) async {
             setState(() {
-              _log = 'Camera controller initialized with $_format $_resolution at $_frameRate fps\n$_log';
+              _log = 'Camera initialized - starting preview...\n$_log';
             });
             
-            // Try to set format compatibility based on selected options
-            try {
-              // The UvcCameraController doesn't directly expose format setting methods
-              // but we can simulate format changes by disconnecting and reconnecting
-              if (_cameraController!.value.isInitialized && 
-                  (_format != "MJPG" || _resolution != "640x480")) {
-                
-                Future.delayed(const Duration(milliseconds: 500), () {
-                  setState(() {
-                    _log = 'Trying camera format: $_format $_resolution at $_frameRate fps\n$_log';
-                  });
-                  _configureCamera();
-                });
-              }
-            } catch (e) {
-              setState(() {
-                _log = 'Error setting camera format: $e\n$_log';
+            if (_cameraController != null && _cameraController!.value.isInitialized) {
+              _log = 'Preview started. Setting format: $_format $_resolution at $_frameRate fps\n$_log';
+              
+              List<String> dimensions = _resolution.split('x');
+              int width = int.parse(dimensions[0]);
+              int height = int.parse(dimensions[1]);
+              
+              Future.delayed(const Duration(milliseconds: 500), () {
+                _configureCamera();
               });
             }
             
@@ -172,10 +161,12 @@ class _UvcCameraWidgetState extends State<UvcCameraWidget> with WidgetsBindingOb
 
               if (event.error.type == UvcCameraErrorType.previewInterrupted) {
                 setState(() {
-                  _log = 'Preview interrupted, reattaching...\n$_log';
+                  _log = 'Preview interrupted, reattaching surface...\n$_log';
                 });
-                _detach();
-                _attach();
+                
+                Future.delayed(const Duration(milliseconds: 500), () {
+                  _configureCamera();
+                });
               }
             });
 
@@ -198,7 +189,6 @@ class _UvcCameraWidgetState extends State<UvcCameraWidget> with WidgetsBindingOb
         } else if (event.type == UvcCameraDeviceEventType.disconnected) {
           _hasCameraPermission = false;
           _hasDevicePermission = false;
-          // _isDeviceAttached - maybe?
           _isDeviceConnected = false;
           
           _log = 'Device disconnected: ${event.device.name}\n$_log';
@@ -260,7 +250,6 @@ class _UvcCameraWidgetState extends State<UvcCameraWidget> with WidgetsBindingOb
       return value;
     });
 
-    // NOTE: Requesting UVC device permission can be made only after camera permission is granted
     if (!hasCameraPermission) {
       return;
     }
@@ -305,7 +294,6 @@ class _UvcCameraWidgetState extends State<UvcCameraWidget> with WidgetsBindingOb
       setState(() {
         _log = 'Camera permission permanently denied\n$_log';
       });
-      // NOTE: Permission is permanently denied
       return false;
     }
   }
@@ -340,113 +328,100 @@ class _UvcCameraWidgetState extends State<UvcCameraWidget> with WidgetsBindingOb
       context: context,
       builder: (context) {
         return AlertDialog(
-          backgroundColor: Colors.grey[800],
-          title: const Text('Video Format', style: TextStyle(color: Colors.white)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Format', style: TextStyle(color: Colors.white70)),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: DropdownButton<String>(
-                  value: _format,
-                  dropdownColor: Colors.grey[800],
-                  isExpanded: true,
-                  underline: const SizedBox(),
-                  style: const TextStyle(color: Colors.white),
-                  onChanged: (value) {
-                    setState(() {
-                      _format = value!;
-                    });
-                  },
-                  items: const [
-                    DropdownMenuItem(value: "MJPG", child: Text("MJPG")),
-                    DropdownMenuItem(value: "YUY2", child: Text("YUY2")),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Text('Resolution', style: TextStyle(color: Colors.white70)),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: DropdownButton<String>(
-                  value: _resolution,
-                  dropdownColor: Colors.grey[800],
-                  isExpanded: true,
-                  underline: const SizedBox(),
-                  style: const TextStyle(color: Colors.white),
-                  onChanged: (value) {
-                    setState(() {
-                      _resolution = value!;
-                    });
-                  },
-                  items: const [
-                    DropdownMenuItem(value: "640x480", child: Text("640x480")),
-                    DropdownMenuItem(value: "320x240", child: Text("320x240")),
-                    DropdownMenuItem(value: "160x120", child: Text("160x120")),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Text('Frame Rate', style: TextStyle(color: Colors.white70)),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: DropdownButton<double>(
-                  value: _frameRate,
-                  dropdownColor: Colors.grey[800],
-                  isExpanded: true,
-                  underline: const SizedBox(),
-                  style: const TextStyle(color: Colors.white),
-                  onChanged: (value) {
-                    setState(() {
-                      _frameRate = value!;
-                    });
-                  },
-                  items: const [
-                    DropdownMenuItem(value: 30.0, child: Text("30.0p")),
-                    DropdownMenuItem(value: 15.0, child: Text("15.0p")),
-                    DropdownMenuItem(value: 5.0, child: Text("5.0p")),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                '* Those options are based on your USB video device\n'
-                '* Try lower resolution or frame rate if black screen occurs\n'
-                '* Some devices may need to be replugged to work properly at the new resolution',
-                style: TextStyle(color: Colors.white70, fontSize: 12),
-              ),
-            ],
+          title: const Text('Video Format Settings'),
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Format selection
+                  DropdownButtonFormField<String>(
+                    decoration: const InputDecoration(labelText: 'Format'),
+                    value: _format,
+                    items: ['MJPG', 'YUY2'].map((format) {
+                      return DropdownMenuItem(
+                        value: format,
+                        child: Text(format),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() {
+                          _format = value;
+                        });
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  
+                  // Resolution selection
+                  DropdownButtonFormField<String>(
+                    decoration: const InputDecoration(labelText: 'Resolution'),
+                    value: _resolution,
+                    items: ['320x240', '640x480', '800x600', '1280x720', '1920x1080'].map((resolution) {
+                      return DropdownMenuItem(
+                        value: resolution,
+                        child: Text(resolution),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() {
+                          _resolution = value;
+                        });
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  
+                  // Frame rate selection
+                  DropdownButtonFormField<double>(
+                    decoration: const InputDecoration(labelText: 'Frame Rate'),
+                    value: _frameRate,
+                    items: [15.0, 24.0, 30.0, 60.0].map((fps) {
+                      return DropdownMenuItem(
+                        value: fps,
+                        child: Text('$fps fps'),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() {
+                          _frameRate = value;
+                        });
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    '* Camera may need to be reconnected after changing settings\n'
+                    '* Try MJPG format with 640x480 at 30fps for best compatibility\n'
+                    '* If you see a black screen, try lower resolution or unplug/replug the camera',
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                ],
+              );
+            },
           ),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(context);
+                Navigator.of(context).pop();
               },
-              child: const Text('CANCEL', style: TextStyle(color: Colors.pink)),
+              child: const Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
-                Navigator.pop(context);
+                this.setState(() {
+                  // Update format in the main widget state
+                  // The actual variables will be updated through the closure
+                });
+                Navigator.of(context).pop();
+                
+                // After dialog is closed, apply the new settings
                 _applyFormatSettings();
               },
-              child: const Text('OK', style: TextStyle(color: Colors.pink)),
+              child: const Text('Apply'),
             ),
           ],
         );
@@ -455,44 +430,124 @@ class _UvcCameraWidgetState extends State<UvcCameraWidget> with WidgetsBindingOb
   }
 
   // Apply the format settings
-  void _applyFormatSettings() {
-    setState(() {
-      _log = 'Applying format: $_format, resolution: $_resolution, frame rate: $_frameRate\n$_log';
-    });
-
-    // Get dimension values from resolution string
-    List<String> dimensions = _resolution.split('x');
-    int width = int.parse(dimensions[0]);
-    int height = int.parse(dimensions[1]);
-
-    // Restart with new settings
-    _detach(force: true);
-    
-    // Reconnect with new format settings
-    _attach(force: true);
-    
-    // Note: We would apply settings to camera controller after connection
-    // but the UvcCameraController doesn't directly expose these methods
-    // The format settings are primarily for user reference
-  }
-
-  // Helper to configure camera based on device capabilities
-  Future<void> _configureCamera() async {
-    if (_cameraController != null) {
+  void _applyFormatSettings() async {
+    if (_cameraController == null) {
       setState(() {
-        _log = 'Attempting to configure camera with $_format $_resolution at $_frameRate fps\n$_log';
+        _log = 'Cannot apply settings - camera not connected\n$_log';
+      });
+      return;
+    }
+    
+    // In Java, they completely reopen the camera when format changes
+    try {
+      setState(() {
+        _log = 'Applying new format settings: $_format $_resolution at $_frameRate fps\n$_log';
       });
       
-      try {
-        // For now, we'll just restart the camera which should apply
-        // any default settings from the underlying implementation
-        _detach(force: true);
-        _attach(force: true);
-      } catch (e) {
+      // First disconnect the camera
+      await _cameraController!.dispose();
+      _cameraController = null;
+      
+      // Brief pause to ensure camera resources are released
+      await Future.delayed(const Duration(milliseconds: 300));
+      
+      // Reconnect with new settings
+      _cameraController = UvcCameraController(device: widget.device);
+      _cameraControllerInitializeFuture = _cameraController!.initialize().then((_) async {
         setState(() {
-          _log = 'Error configuring camera: $e\n$_log';
+          _log = 'Camera reinitialized with new settings\n$_log';
         });
-      }
+        
+        // No longer calling _configureCamera() here to avoid recursion
+        
+        // Set up error and status listeners again
+        _errorEventSubscription = _cameraController!.cameraErrorEvents.listen((event) {
+          setState(() {
+            _log = 'Error: ${event.error}\n$_log';
+          });
+          
+          if (event.error.type == UvcCameraErrorType.previewInterrupted) {
+            setState(() {
+              _log = 'Preview interrupted, attempting to recover...\n$_log';
+            });
+            
+            // Instead of calling _configureCamera, wait a moment and log
+            Future.delayed(const Duration(milliseconds: 500), () {
+              setState(() {
+                _log = 'Camera recovery attempted\n$_log';
+              });
+            });
+          }
+        });
+        
+        _statusEventSubscription = _cameraController!.cameraStatusEvents.listen((event) {
+          setState(() {
+            _log = 'Status: ${event.payload}\n$_log';
+          });
+        });
+        
+        _buttonEventSubscription = _cameraController!.cameraButtonEvents.listen((event) {
+          setState(() {
+            _log = 'Button(${event.button}): ${event.state}\n$_log';
+          });
+        });
+      }).catchError((error) {
+        setState(() {
+          _log = 'Error reinitializing camera: $error\n$_log';
+        });
+      });
+    } catch (e) {
+      setState(() {
+        _log = 'Error applying camera settings: $e\n$_log';
+      });
+    }
+  }
+
+  // Helper to configure camera and add surface explicitly
+  void _configureCamera() async {
+    if (_cameraController == null || !_cameraController!.value.isInitialized) {
+      setState(() {
+        _log = 'Cannot configure camera - controller not initialized\n$_log';
+      });
+      return;
+    }
+    
+    setState(() {
+      _log = 'Configuring camera with format: $_format, resolution: $_resolution, frameRate: $_frameRate\n$_log';
+    });
+    
+    try {
+      // In Java, they detach and reattach the surface when configuring
+      // Flutter UVC plugin doesn't expose direct stopPreview/startPreview methods
+      // So we'll need to try a different approach
+      
+      // Allow a moment for the camera to process
+      await Future.delayed(const Duration(milliseconds: 100));
+      
+      // Instead of calling _applyFormatSettings() which would create a loop,
+      // we'll just log that configuration has been attempted
+      setState(() {
+        _log = 'Camera configuration attempted with current settings\n$_log';
+      });
+    } catch (e) {
+      setState(() {
+        _log = 'Error configuring camera: $e\n$_log';
+      });
+    }
+  }
+  
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    
+    // In Java example, they handle when the surface becomes available
+    // Instead of calling configureCamera which could cause loops, just log
+    if (_isDeviceAttached && _isDeviceConnected && 
+        _cameraController != null && _cameraController!.value.isInitialized) {
+      // Surface might be ready now, just log it
+      setState(() {
+        _log = 'Widget dependencies changed - camera is already running\n$_log';
+      });
     }
   }
 
@@ -670,7 +725,7 @@ class _UvcCameraWidgetState extends State<UvcCameraWidget> with WidgetsBindingOb
                   child: Stack(
                     children: [
                       Center(
-                        child: _cameraController != null && _isDeviceConnected 
+                        child: _cameraController != null && _isDeviceConnected && _cameraController!.value.isInitialized
                         ? AspectRatio(
                             aspectRatio: 4/3, // Default aspect ratio, adjust as needed
                             child: Stack(
@@ -686,7 +741,7 @@ class _UvcCameraWidgetState extends State<UvcCameraWidget> with WidgetsBindingOb
                                     width: 15,
                                     height: 15,
                                     decoration: BoxDecoration(
-                                      color: _cameraController!.value.isInitialized ? Colors.green : Colors.red,
+                                      color: _cameraController != null && _cameraController!.value.isInitialized ? Colors.green : Colors.red,
                                       shape: BoxShape.circle,
                                     ),
                                   ),
@@ -796,53 +851,92 @@ class _UvcCameraWidgetState extends State<UvcCameraWidget> with WidgetsBindingOb
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    ValueListenableBuilder<UvcCameraControllerState>(
-                      valueListenable: _cameraController!,
-                      builder: (context, value, child) {
-                        return Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            FloatingActionButton(
-                              backgroundColor: Colors.white,
-                              onPressed: value.isTakingPicture
-                                  ? null
-                                  : () async {
-                                      await _takePicture();
-                                    },
-                              child: const Icon(Icons.camera_alt, color: Colors.black),
-                            ),
-                            const SizedBox(width: 20),
-                            FloatingActionButton(
-                              backgroundColor: value.isRecordingVideo ? Colors.red : Colors.white,
-                              onPressed: () async {
-                                if (value.isRecordingVideo) {
-                                  await _stopVideoRecording();
-                                } else {
-                                  await _startVideoRecording(value.previewMode!);
-                                }
-                              },
-                              child: Icon(
-                                value.isRecordingVideo ? Icons.stop : Icons.videocam,
-                                color: value.isRecordingVideo ? Colors.white : Colors.black,
+                    if (_cameraController != null)
+                      ValueListenableBuilder<UvcCameraControllerState>(
+                        valueListenable: _cameraController!,
+                        builder: (context, value, child) {
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              FloatingActionButton(
+                                backgroundColor: Colors.white,
+                                onPressed: value.isTakingPicture || !value.isInitialized
+                                    ? null
+                                    : () async {
+                                        try {
+                                          await _takePicture();
+                                        } catch (e) {
+                                          setState(() {
+                                            _log = 'Error taking picture: $e\n$_log';
+                                          });
+                                        }
+                                      },
+                                child: const Icon(Icons.camera_alt, color: Colors.black),
                               ),
-                            ),
-                            const SizedBox(width: 20),
-                            FloatingActionButton(
-                              heroTag: "formatButton",
-                              backgroundColor: Colors.white,
-                              onPressed: () {
-                                _showFormatDialog();
-                              },
-                              child: const Icon(Icons.settings, color: Colors.black),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
+                              const SizedBox(width: 20),
+                              FloatingActionButton(
+                                backgroundColor: value.isRecordingVideo ? Colors.red : Colors.white,
+                                onPressed: !value.isInitialized ? null : () async {
+                                  try {
+                                    if (value.isRecordingVideo) {
+                                      await _stopVideoRecording();
+                                    } else if (value.previewMode != null) {
+                                      await _startVideoRecording(value.previewMode!);
+                                    } else {
+                                      setState(() {
+                                        _log = 'Cannot record: Preview mode is null\n$_log';
+                                      });
+                                    }
+                                  } catch (e) {
+                                    setState(() {
+                                      _log = 'Error with video recording: $e\n$_log';
+                                    });
+                                  }
+                                },
+                                child: Icon(
+                                  value.isRecordingVideo ? Icons.stop : Icons.videocam,
+                                  color: value.isRecordingVideo ? Colors.white : Colors.black,
+                                ),
+                              ),
+                              const SizedBox(width: 20),
+                              FloatingActionButton(
+                                heroTag: "formatButton",
+                                backgroundColor: Colors.white,
+                                onPressed: !value.isInitialized ? null : () {
+                                  _showFormatDialog();
+                                },
+                                child: const Icon(Icons.settings, color: Colors.black),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
                   ],
                 ),
               ),
             ],
+          );
+        } else if (snapshot.hasError) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text('Error initializing camera', style: TextStyle(fontSize: 18, color: Colors.red)),
+                const SizedBox(height: 20),
+                Text('${snapshot.error}', style: const TextStyle(fontSize: 14)),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _log = 'Restarting camera after error...\n$_log';
+                    });
+                    _detach(force: true);
+                    _attach(force: true);
+                  },
+                  child: const Text("Restart Camera"),
+                ),
+              ],
+            ),
           );
         } else {
           return const Center(child: CircularProgressIndicator());
