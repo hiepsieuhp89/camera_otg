@@ -2,7 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lavie/src/features/auth/data/auth_service.dart';
-import 'package:lavie/src/routes/app_router.dart';
+import 'package:lavie/src/routes/routes.dart';
 import 'package:lavie/src/theme/app_theme.dart';
 
 @RoutePage()
@@ -29,17 +29,17 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         final authService = ref.read(authServiceProvider);
         print('DEBUG: user roles: admin=${authService.isAdmin(currentUser)}, broadcaster=${authService.isBroadcaster(currentUser)}, viewer=${authService.isViewer(currentUser)}');
         if (authService.isAdmin(currentUser)) {
-          context.router.replace(const AdminDashboardRoute());
+          context.router.replaceNamed(Routes.adminDashboardRoute);
         } else if (authService.isBroadcaster(currentUser)) {
-          context.router.replace(const BroadcastRoute());
+          context.router.replaceNamed(Routes.broadcastRoute);
         } else if (authService.isViewer(currentUser)) {
-          context.router.replace(const ViewerRoute());
+          context.router.replaceNamed(Routes.viewerRoute);
         } else {
-          context.router.replace(const LoginRoute());
+          context.router.replaceNamed(Routes.loginRoute);
         }
       } else {
         print('DEBUG: No user, go to login');
-        context.router.replace(const LoginRoute());
+        context.router.replaceNamed(Routes.loginRoute);
       }
     }
   }

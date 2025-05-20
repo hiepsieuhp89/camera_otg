@@ -13,8 +13,6 @@ class DefaultFirebaseOptions {
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         return android;
-      case TargetPlatform.iOS:
-        return ios;
       case TargetPlatform.macOS:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for macos - '
@@ -53,15 +51,5 @@ class DefaultFirebaseOptions {
     messagingSenderId: '631172388937',
     projectId: 'lavie-196cd',
     storageBucket: 'lavie-196cd.firebasestorage.app',
-  );
-
-  static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyDLavie123456789iOSApiKey',
-    appId: '1:123456789012:ios:abc123def456ghi789',
-    messagingSenderId: '123456789012',
-    projectId: 'lavie-app',
-    storageBucket: 'lavie-app.appspot.com',
-    iosClientId: '123456789012-abcdefghijklmnopqrstuvwxyz.apps.googleusercontent.com',
-    iosBundleId: 'com.lavie.app',
   );
 }

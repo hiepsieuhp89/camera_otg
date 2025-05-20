@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lavie/src/features/auth/data/auth_service.dart';
 import 'package:lavie/src/features/auth/domain/user_model.dart';
-import 'package:lavie/src/routes/app_router.dart';
+import 'package:lavie/src/routes/routes.dart';
 import 'package:lavie/src/theme/app_theme.dart';
 
 @RoutePage()
@@ -26,8 +26,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   UserRole _selectedRole = UserRole.viewer;
   
   // Added for email selection
+  // Default users:
+  // - tungcan2000@gmail.com / 123123123 (regular user)
+  // - tungcan2001@gmail.com / 123123123 (regular user)
+  // - admin@lavie.com / 123123123 (admin user)
   String _selectedEmail = 'tungcan2000@gmail.com'; // Default selected email
-  final List<String> _availableEmails = ['tungcan2000@gmail.com', 'tungcan2001@gmail.com'];
+  final List<String> _availableEmails = [
+    'tungcan2000@gmail.com', 
+    'tungcan2001@gmail.com',
+    'admin@lavie.com'
+  ];
 
   @override
   void dispose() {
@@ -58,7 +66,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         if (currentUser != null) {
           if (ref.read(authServiceProvider).isAdmin(currentUser)) {
             print('Step 4: User is admin, navigating to AdminDashboardRoute');
-            context.router.replace(const AdminDashboardRoute());
+            context.router.replaceNamed(Routes.adminDashboardRoute);
           } else {
             // For non-admin users, check if they are already paired
             print('Step 5: User is not admin, checking pairedDeviceId...');
@@ -66,16 +74,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               print('Step 6: User is paired, checking role...');
               if (ref.read(authServiceProvider).isBroadcaster(currentUser)) {
                 print('Step 7: User is broadcaster, navigating to BroadcastRoute');
-                context.router.replace(const BroadcastRoute());
+                context.router.replaceNamed(Routes.broadcastRoute);
               } else if (ref.read(authServiceProvider).isViewer(currentUser)) {
                 print('Step 8: User is viewer, navigating to ViewerRoute');
-                context.router.replace(const ViewerRoute());
+                context.router.replaceNamed(Routes.viewerRoute);
               } else {
                 print('Step 9: User is paired but role is unknown');
               }
             } else {
               print('Step 10: User is not paired, navigating to DevicePairingRoute');
-              context.router.replace(const DevicePairingRoute());
+              context.router.replaceNamed(Routes.devicePairingRoute);
             }
           }
         } else {
@@ -129,7 +137,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         if (currentUser != null) {
           // New users always need to pair first
           print('Step 4: New user, navigating to DevicePairingRoute');
-          context.router.replace(const DevicePairingRoute());
+          context.router.replaceNamed(Routes.devicePairingRoute);
         } else {
           print('Step 5: currentUser is null after registration');
           _errorMessage = 'Registration successful but failed to log in. Please log in manually.';
@@ -447,7 +455,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   // Add UVC Camera Test Button
                   OutlinedButton.icon(
                     onPressed: () {
-                      context.router.push(const UVCCameraRoute());
+                      context.router.pushNamed(Routes.uvcCameraRoute);
                     },
                     icon: const Icon(Icons.camera_alt),
                     label: const Text('Test UVC Camera'),

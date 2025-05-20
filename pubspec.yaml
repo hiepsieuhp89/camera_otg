@@ -37,6 +37,21 @@ dependencies:
   uvccamera: ^0.0.13
   cross_file: ^0.3.4+2
   permission_handler: ^11.3.1
+  
+  # Firebase
+  firebase_core: ^2.25.4
+  firebase_auth: ^4.17.4
+  cloud_firestore: ^4.15.4
+  
+  # State management
+  flutter_riverpod: ^2.4.9
+  
+  # Navigation
+  auto_route: ^7.8.4
+  
+  # Utils
+  intl: ^0.19.0
+  path_provider: ^2.1.2
 
 dev_dependencies:
   flutter_test:
@@ -48,6 +63,10 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^2.0.0
+  
+  # Code generation
+  auto_route_generator: ^7.3.2
+  build_runner: ^2.4.8
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
