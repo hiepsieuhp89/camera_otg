@@ -43,6 +43,10 @@ dependencies:
   firebase_auth: ^4.17.4
   cloud_firestore: ^4.15.4
   
+  # WebRTC
+  flutter_webrtc: ^0.14.0
+  sdp_transform: ^0.3.2
+  
   # State management
   flutter_riverpod: ^2.4.9
   

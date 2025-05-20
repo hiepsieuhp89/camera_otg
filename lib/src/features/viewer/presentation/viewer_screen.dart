@@ -3,9 +3,12 @@ import 'dart:async';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:lavie/src/features/auth/data/auth_service.dart';
 import 'package:lavie/src/features/device/data/device_service.dart';
+import 'package:lavie/src/features/broadcast/data/webrtc_service.dart';
 import 'package:lavie/src/theme/app_theme.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 @RoutePage()
 class ViewerScreen extends ConsumerStatefulWidget {
@@ -22,16 +25,47 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   String? _errorMessage;
   bool _isStreamActive = false;
   
+  // WebRTC
+  RTCVideoRenderer? _remoteRenderer;
+  bool _isWebRTCConnected = false;
+  
   @override
   void initState() {
     super.initState();
     _checkForConnectedDevice();
+    _initializeWebRTC();
   }
   
   @override
   void dispose() {
     _deviceStreamSubscription?.cancel();
+    
+    // Clean up WebRTC
+    ref.read(webRTCServiceProvider).dispose();
+    _remoteRenderer?.dispose();
+    
     super.dispose();
+  }
+  
+  Future<void> _initializeWebRTC() async {
+    try {
+      // Check microphone and camera permissions for WebRTC
+      var micStatus = await Permission.microphone.status;
+      if (!micStatus.isGranted) {
+        micStatus = await Permission.microphone.request();
+      }
+      
+      var cameraStatus = await Permission.camera.status;
+      if (!cameraStatus.isGranted) {
+        cameraStatus = await Permission.camera.request();
+      }
+      
+      // Initialize renderer
+      _remoteRenderer = RTCVideoRenderer();
+      await _remoteRenderer!.initialize();
+    } catch (e) {
+      print('Error initializing WebRTC: $e');
+    }
   }
   
   Future<void> _checkForConnectedDevice() async {
@@ -75,7 +109,56 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         _connectedDevice = device;
         _isStreamActive = device.isBroadcasting;
       });
+      
+      // If broadcasting state changed to active, connect to WebRTC
+      if (device.isBroadcasting && !_isWebRTCConnected) {
+        _connectToWebRTCStream(device.id);
+      } else if (!device.isBroadcasting && _isWebRTCConnected) {
+        _disconnectFromWebRTCStream();
+      }
     });
+  }
+  
+  Future<void> _connectToWebRTCStream(String deviceId) async {
+    setState(() {
+      _isConnecting = true;
+      _errorMessage = null;
+    });
+    
+    try {
+      // Initialize WebRTC
+      final webRTCService = ref.read(webRTCServiceProvider);
+      await webRTCService.initializeViewer(deviceId);
+      
+      // Get remote video renderer
+      _remoteRenderer = (await webRTCService.remoteRenderer) as RTCVideoRenderer?;
+      
+      setState(() {
+        _isWebRTCConnected = true;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Failed to connect to stream: ${e.toString()}';
+        _isWebRTCConnected = false;
+      });
+    } finally {
+      setState(() {
+        _isConnecting = false;
+      });
+    }
+  }
+  
+  Future<void> _disconnectFromWebRTCStream() async {
+    try {
+      // Clean up WebRTC
+      await ref.read(webRTCServiceProvider).dispose();
+      
+      setState(() {
+        _isWebRTCConnected = false;
+      });
+    } catch (e) {
+      print('Error disconnecting from WebRTC: $e');
+    }
   }
   
   Future<void> _sendVibrationSignal(int count) async {
@@ -124,6 +207,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
+    final webRTCService = ref.watch(webRTCServiceProvider);
     
     if (user == null) {
       return const Scaffold(
@@ -149,7 +233,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       ),
       body: user.pairedDeviceId == null
           ? _buildNoPairedDeviceView()
-          : _buildStreamView(),
+          : _buildStreamView(webRTCService),
     );
   }
   
@@ -184,7 +268,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     );
   }
   
-  Widget _buildStreamView() {
+  Widget _buildStreamView(WebRTCService webRTCService) {
     if (_connectedDevice == null) {
       return const Center(
         child: CircularProgressIndicator(),
@@ -221,9 +305,15 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      _isStreamActive ? 'Broadcasting active' : 'Waiting for broadcast',
+                      _isStreamActive 
+                          ? _isWebRTCConnected 
+                              ? 'Connected to broadcast'
+                              : 'Connecting to broadcast...'
+                          : 'Waiting for broadcast',
                       style: TextStyle(
-                        color: _isStreamActive ? Colors.green : Colors.grey,
+                        color: _isStreamActive
+                            ? _isWebRTCConnected ? Colors.green : Colors.orange
+                            : Colors.grey,
                       ),
                     ),
                   ],
@@ -250,65 +340,87 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
             ),
           ),
         
-        // Video stream (placeholder since actual video would require WebRTC)
+        // Video stream
         Expanded(
           child: Container(
             color: Colors.black,
-            child: _isStreamActive
-                ? const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.videocam,
-                          size: 64,
-                          color: Colors.white54,
-                        ),
-                        SizedBox(height: 16),
-                        Text(
-                          'Live Stream',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                          ),
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          'Video stream would appear here',
-                          style: TextStyle(
-                            color: Colors.white70,
-                          ),
-                        ),
-                      ],
-                    ),
+            child: _isStreamActive && _isWebRTCConnected && _remoteRenderer != null && webRTCService.isConnected
+                ? RTCVideoView(
+                    _remoteRenderer!,
+                    objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
                   )
-                : const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.hourglass_empty,
-                          size: 64,
-                          color: Colors.white54,
+                : _isStreamActive && _isConnecting
+                    ? const Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CircularProgressIndicator(color: Colors.white),
+                            SizedBox(height: 16),
+                            Text(
+                              'Connecting to broadcast...',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
                         ),
-                        SizedBox(height: 16),
-                        Text(
-                          'Waiting for Broadcast',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
+                      )
+                    : _isStreamActive
+                        ? const Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.videocam,
+                                  size: 64,
+                                  color: Colors.white54,
+                                ),
+                                SizedBox(height: 16),
+                                Text(
+                                  'Broadcast Available',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                  ),
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  'Trying to connect to the stream...',
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : const Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.hourglass_empty,
+                                  size: 64,
+                                  color: Colors.white54,
+                                ),
+                                SizedBox(height: 16),
+                                Text(
+                                  'Waiting for Broadcast',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                  ),
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  'The broadcaster is currently offline',
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          'The broadcaster is currently offline',
-                          style: TextStyle(
-                            color: Colors.white70,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
           ),
         ),
         

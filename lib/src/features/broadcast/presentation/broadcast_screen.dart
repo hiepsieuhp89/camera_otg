@@ -4,8 +4,10 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:lavie/src/features/auth/data/auth_service.dart';
 import 'package:lavie/src/features/device/data/device_service.dart';
+import 'package:lavie/src/features/broadcast/data/webrtc_service.dart';
 import 'package:lavie/src/theme/app_theme.dart';
 import 'package:uvccamera/uvccamera.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -29,6 +31,9 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
   UvcCameraDevice? _selectedDevice;
   Timer? _statusUpdateTimer;
   
+  // WebRTC
+  RTCVideoRenderer? _localRenderer;
+  
   @override
   void initState() {
     super.initState();
@@ -41,6 +46,11 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
     _cleanupCamera();
     _signalSubscription?.cancel();
     _statusUpdateTimer?.cancel();
+    
+    // Clean up WebRTC
+    ref.read(webRTCServiceProvider).dispose();
+    _localRenderer?.dispose();
+    
     super.dispose();
   }
   
@@ -64,6 +74,19 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
           throw Exception('Camera permission denied');
         }
       }
+      
+      // Check microphone permission for WebRTC
+      var micStatus = await Permission.microphone.status;
+      if (!micStatus.isGranted) {
+        micStatus = await Permission.microphone.request();
+        if (!micStatus.isGranted) {
+          throw Exception('Microphone permission denied');
+        }
+      }
+      
+      // Initialize WebRTC renderer
+      _localRenderer = RTCVideoRenderer();
+      await _localRenderer!.initialize();
       
       // Check if UVC camera is supported
       final isSupported = await UvcCamera.isSupported();
@@ -149,6 +172,16 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
         throw Exception('No paired device found');
       }
       
+      // Initialize WebRTC
+      final webRTCService = ref.read(webRTCServiceProvider);
+      await webRTCService.initializeBroadcaster(user.pairedDeviceId!);
+      
+      // Create and publish offer
+      await webRTCService.createAndPublishOffer();
+      
+      // Get local renderer
+      _localRenderer = (await webRTCService.localRenderer) as RTCVideoRenderer?;
+      
       // Update device status in Firestore
       final deviceService = ref.read(deviceServiceProvider);
       await deviceService.startBroadcasting(user.pairedDeviceId!);
@@ -181,6 +214,9 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
       if (user == null || user.pairedDeviceId == null) {
         throw Exception('No paired device found');
       }
+      
+      // Clean up WebRTC
+      await ref.read(webRTCServiceProvider).dispose();
       
       // Update device status in Firestore
       final deviceService = ref.read(deviceServiceProvider);
@@ -267,6 +303,7 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
     final hasNoDevice = user == null || user.pairedDeviceId == null;
+    final webRTCService = ref.watch(webRTCServiceProvider);
     
     if (hasNoDevice) {
       return Scaffold(
@@ -316,33 +353,41 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
               ),
               child: _isInitializing
                   ? const Center(child: CircularProgressIndicator())
-                  : _isCameraConnected && _cameraController != null && _cameraController!.value.isInitialized
+                  : _isBroadcasting && webRTCService.isInitialized && _localRenderer != null
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child: UvcCameraPreview(_cameraController!),
-                        )
-                      : Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(
-                                Icons.videocam_off,
-                                size: 48,
-                                color: Colors.white54,
-                              ),
-                              const SizedBox(height: 16),
-                              const Text(
-                                'Camera not connected',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                              const SizedBox(height: 16),
-                              ElevatedButton(
-                                onPressed: _initializeCamera,
-                                child: const Text('Reconnect'),
-                              ),
-                            ],
+                          child: RTCVideoView(
+                            _localRenderer!,
+                            objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
                           ),
-                        ),
+                        )
+                      : _isCameraConnected && _cameraController != null && _cameraController!.value.isInitialized
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: UvcCameraPreview(_cameraController!),
+                            )
+                          : Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(
+                                    Icons.videocam_off,
+                                    size: 48,
+                                    color: Colors.white54,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  const Text(
+                                    'Camera not connected',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  ElevatedButton(
+                                    onPressed: _initializeCamera,
+                                    child: const Text('Reconnect'),
+                                  ),
+                                ],
+                              ),
+                            ),
             ),
             
             // Error message
