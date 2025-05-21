@@ -22,12 +22,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _isLoading = false;
   String? _errorMessage;
   bool _obscurePassword = true;
+  bool _isTestingMode = false;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  void _toggleTestingMode() {
+    setState(() {
+      _isTestingMode = !_isTestingMode;
+      if (_isTestingMode) {
+        _emailController.text = 'tungcan2000@gmail.com';
+        _passwordController.text = '123123123';
+      } else {
+        _emailController.text = '';
+        _passwordController.text = '';
+      }
+    });
   }
 
   void _showRoleSelectionDialog() {
@@ -214,7 +228,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     width: 160,
                     height: 160,
                     decoration: BoxDecoration(
-                      color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: ClipRRect(
@@ -413,6 +426,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   
                   const SizedBox(height: 24),
+                  
+                  // Testing Mode Button
+                  OutlinedButton.icon(
+                    onPressed: _toggleTestingMode,
+                    icon: Icon(
+                      _isTestingMode ? Icons.toggle_on : Icons.toggle_off,
+                      color: _isTestingMode ? AppTheme.primaryColor : Colors.grey,
+                    ),
+                    label: Text(
+                      'Testing Mode ${_isTestingMode ? "ON" : "OFF"}',
+                      style: TextStyle(
+                        color: _isTestingMode ? AppTheme.primaryColor : Colors.grey,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 12),
                   
                   // Add UVC Camera Test Button
                   OutlinedButton.icon(
