@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
@@ -27,6 +28,9 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   List<Map<String, dynamic>> _activeStreams = [];
   String? _selectedBroadcasterId;
   String? _selectedBroadcasterName;
+  Timer? _staticNoiseTimer;
+  Random _random = Random();
+  bool _isFallbackMode = false;
   
   @override
   void initState() {
@@ -37,6 +41,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   @override
   void dispose() {
     _cleanupWebRTC();
+    _staticNoiseTimer?.cancel();
     super.dispose();
   }
   
@@ -64,8 +69,24 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
             _remoteRenderer!.srcObject = stream;
             setState(() {
               _isStreamActive = true;
+              _isFallbackMode = false;
+              
+              // Ngừng timer hiệu ứng nhiễu nếu có
+              _staticNoiseTimer?.cancel();
             });
           }
+        };
+        
+        // Xử lý thông báo khi stream được thiết lập nhưng không có media (fallback mode)
+        _webRTCService!.onNoMediaStreamAvailable = () {
+          // Đánh dấu stream đang hoạt động nhưng ở chế độ fallback
+          setState(() {
+            _isStreamActive = true;
+            _isFallbackMode = true;
+            
+            // Bắt đầu timer để cập nhật hiệu ứng nhiễu
+            _startStaticNoiseTimer();
+          });
         };
         
         // Listen for active streams
@@ -89,6 +110,23 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         _isLoading = false;
       });
     }
+  }
+  
+  void _startStaticNoiseTimer() {
+    // Hủy timer cũ nếu có
+    _staticNoiseTimer?.cancel();
+    
+    // Tạo timer mới cập nhật mỗi 200ms để tạo hiệu ứng nhiễu
+    _staticNoiseTimer = Timer.periodic(Duration(milliseconds: 200), (timer) {
+      if (mounted && _isFallbackMode) {
+        setState(() {
+          // Chỉ trigger rebuild để vẽ lại nhiễu
+          _random = Random();
+        });
+      } else {
+        timer.cancel();
+      }
+    });
   }
   
   Future<void> _refreshActiveStreams() async {
@@ -120,6 +158,8 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     _remoteRenderer = null;
     _webRTCService?.dispose();
     _webRTCService = null;
+    _staticNoiseTimer?.cancel();
+    _staticNoiseTimer = null;
   }
   
   Future<void> _connectToStream(String broadcasterId, String broadcasterName) async {
@@ -128,6 +168,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     setState(() {
       _isConnecting = true;
       _errorMessage = null;
+      _isStreamActive = false; // Reset stream status
     });
     
     try {
@@ -147,6 +188,9 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     } catch (e) {
       setState(() {
         _errorMessage = 'Lỗi kết nối: ${e.toString()}';
+        _selectedBroadcasterId = null;
+        _selectedBroadcasterName = null;
+        _isStreamActive = false;
       });
       
       ScaffoldMessenger.of(context).showSnackBar(
@@ -177,7 +221,11 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         _selectedBroadcasterId = null;
         _selectedBroadcasterName = null;
         _isStreamActive = false;
+        _isFallbackMode = false;
       });
+      
+      // Hủy timer nếu đang chạy
+      _staticNoiseTimer?.cancel();
       
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -435,34 +483,36 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         Expanded(
           child: Container(
             color: Colors.black,
-            child: _isStreamActive && _remoteRenderer != null
-                ? RTCVideoView(
-                    _remoteRenderer!,
-                    objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                  )
+            child: _isStreamActive 
+                ? (_isFallbackMode 
+                    ? _buildFallbackStreamView() 
+                    : (_remoteRenderer != null 
+                        ? RTCVideoView(
+                            _remoteRenderer!,
+                            objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                          )
+                        : const Center(child: CircularProgressIndicator())))
                 : Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
+                      children: const [
                         Icon(
-                          _isStreamActive ? Icons.videocam : Icons.hourglass_empty,
+                          Icons.hourglass_empty,
                           size: 64,
                           color: Colors.white54,
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16),
                         Text(
-                          _isStreamActive ? 'Đang kết nối...' : 'Đang chờ phát sóng',
-                          style: const TextStyle(
+                          'Đang chờ phát sóng',
+                          style: TextStyle(
                             color: Colors.white,
                             fontSize: 20,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8),
                         Text(
-                          _isStreamActive
-                              ? 'Đang thiết lập kết nối video...'
-                              : 'Người phát sóng hiện đang ngoại tuyến',
-                          style: const TextStyle(
+                          'Người phát sóng hiện đang ngoại tuyến',
+                          style: TextStyle(
                             color: Colors.white70,
                           ),
                         ),
@@ -538,4 +588,103 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       ],
     );
   }
+  
+  // Widget hiển thị khi có phát sóng fallback (không có media)
+  Widget _buildFallbackStreamView() {
+    return Stack(
+      children: [
+        // Hiệu ứng nhiễu tĩnh
+        CustomPaint(
+          painter: StaticNoisePainter(_random),
+          size: Size.infinite,
+        ),
+        
+        // Overlay thông báo
+        Center(
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            margin: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.7),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.orange.withOpacity(0.5), width: 2),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: const [
+                Icon(
+                  Icons.videocam_off,
+                  size: 64,
+                  color: Colors.orange,
+                ),
+                SizedBox(height: 16),
+                Text(
+                  'Phát sóng ở chế độ dự phòng',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'Người phát sóng đang gặp vấn đề với camera\n'
+                  'nhưng vẫn đang phát sóng.\n\n'
+                  'Bạn vẫn có thể gửi tín hiệu rung như bình thường.',
+                  style: TextStyle(color: Colors.white70),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// Painter tạo hiệu ứng nhiễu tĩnh cho chế độ fallback
+class StaticNoisePainter extends CustomPainter {
+  final Random random;
+  
+  StaticNoisePainter(this.random);
+  
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.black
+      ..style = PaintingStyle.fill;
+    
+    // Vẽ nền đen
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paint);
+    
+    // Vẽ các điểm nhiễu trắng ngẫu nhiên
+    for (int i = 0; i < 3000; i++) {
+      double x = random.nextDouble() * size.width;
+      double y = random.nextDouble() * size.height;
+      double pointSize = random.nextDouble() * 2 + 1;
+      int alpha = random.nextInt(100) + 155; // 155-255 (đậm hơn)
+      
+      final noisePaint = Paint()
+        ..color = Color.fromRGBO(255, 255, 255, alpha / 255)
+        ..style = PaintingStyle.fill;
+      
+      canvas.drawRect(Rect.fromLTWH(x, y, pointSize, pointSize), noisePaint);
+    }
+    
+    // Thêm một số đường kẻ ngang và dải nhiễu lớn hơn
+    if (random.nextInt(5) == 0) { // 20% cơ hội xuất hiện
+      double y = random.nextDouble() * size.height;
+      double height = random.nextDouble() * 8 + 2;
+      
+      final linePaint = Paint()
+        ..color = Colors.white.withOpacity(0.7)
+        ..style = PaintingStyle.fill;
+      
+      canvas.drawRect(Rect.fromLTWH(0, y, size.width, height), linePaint);
+    }
+  }
+  
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 } 

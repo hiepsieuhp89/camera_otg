@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:vibration/vibration.dart';
@@ -26,6 +27,9 @@ class WebRTCConnectionService {
   
   /// Remote stream available callback
   Function(MediaStream)? onRemoteStreamAvailable;
+  
+  /// No media stream available callback (for fallback streams)
+  Function()? onNoMediaStreamAvailable;
   
   /// Available streams callback
   Function(List<Map<String, dynamic>>)? onAvailableStreamsChanged;
@@ -221,6 +225,12 @@ class WebRTCConnectionService {
         throw Exception('Broadcast is not active');
       }
 
+      // Kiểm tra xem đây có phải là broadcast không có media không
+      final bool isNoMediaBroadcast = broadcastData['noMedia'] == true;
+      if (isNoMediaBroadcast) {
+        debugPrint('This is a no-media broadcast (fallback mode)');
+      }
+
       debugPrint('Initializing peer connection...');
       await _initPeerConnection();
       
@@ -248,30 +258,35 @@ class WebRTCConnectionService {
       debugPrint('Setting local description...');
       await _peerConnection!.setLocalDescription(answer);
       
-      await Future.delayed(const Duration(milliseconds: 500));
-      
-      debugPrint('Sending answer to broadcaster: $broadcasterId');
+      debugPrint('Sending answer to broadcaster...');
       await _firestore
           .collection('broadcasters')
           .doc(broadcasterId)
           .collection('answers')
           .doc(userId)
           .set({
-        'viewerId': userId, 
+        'viewerId': userId,
         'answer': {
           'type': answer.type,
           'sdp': answer.sdp,
         },
         'timestamp': FieldValue.serverTimestamp(),
       });
-
+      
       debugPrint('Listening for ICE candidates...');
-      _listenForIceCandidates(broadcasterId);
+      _listenForIceCandidates(broadcasterId: broadcasterId);
+      
+      // Nếu đây là broadcast không có media, thông báo ngay
+      if (isNoMediaBroadcast && onNoMediaStreamAvailable != null) {
+        debugPrint('Notifying about no-media broadcast...');
+        onNoMediaStreamAvailable!();
+      }
+      
       debugPrint('Viewing setup complete');
     } catch (e) {
-      debugPrint('Error in startViewing: $e');
+      debugPrint('Error starting viewing: $e');
       await _cleanup();
-      throw Exception('Unable to connect to broadcast: $e');
+      rethrow;
     }
   }
 
@@ -324,7 +339,7 @@ class WebRTCConnectionService {
   }
 
   /// Listen for ICE candidates
-  void _listenForIceCandidates([String? targetBroadcasterId]) {
+  void _listenForIceCandidates({String? broadcasterId}) {
     if (isBroadcaster) {
       _iceCandidatesSubscription = _firestore
           .collection('broadcasters')
@@ -358,10 +373,10 @@ class WebRTCConnectionService {
           });
         }
       });
-    } else if (targetBroadcasterId != null) {
+    } else if (broadcasterId != null) {
       _iceCandidatesSubscription = _firestore
           .collection('broadcasters')
-          .doc(targetBroadcasterId)
+          .doc(broadcasterId)
           .collection('candidates')
           .snapshots()
           .listen((snapshot) {
@@ -451,18 +466,73 @@ class WebRTCConnectionService {
           final data = change.doc.data();
           if (data != null) {
             debugPrint('Received vibration from viewer: ${data['fromViewerId']}');
+            debugPrint('Vibration pattern: ${data['pattern']}');
             
             try {
               if (data.containsKey('pattern')) {
                 final pattern = data['pattern'] as int;
+                debugPrint('Attempting to vibrate with pattern: $pattern');
+                
+                // Kiểm tra hỗ trợ rung
+                final bool hasVibrator = await Vibration.hasVibrator() ?? false;
+                final bool hasAmplitudeControl = await Vibration.hasAmplitudeControl() ?? false;
+                debugPrint('Device has vibrator: $hasVibrator, supports amplitude control: $hasAmplitudeControl');
+                
                 if (pattern == 1) {
-                  await Vibration.vibrate(duration: 300);
+                  // Thử cả ba cách để tăng khả năng thiết bị rung
+                  try {
+                    debugPrint('Executing flutter services HapticFeedback...');
+                    HapticFeedback.vibrate();
+                    await Future.delayed(const Duration(milliseconds: 50));
+                    HapticFeedback.heavyImpact();
+                  } catch (e) {
+                    debugPrint('HapticFeedback error: $e');
+                  }
+                  
+                  // Dùng Vibration package
+                  if (hasVibrator) {
+                    try {
+                      debugPrint('Executing Vibration.vibrate with duration...');
+                      if (hasAmplitudeControl) {
+                        await Vibration.vibrate(duration: 500, amplitude: 255);
+                      } else {
+                        await Vibration.vibrate(duration: 500);
+                      }
+                    } catch (e) {
+                      debugPrint('Vibration package error: $e');
+                    }
+                  }
                 } else if (pattern == 2) {
-                  await Vibration.vibrate(pattern: [0, 300, 100, 300]);
+                  // Sử dụng multiple haptic feedback
+                  try {
+                    debugPrint('Executing multiple HapticFeedback...');
+                    HapticFeedback.heavyImpact();
+                    await Future.delayed(const Duration(milliseconds: 100));
+                    HapticFeedback.heavyImpact();
+                  } catch (e) {
+                    debugPrint('HapticFeedback error: $e');
+                  }
+                  
+                  // Dùng Vibration package với pattern
+                  if (hasVibrator) {
+                    try {
+                      debugPrint('Executing Vibration.vibrate with pattern...');
+                      // Pattern: wait 0ms, vibrate 300ms, wait 100ms, vibrate 300ms
+                      await Vibration.vibrate(pattern: [0, 300, 100, 300]);
+                    } catch (e) {
+                      debugPrint('Vibration package pattern error: $e');
+                    }
+                  }
                 }
               }
               
-              await change.doc.reference.delete();
+              // Xóa thông báo rung sau khi xử lý
+              try {
+                await change.doc.reference.delete();
+                debugPrint('Deleted vibration document after processing');
+              } catch (deleteError) {
+                debugPrint('Error deleting vibration document: $deleteError');
+              }
             } catch (e) {
               debugPrint('Error processing vibration: $e');
             }
@@ -470,6 +540,8 @@ class WebRTCConnectionService {
         }
       }
     });
+    
+    debugPrint('Vibration listener setup complete');
   }
 
   /// Dispose resources

@@ -15,6 +15,7 @@ import 'package:lavie/src/features/webrtc/data/webrtc_connection_service.dart';
 import 'package:lavie/src/theme/app_theme.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:uvccamera/uvccamera.dart';
+import 'package:vibration/vibration.dart';
 
 @RoutePage()
 class BroadcastScreen extends ConsumerStatefulWidget {
@@ -848,7 +849,7 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
           } else if (event.type == UvcCameraDeviceEventType.connected) {
             logger.info('BroadcastScreen: Device connected: ${event.device.name}');
             
-            setState(() {
+      setState(() {
             _isDeviceConnected = true;
             });
             
@@ -871,7 +872,7 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
           } else if (event.type == UvcCameraDeviceEventType.disconnected) {
             logger.warning('BroadcastScreen: Device disconnected');
             
-            setState(() {
+        setState(() {
             _isDeviceConnected = false;
               _isCameraConnected = false;
             });
@@ -886,7 +887,7 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
                     Exception('Thiết bị đã bị ngắt kết nối'),
                     contextMessage: 'thiết bị đã bị ngắt kết nối logic'
                   );
-                } catch (e) {
+    } catch (e) {
                   logger.error('BroadcastScreen: Error handling device disconnect - $e');
                 }
               });
@@ -902,7 +903,7 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
               }
             }
           }
-        } catch (e) {
+    } catch (e) {
           logger.error('BroadcastScreen: Error processing device event - $e');
         }
       }, onError: (e) {
@@ -1072,7 +1073,7 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
               );
             }
             return;
-        } catch (e) {
+    } catch (e) {
             logger.error('BroadcastScreen: Failed to create fallback stream during recovery - $e');
           }
         }
@@ -1145,11 +1146,11 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
       });
       
       // 1. Kiểm tra tình trạng camera
-      if (!_isCameraConnected || _cameraController == null || !_cameraController!.value.isInitialized) {
-        await logger.warning('BroadcastScreen: Cannot start broadcasting - camera not ready');
-        setState(() {
-          _errorMessage = 'Camera chưa được kết nối hoặc khởi tạo';
-        });
+    if (!_isCameraConnected || _cameraController == null || !_cameraController!.value.isInitialized) {
+      await logger.warning('BroadcastScreen: Cannot start broadcasting - camera not ready');
+      setState(() {
+        _errorMessage = 'Camera chưa được kết nối hoặc khởi tạo';
+      });
         
         // Thông báo cho người dùng
         if (mounted) {
@@ -1161,8 +1162,8 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
             ),
           );
         }
-        return;
-      }
+      return;
+    }
 
       // 2. Kiểm tra trạng thái quyền truy cập
       await logger.info('BroadcastScreen: Checking permission status before broadcast...');
@@ -1178,10 +1179,10 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
         // Yêu cầu quyền truy cập camera
         final newStatus = await _requestCameraPermission();
         if (!newStatus) {
-          setState(() {
+      setState(() {
             _errorMessage = 'Không có quyền truy cập camera';
-          });
-          return;
+      });
+      return;
         }
       }
       
@@ -1210,7 +1211,7 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
       if (user == null) {
         throw Exception('Chưa đăng nhập');
       }
-      
+
       // 3. Thiết lập WebRTC service
       try {
         await _setupWebRTCForBroadcasting();
@@ -1255,7 +1256,7 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
       if (_webRTCService != null) {
         if (_localStream != null) {
           await logger.info('BroadcastScreen: Starting WebRTC broadcast with full stream...');
-          await _webRTCService!.startBroadcast(_localStream!, user.name);
+        await _webRTCService!.startBroadcast(_localStream!, user.name);
         } else {
           // Không có stream nào, sử dụng phương thức không có media
           await logger.warning('BroadcastScreen: Starting broadcast without media stream...');
@@ -1287,7 +1288,7 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
       
       // Hiển thị thông báo phù hợp với mode
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(_isUsingFallbackStream 
               ? 'Đã bắt đầu phát sóng (chế độ dự phòng)' 
@@ -1455,12 +1456,63 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
     final logger = ref.read(loggerProvider);
     try {
       logger.info('BroadcastScreen: Vibrating device $count times');
+      
+      // Kiểm tra hỗ trợ rung
+      final bool hasVibrator = await Vibration.hasVibrator() ?? false;
+      await logger.info('BroadcastScreen: Device has vibrator: $hasVibrator');
+      
       for (int i = 0; i < count; i++) {
-        await HapticFeedback.heavyImpact();
+        // Sử dụng cả HapticFeedback.vibrate và heavyImpact để đảm bảo thiết bị rung
+        try {
+          await logger.info('BroadcastScreen: Executing HapticFeedback.vibrate');
+          HapticFeedback.vibrate();
+          await Future.delayed(const Duration(milliseconds: 50));
+        } catch (vibError) {
+          await logger.error('BroadcastScreen: Error with HapticFeedback.vibrate - $vibError');
+        }
+        
+        try {
+          await logger.info('BroadcastScreen: Executing HapticFeedback.heavyImpact');
+          HapticFeedback.heavyImpact();
+          await Future.delayed(const Duration(milliseconds: 50));
+        } catch (impactError) {
+          await logger.error('BroadcastScreen: Error with HapticFeedback.heavyImpact - $impactError');
+        }
+        
+        // Thêm mediumImpact để tăng khả năng thiết bị phản hồi
+        try {
+          await logger.info('BroadcastScreen: Executing HapticFeedback.mediumImpact');
+          HapticFeedback.mediumImpact();
+          await Future.delayed(const Duration(milliseconds: 50));
+        } catch (mediumError) {
+          await logger.error('BroadcastScreen: Error with HapticFeedback.mediumImpact - $mediumError');
+        }
+        
+        // Sử dụng Vibration package nếu có hỗ trợ
+        if (hasVibrator) {
+          try {
+            await logger.info('BroadcastScreen: Executing Vibration.vibrate');
+            
+            // Kiểm tra xem thiết bị có hỗ trợ điều khiển độ rung không
+            final bool hasAmplitudeControl = await Vibration.hasAmplitudeControl() ?? false;
+            await logger.info('BroadcastScreen: Device supports amplitude control: $hasAmplitudeControl');
+            
+            if (hasAmplitudeControl) {
+              await Vibration.vibrate(duration: 500, amplitude: 255);
+            } else {
+              await Vibration.vibrate(duration: 500);
+            }
+            
+          } catch (vibrationError) {
+            await logger.error('BroadcastScreen: Error with Vibration package - $vibrationError');
+          }
+        }
+        
         if (i < count - 1) {
           await Future.delayed(const Duration(milliseconds: 500));
         }
       }
+      await logger.info('BroadcastScreen: Vibration sequence completed');
     } catch (e) {
       logger.error('BroadcastScreen: Device vibration error - $e');
     }
