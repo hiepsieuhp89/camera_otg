@@ -18,47 +18,100 @@ class ViewerScreen extends ConsumerStatefulWidget {
 }
 
 class _ViewerScreenState extends ConsumerState<ViewerScreen> {
-  DeviceModel? _connectedDevice;
-  StreamSubscription? _deviceStreamSubscription;
+  bool _isLoading = true;
   bool _isConnecting = false;
   String? _errorMessage;
   bool _isStreamActive = false;
   WebRTCConnectionService? _webRTCService;
   RTCVideoRenderer? _remoteRenderer;
+  List<Map<String, dynamic>> _activeStreams = [];
+  String? _selectedBroadcasterId;
+  String? _selectedBroadcasterName;
   
   @override
   void initState() {
     super.initState();
     _initializeWebRTC();
-    _checkForConnectedDevice();
   }
   
   @override
   void dispose() {
     _cleanupWebRTC();
-    _deviceStreamSubscription?.cancel();
     super.dispose();
   }
   
   Future<void> _initializeWebRTC() async {
-    _remoteRenderer = RTCVideoRenderer();
-    await _remoteRenderer!.initialize();
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
     
-    final user = ref.read(currentUserProvider);
-    if (user != null) {
-      _webRTCService = ref.read(webRTCConnectionServiceProvider(
-        WebRTCConnectionParams(
-          userId: user.id,
-          isBroadcaster: false,
-        ),
-      ));
+    try {
+      _remoteRenderer = RTCVideoRenderer();
+      await _remoteRenderer!.initialize();
       
-      _webRTCService!.onRemoteStreamAvailable = (stream) {
-        if (_remoteRenderer != null) {
-          _remoteRenderer!.srcObject = stream;
-          setState(() {});
-        }
-      };
+      final user = ref.read(currentUserProvider);
+      if (user != null) {
+        _webRTCService = ref.read(webRTCConnectionServiceProvider(
+          WebRTCConnectionParams(
+            userId: user.id,
+            isBroadcaster: false,
+          ),
+        ));
+        
+        _webRTCService!.onRemoteStreamAvailable = (stream) {
+          if (_remoteRenderer != null) {
+            _remoteRenderer!.srcObject = stream;
+            setState(() {
+              _isStreamActive = true;
+            });
+          }
+        };
+        
+        // Listen for active streams
+        _webRTCService!.onAvailableStreamsChanged = (streams) {
+          setState(() {
+            _activeStreams = streams;
+          });
+        };
+        
+        await _refreshActiveStreams();
+        
+        // Start listening for active streams
+        _webRTCService!.listenForActiveStreams();
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Lỗi khởi tạo: ${e.toString()}';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+  
+  Future<void> _refreshActiveStreams() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+    
+    try {
+      if (_webRTCService != null) {
+        final streams = await _webRTCService!.getActiveStreams();
+        setState(() {
+          _activeStreams = streams;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Lỗi tải danh sách phát sóng: ${e.toString()}';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
   
@@ -69,56 +122,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     _webRTCService = null;
   }
   
-  Future<void> _checkForConnectedDevice() async {
-    final user = ref.read(currentUserProvider);
-    if (user == null || user.pairedDeviceId == null) return;
-    
-    try {
-      final device = await ref.read(deviceServiceProvider).getDevice(user.pairedDeviceId!);
-      if (device != null) {
-        setState(() {
-          _connectedDevice = device;
-        });
-        _listenForDeviceChanges();
-      }
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'Failed to get device: ${e.toString()}';
-      });
-    }
-  }
-  
-  void _listenForDeviceChanges() {
-    final user = ref.read(currentUserProvider);
-    if (user == null || user.pairedDeviceId == null) return;
-    
-    _deviceStreamSubscription?.cancel();
-    
-    _deviceStreamSubscription = ref
-        .read(deviceServiceProvider)
-        .deviceStream(user.pairedDeviceId!)
-        .listen((device) {
-      if (device == null) {
-        setState(() {
-          _connectedDevice = null;
-          _isStreamActive = false;
-        });
-        return;
-      }
-      
-      setState(() {
-        _connectedDevice = device;
-        _isStreamActive = device.isBroadcasting;
-      });
-      
-      // Connect to WebRTC stream if broadcasting started
-      if (device.isBroadcasting && !_isConnecting && _webRTCService != null) {
-        _connectToStream(device.id);
-      }
-    });
-  }
-  
-  Future<void> _connectToStream(String broadcasterId) async {
+  Future<void> _connectToStream(String broadcasterId, String broadcasterName) async {
     if (_isConnecting) return;
     
     setState(() {
@@ -128,6 +132,11 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     
     try {
       await _webRTCService!.startViewing(broadcasterId);
+      
+      setState(() {
+        _selectedBroadcasterId = broadcasterId;
+        _selectedBroadcasterName = broadcasterName;
+      });
       
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -153,8 +162,42 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     }
   }
   
+  Future<void> _disconnectFromStream() async {
+    setState(() {
+      _isConnecting = true;
+      _errorMessage = null;
+    });
+    
+    try {
+      if (_webRTCService != null) {
+        await _webRTCService!.stopViewing();
+      }
+      
+      setState(() {
+        _selectedBroadcasterId = null;
+        _selectedBroadcasterName = null;
+        _isStreamActive = false;
+      });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Đã ngắt kết nối'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Lỗi ngắt kết nối: ${e.toString()}';
+      });
+    } finally {
+      setState(() {
+        _isConnecting = false;
+      });
+    }
+  }
+  
   Future<void> _sendVibrationSignal(int count) async {
-    if (_connectedDevice == null || !_isStreamActive) {
+    if (_selectedBroadcasterId == null || !_isStreamActive) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Không thể gửi tín hiệu: Không có phát sóng đang hoạt động'),
@@ -170,7 +213,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     });
     
     try {
-      await _webRTCService!.sendVibrationToBroadcaster(_connectedDevice!.id, count);
+      await _webRTCService!.sendVibrationToBroadcaster(_selectedBroadcasterId!, count);
       
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -214,39 +257,115 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: _checkForConnectedDevice,
-          ),
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () => context.router.pushNamed('/device-pairing'),
+            onPressed: _refreshActiveStreams,
           ),
         ],
       ),
-      body: user.pairedDeviceId == null
-          ? _buildNoPairedDeviceView()
+      body: _selectedBroadcasterId == null
+          ? _buildStreamSelectionView()
           : _buildStreamView(),
     );
   }
   
-  Widget _buildNoPairedDeviceView() {
-    return const Center(
+  Widget _buildStreamSelectionView() {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+    
+    if (_errorMessage != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline,
+              size: 64,
+              color: Colors.red.shade300,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              _errorMessage!,
+              style: const TextStyle(color: Colors.red),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: _refreshActiveStreams,
+              child: const Text('Thử lại'),
+            ),
+          ],
+        ),
+      );
+    }
+    
+    if (_activeStreams.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.videocam_off,
+              size: 64,
+              color: Colors.grey,
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'Không có phát sóng nào',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Hiện tại không có phát sóng nào đang hoạt động.',
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: _refreshActiveStreams,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Làm mới'),
+            ),
+          ],
+        ),
+      );
+    }
+    
+    return Padding(
+      padding: const EdgeInsets.all(16),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.videocam_off,
-            size: 64,
-            color: Colors.grey,
-          ),
-          SizedBox(height: 24),
-          Text(
-            'Chưa có phiên Live nào',
+          const Text(
+            'Phát sóng đang hoạt động',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: 16),
-          Text(
-            'Hiện tại bạn chưa có phiên Live nào có thể xem được.',
-            textAlign: TextAlign.center,
+          const SizedBox(height: 16),
+          Expanded(
+            child: ListView.builder(
+              itemCount: _activeStreams.length,
+              itemBuilder: (context, index) {
+                final stream = _activeStreams[index];
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  child: ListTile(
+                    leading: const CircleAvatar(
+                      backgroundColor: AppTheme.primaryColor,
+                      child: Icon(Icons.videocam, color: Colors.white),
+                    ),
+                    title: Text(stream['broadcasterName'] ?? 'Không có tên'),
+                    subtitle: const Text('Đang phát sóng'),
+                    trailing: ElevatedButton(
+                      onPressed: () => _connectToStream(
+                        stream['broadcasterId'],
+                        stream['broadcasterName'] ?? 'Không có tên',
+                      ),
+                      child: const Text('Xem'),
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -254,12 +373,6 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   }
   
   Widget _buildStreamView() {
-    if (_connectedDevice == null) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
-    }
-    
     return Column(
       children: [
         // Status card
@@ -282,7 +395,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _connectedDevice!.name,
+                      _selectedBroadcasterName ?? 'Người phát sóng',
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -290,7 +403,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      _isStreamActive ? 'Đang phát sóng' : 'Đang chờ phát sóng',
+                      _isStreamActive ? 'Đang phát sóng' : 'Đang chờ kết nối',
                       style: TextStyle(
                         color: _isStreamActive ? Colors.green : Colors.grey,
                       ),
@@ -298,11 +411,10 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
                   ],
                 ),
               ),
-              if (!_isStreamActive)
-                OutlinedButton(
-                  onPressed: _checkForConnectedDevice,
-                  child: const Text('Làm mới'),
-                ),
+              OutlinedButton(
+                onPressed: _disconnectFromStream,
+                child: const Text('Ngắt kết nối'),
+              ),
             ],
           ),
         ),

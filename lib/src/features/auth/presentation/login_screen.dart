@@ -241,7 +241,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     'Đăng nhập để tiếp tục',
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.grey[600],
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.grey[300]
+                          : Colors.grey[600],
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -278,7 +280,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   // Email field
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.grey[100],
+                      color: Theme.of(context).brightness == Brightness.dark 
+                          ? Colors.grey[800] 
+                          : Colors.grey[100],
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: TextFormField(
@@ -311,7 +315,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   // Password field
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.grey[100],
+                      color: Theme.of(context).brightness == Brightness.dark 
+                          ? Colors.grey[800] 
+                          : Colors.grey[100],
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: TextFormField(
@@ -385,7 +391,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     'Liên hệ quản trị viên để tạo tài khoản',
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.grey[600],
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.grey[300]
+                          : Colors.grey[600],
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -397,7 +405,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     'Lavie v1.0.0',
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.grey[400],
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.grey[500]
+                          : Colors.grey[400],
                     ),
                     textAlign: TextAlign.center,
                   ),

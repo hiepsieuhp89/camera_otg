@@ -1,285 +1,47 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lavie/src/core/providers/logger_provider.dart';
-import 'package:lavie/src/features/auth/domain/user_model.dart';
+import 'dart:async';
 
-// Device model
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uvccamera/uvccamera.dart';
+
+// Local camera device model
 class DeviceModel {
   final String id;
   final String name;
-  final String ownerId;
   final bool isActive;
   final bool isBroadcasting;
-  final DateTime lastSeen;
   final String? viewerId;
 
   DeviceModel({
     required this.id,
     required this.name,
-    required this.ownerId,
     this.isActive = true,
     this.isBroadcasting = false,
-    required this.lastSeen,
     this.viewerId,
   });
 
-  factory DeviceModel.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
+  factory DeviceModel.fromUvcDevice(UvcCameraDevice device) {
     return DeviceModel(
-      id: doc.id,
-      name: data['name'] ?? '',
-      ownerId: data['ownerId'] ?? '',
-      isActive: data['isActive'] ?? false,
-      isBroadcasting: data['isBroadcasting'] ?? false,
-      lastSeen: (data['lastSeen'] as Timestamp).toDate(),
-      viewerId: data['viewerId'],
+      id: device.name,
+      name: device.name,
+      isActive: true,
+      isBroadcasting: false,
     );
-  }
-
-  Map<String, dynamic> toFirestore() {
-    return {
-      'name': name,
-      'ownerId': ownerId,
-      'isActive': isActive,
-      'isBroadcasting': isBroadcasting,
-      'lastSeen': Timestamp.fromDate(lastSeen),
-      'viewerId': viewerId,
-    };
   }
 
   DeviceModel copyWith({
     String? id,
-    String? name,
-    String? ownerId,
+    String? name, 
     bool? isActive,
     bool? isBroadcasting,
-    DateTime? lastSeen,
     String? viewerId,
   }) {
     return DeviceModel(
       id: id ?? this.id,
       name: name ?? this.name,
-      ownerId: ownerId ?? this.ownerId,
       isActive: isActive ?? this.isActive,
       isBroadcasting: isBroadcasting ?? this.isBroadcasting,
-      lastSeen: lastSeen ?? this.lastSeen,
       viewerId: viewerId != null ? viewerId : this.viewerId,
     );
-  }
-}
-
-class DeviceService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final CollectionReference _devicesCollection = FirebaseFirestore.instance.collection('devices');
-  
-  // Get all available devices (not paired with any user)
-  Future<List<DeviceModel>> getAvailableDevices() async {
-    try {
-      QuerySnapshot snapshot = await _devicesCollection
-          .where('isActive', isEqualTo: true)
-          .get();
-      
-      return snapshot.docs
-          .map((doc) => DeviceModel.fromFirestore(doc))
-          .toList();
-    } catch (e) {
-      rethrow;
-    }
-  }
-  
-  // Get all active broadcaster devices
-  Future<List<DeviceModel>> getActiveBroadcasterDevices() async {
-    try {
-      QuerySnapshot snapshot = await _devicesCollection
-          .where('isActive', isEqualTo: true)
-          .where('isBroadcasting', isEqualTo: true)
-          .get();
-      
-      return snapshot.docs
-          .map((doc) => DeviceModel.fromFirestore(doc))
-          .toList();
-    } catch (e) {
-      rethrow;
-    }
-  }
-  
-  // Register a new device
-  Future<DeviceModel> registerDevice(String deviceId, String deviceName, String ownerId) async {
-    try {
-      // Check if device already exists
-      DocumentSnapshot doc = await _devicesCollection.doc(deviceId).get();
-      
-      if (doc.exists) {
-        // Update existing device
-        await _devicesCollection.doc(deviceId).update({
-          'name': deviceName,
-          'ownerId': ownerId,
-          'isActive': true,
-          'lastSeen': FieldValue.serverTimestamp(),
-        });
-      } else {
-        // Create new device
-        await _devicesCollection.doc(deviceId).set({
-          'name': deviceName,
-          'ownerId': ownerId,
-          'isActive': true,
-          'isBroadcasting': false,
-          'lastSeen': FieldValue.serverTimestamp(),
-        });
-      }
-      
-      // Get the updated/created device
-      DocumentSnapshot updatedDoc = await _devicesCollection.doc(deviceId).get();
-      return DeviceModel.fromFirestore(updatedDoc);
-    } catch (e) {
-      rethrow;
-    }
-  }
-  
-  // Start broadcasting with a device
-  Future<void> startBroadcasting(String deviceId) async {
-    try {
-      await _devicesCollection.doc(deviceId).update({
-        'isBroadcasting': true,
-        'lastSeen': FieldValue.serverTimestamp(),
-      });
-    } catch (e) {
-      rethrow;
-    }
-  }
-  
-  // Stop broadcasting with a device
-  Future<void> stopBroadcasting(String deviceId) async {
-    try {
-      await _devicesCollection.doc(deviceId).update({
-        'isBroadcasting': false,
-        'viewerId': null,
-        'lastSeen': FieldValue.serverTimestamp(),
-      });
-    } catch (e) {
-      rethrow;
-    }
-  }
-  
-  // Connect a viewer to a broadcasting device
-  Future<void> connectViewer(String deviceId, String viewerId) async {
-    try {
-      await _devicesCollection.doc(deviceId).update({
-        'viewerId': viewerId,
-        'lastSeen': FieldValue.serverTimestamp(),
-      });
-    } catch (e) {
-      rethrow;
-    }
-  }
-  
-  // Disconnect a viewer from a broadcasting device
-  Future<void> disconnectViewer(String deviceId) async {
-    try {
-      await _devicesCollection.doc(deviceId).update({
-        'viewerId': null,
-        'lastSeen': FieldValue.serverTimestamp(),
-      });
-    } catch (e) {
-      rethrow;
-    }
-  }
-  
-  // Update device status
-  Future<void> updateDeviceStatus(String deviceId, {bool? isActive, bool? isBroadcasting}) async {
-    try {
-      final Map<String, dynamic> updates = {
-        'lastSeen': FieldValue.serverTimestamp(),
-      };
-      
-      if (isActive != null) {
-        updates['isActive'] = isActive;
-      }
-      
-      if (isBroadcasting != null) {
-        updates['isBroadcasting'] = isBroadcasting;
-        if (!isBroadcasting) {
-          updates['viewerId'] = null;
-        }
-      }
-      
-      await _devicesCollection.doc(deviceId).update(updates);
-    } catch (e) {
-      rethrow;
-    }
-  }
-  
-  // Get a specific device
-  Future<DeviceModel?> getDevice(String deviceId) async {
-    try {
-      DocumentSnapshot doc = await _devicesCollection.doc(deviceId).get();
-      if (doc.exists) {
-        return DeviceModel.fromFirestore(doc);
-      }
-      return null;
-    } catch (e) {
-      rethrow;
-    }
-  }
-  
-  // Get devices owned by a specific user
-  Future<List<DeviceModel>> getUserDevices(String userId) async {
-    try {
-      QuerySnapshot snapshot = await _devicesCollection
-          .where('ownerId', isEqualTo: userId)
-          .get();
-      
-      return snapshot.docs
-          .map((doc) => DeviceModel.fromFirestore(doc))
-          .toList();
-    } catch (e) {
-      rethrow;
-    }
-  }
-  
-  // Listen to changes on a specific device
-  Stream<DeviceModel?> deviceStream(String deviceId) {
-    return _devicesCollection.doc(deviceId).snapshots().map((doc) {
-      if (doc.exists) {
-        return DeviceModel.fromFirestore(doc);
-      }
-      return null;
-    });
-  }
-  
-  // Send a vibration signal to a broadcasting device
-  Future<void> sendVibrationSignal(String deviceId, int count) async {
-    try {
-      // Create a signal in a subcollection
-      await _devicesCollection.doc(deviceId).collection('signals').add({
-        'type': 'vibration',
-        'count': count,
-        'timestamp': FieldValue.serverTimestamp(),
-      });
-    } catch (e) {
-      rethrow;
-    }
-  }
-  
-  // Listen for vibration signals on a device
-  Stream<List<VibrationSignal>> vibrationSignalsStream(String deviceId) {
-    return _devicesCollection
-        .doc(deviceId)
-        .collection('signals')
-        .where('type', isEqualTo: 'vibration')
-        .orderBy('timestamp', descending: true)
-        .limit(10)
-        .snapshots()
-        .map((snapshot) {
-          return snapshot.docs.map((doc) {
-            final data = doc.data() as Map<String, dynamic>;
-            return VibrationSignal(
-              id: doc.id,
-              count: data['count'] ?? 1,
-              timestamp: (data['timestamp'] as Timestamp).toDate(),
-            );
-          }).toList();
-        });
   }
 }
 
@@ -296,8 +58,173 @@ class VibrationSignal {
   });
 }
 
+class DeviceService {
+  // Local state
+  Map<String, DeviceModel> _activeDevices = {};
+  Map<String, StreamController<DeviceModel?>> _deviceStreamControllers = {};
+  Map<String, StreamController<List<VibrationSignal>>> _signalStreamControllers = {};
+  final List<VibrationSignal> _recentSignals = [];
+  
+  // Get all available UVC cameras connected to the device
+  Future<List<DeviceModel>> getAvailableDevices() async {
+    try {
+      // Check if UVC camera is supported
+      final isSupported = await UvcCamera.isSupported();
+      if (!isSupported) {
+        throw Exception('Thiết bị không hỗ trợ camera UVC');
+      }
+      
+      // Get list of cameras
+      final devices = await UvcCamera.getDevices();
+      if (devices.isEmpty) {
+        return [];
+      }
+      
+      // Convert to our device model
+      final deviceModels = devices.values.map((device) => 
+        DeviceModel.fromUvcDevice(device)
+      ).toList();
+      
+      // Update local cache
+      for (var device in deviceModels) {
+        _activeDevices[device.id] = device;
+      }
+      
+      return deviceModels;
+    } catch (e) {
+      rethrow;
+    }
+  }
+  
+  // Get active broadcaster devices - this is just a stub now
+  Future<List<DeviceModel>> getActiveBroadcasterDevices() async {
+    // In the new architecture, we'll use WebRTC service to find active broadcasters
+    // This is just a placeholder for compatibility
+    return await getAvailableDevices();
+  }
+  
+  // Start broadcasting with a device
+  Future<void> startBroadcasting(String deviceId) async {
+    if (_activeDevices.containsKey(deviceId)) {
+      final updatedDevice = _activeDevices[deviceId]!.copyWith(
+        isBroadcasting: true,
+      );
+      _activeDevices[deviceId] = updatedDevice;
+      
+      // Notify listeners
+      _notifyDeviceChanged(deviceId, updatedDevice);
+    }
+  }
+  
+  // Stop broadcasting with a device
+  Future<void> stopBroadcasting(String deviceId) async {
+    if (_activeDevices.containsKey(deviceId)) {
+      final updatedDevice = _activeDevices[deviceId]!.copyWith(
+        isBroadcasting: false,
+        viewerId: null,
+      );
+      _activeDevices[deviceId] = updatedDevice;
+      
+      // Notify listeners
+      _notifyDeviceChanged(deviceId, updatedDevice);
+    }
+  }
+  
+  // Update device status
+  Future<void> updateDeviceStatus(String deviceId, {bool? isActive, bool? isBroadcasting}) async {
+    if (_activeDevices.containsKey(deviceId)) {
+      final updatedDevice = _activeDevices[deviceId]!.copyWith(
+        isActive: isActive,
+        isBroadcasting: isBroadcasting,
+      );
+      _activeDevices[deviceId] = updatedDevice;
+      
+      // Notify listeners
+      _notifyDeviceChanged(deviceId, updatedDevice);
+    }
+  }
+  
+  // Get a specific device
+  Future<DeviceModel?> getDevice(String deviceId) async {
+    // Check if we need to refresh devices
+    if (_activeDevices.isEmpty) {
+      await getAvailableDevices();
+    }
+    
+    return _activeDevices[deviceId];
+  }
+  
+  // Stream for device changes
+  Stream<DeviceModel?> deviceStream(String deviceId) {
+    if (!_deviceStreamControllers.containsKey(deviceId)) {
+      _deviceStreamControllers[deviceId] = StreamController<DeviceModel?>.broadcast();
+    }
+    
+    // Initial value
+    if (_activeDevices.containsKey(deviceId)) {
+      _deviceStreamControllers[deviceId]!.add(_activeDevices[deviceId]);
+    }
+    
+    return _deviceStreamControllers[deviceId]!.stream;
+  }
+  
+  // Send a vibration signal
+  Future<void> sendVibrationSignal(String deviceId, int count) async {
+    final signal = VibrationSignal(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      count: count,
+      timestamp: DateTime.now(),
+    );
+    
+    _recentSignals.insert(0, signal);
+    if (_recentSignals.length > 10) {
+      _recentSignals.removeLast();
+    }
+    
+    // Notify listeners
+    _notifyVibrationSignal(deviceId, _recentSignals);
+  }
+  
+  // Listen for vibration signals
+  Stream<List<VibrationSignal>> vibrationSignalsStream(String deviceId) {
+    if (!_signalStreamControllers.containsKey(deviceId)) {
+      _signalStreamControllers[deviceId] = StreamController<List<VibrationSignal>>.broadcast();
+      
+      // Send initial empty list
+      _signalStreamControllers[deviceId]!.add([]);
+    }
+    
+    return _signalStreamControllers[deviceId]!.stream;
+  }
+  
+  // Helper to notify device changes
+  void _notifyDeviceChanged(String deviceId, DeviceModel? device) {
+    if (_deviceStreamControllers.containsKey(deviceId)) {
+      _deviceStreamControllers[deviceId]!.add(device);
+    }
+  }
+  
+  // Helper to notify vibration signals
+  void _notifyVibrationSignal(String deviceId, List<VibrationSignal> signals) {
+    if (_signalStreamControllers.containsKey(deviceId)) {
+      _signalStreamControllers[deviceId]!.add(signals);
+    }
+  }
+  
+  // Clean up resources
+  void dispose() {
+    for (final controller in _deviceStreamControllers.values) {
+      controller.close();
+    }
+    for (final controller in _signalStreamControllers.values) {
+      controller.close();
+    }
+  }
+}
+
 // Device service provider
 final deviceServiceProvider = Provider<DeviceService>((ref) {
-  final logger = ref.watch(loggerProvider);
-  return DeviceService();
+  final service = DeviceService();
+  ref.onDispose(() => service.dispose());
+  return service;
 }); 

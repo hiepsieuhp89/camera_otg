@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lavie/src/features/auth/data/auth_service.dart';
 import 'package:lavie/src/features/auth/domain/user_model.dart';
-import 'package:lavie/src/features/device/data/device_service.dart';
+import 'package:lavie/src/features/webrtc/data/webrtc_connection_service.dart';
 import 'package:lavie/src/routes/routes.dart';
 import 'package:lavie/src/theme/app_theme.dart';
 
@@ -15,24 +15,56 @@ class AdminDashboardScreen extends ConsumerStatefulWidget {
   ConsumerState<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
 }
 
-class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   List<UserModel> _users = [];
-  List<DeviceModel> _devices = [];
+  List<Map<String, dynamic>> _activeStreams = [];
   bool _isLoading = false;
   String? _errorMessage;
+  WebRTCConnectionService? _webRTCService;
   
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
     _loadData();
+    _initWebRTC();
   }
   
   @override
   void dispose() {
-    _tabController.dispose();
+    _webRTCService?.dispose();
     super.dispose();
+  }
+  
+  Future<void> _initWebRTC() async {
+    final user = ref.read(currentUserProvider);
+    if (user != null) {
+      _webRTCService = ref.read(webRTCConnectionServiceProvider(
+        WebRTCConnectionParams(
+          userId: user.id,
+          isBroadcaster: false,
+        ),
+      ));
+      
+      _webRTCService!.onAvailableStreamsChanged = (streams) {
+        setState(() {
+          _activeStreams = streams;
+        });
+      };
+      
+      await _refreshActiveStreams();
+      
+      // Start listening for active streams
+      _webRTCService!.listenForActiveStreams();
+    }
+  }
+  
+  Future<void> _refreshActiveStreams() async {
+    if (_webRTCService != null) {
+      final streams = await _webRTCService!.getActiveStreams();
+      setState(() {
+        _activeStreams = streams;
+      });
+    }
   }
   
   Future<void> _loadData() async {
@@ -43,15 +75,14 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
     
     try {
       final authService = ref.read(authServiceProvider);
-      final deviceService = ref.read(deviceServiceProvider);
       
       final users = await authService.getAllUsers();
-      final devices = await deviceService.getAvailableDevices();
       
       setState(() {
         _users = users;
-        _devices = devices;
       });
+      
+      await _refreshActiveStreams();
     } catch (e) {
       setState(() {
         _errorMessage = 'Failed to load data: ${e.toString()}';
@@ -146,8 +177,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
               Text('Created: ${_formatDateTime(user.createdAt)}'),
               const SizedBox(height: 8),
               Text('Last Login: ${_formatDateTime(user.lastLogin)}'),
-              const SizedBox(height: 8),
-              Text('Paired Device: ${user.pairedDeviceId ?? 'None'}'),
               const SizedBox(height: 16),
               const Text('Change Role:', style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
@@ -194,40 +223,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
       child: Text(_getRoleText(role)),
     );
   }
-
-  void _showDeviceDetails(DeviceModel device) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text(device.name),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('ID: ${device.id}'),
-              const SizedBox(height: 8),
-              Text('Owner ID: ${device.ownerId}'),
-              const SizedBox(height: 8),
-              Text('Active: ${device.isActive ? 'Yes' : 'No'}'),
-              const SizedBox(height: 8),
-              Text('Broadcasting: ${device.isBroadcasting ? 'Yes' : 'No'}'),
-              const SizedBox(height: 8),
-              Text('Last Seen: ${_formatDateTime(device.lastSeen)}'),
-              const SizedBox(height: 8),
-              Text('Viewer ID: ${device.viewerId ?? 'None'}'),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Close'),
-            ),
-          ],
-        );
-      },
-    );
-  }
   
   String _getRoleText(UserRole role) {
     switch (role) {
@@ -246,58 +241,57 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
   
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Admin Dashboard'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _isLoading ? null : _loadData,
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: _logout,
-          ),
-        ],
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: 'Users'),
-            Tab(text: 'Devices'),
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Admin Dashboard'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: _isLoading ? null : _loadData,
+            ),
+            IconButton(
+              icon: const Icon(Icons.logout),
+              onPressed: _logout,
+            ),
           ],
+          bottom: const TabBar(
+            tabs: [
+              Tab(text: 'Users'),
+              Tab(text: 'Active Streams'),
+            ],
+          ),
         ),
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                if (_errorMessage != null)
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    color: Colors.red.shade100,
-                    width: double.infinity,
-                    child: Text(
-                      _errorMessage!,
-                      style: const TextStyle(color: Colors.red),
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : Column(
+                children: [
+                  if (_errorMessage != null)
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      color: Colors.red.shade100,
+                      width: double.infinity,
+                      child: Text(
+                        _errorMessage!,
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                    ),
+                  Expanded(
+                    child: TabBarView(
+                      children: [
+                        _buildUsersTab(),
+                        _buildActiveStreamsTab(),
+                      ],
                     ),
                   ),
-                Expanded(
-                  child: TabBarView(
-                    controller: _tabController,
-                    children: [
-                      _buildUsersTab(),
-                      _buildDevicesTab(),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-      floatingActionButton: _tabController.index == 0 
-          ? FloatingActionButton(
-              onPressed: _showCreateUserDialog,
-              child: const Icon(Icons.person_add),
-            )
-          : null,
+                ],
+              ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: _showCreateUserDialog,
+          child: const Icon(Icons.person_add),
+        ),
+      ),
     );
   }
   
@@ -329,36 +323,42 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
     );
   }
   
-  Widget _buildDevicesTab() {
-    if (_devices.isEmpty) {
+  Widget _buildActiveStreamsTab() {
+    if (_activeStreams.isEmpty) {
       return const Center(
-        child: Text('No devices found'),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.videocam_off,
+              size: 64,
+              color: Colors.grey,
+            ),
+            SizedBox(height: 16),
+            Text(
+              'No active streams',
+              style: TextStyle(fontSize: 18),
+            ),
+          ],
+        ),
       );
     }
     
     return ListView.builder(
-      itemCount: _devices.length,
+      itemCount: _activeStreams.length,
       itemBuilder: (context, index) {
-        final device = _devices[index];
+        final stream = _activeStreams[index];
         return ListTile(
-          leading: CircleAvatar(
-            backgroundColor: device.isBroadcasting ? Colors.green : Colors.grey,
+          leading: const CircleAvatar(
+            backgroundColor: Colors.green,
             child: Icon(
-              device.isBroadcasting ? Icons.videocam : Icons.videocam_off,
+              Icons.videocam,
               color: Colors.white,
             ),
           ),
-          title: Text(device.name),
-          subtitle: Text(
-            device.isBroadcasting
-                ? 'Broadcasting • Last seen: ${_formatDateTime(device.lastSeen)}'
-                : 'Offline • Last seen: ${_formatDateTime(device.lastSeen)}',
-          ),
-          trailing: IconButton(
-            icon: const Icon(Icons.info_outline),
-            onPressed: () => _showDeviceDetails(device),
-          ),
-          onTap: () => _showDeviceDetails(device),
+          title: Text(stream['broadcasterName'] ?? 'Unknown broadcaster'),
+          subtitle: Text('ID: ${stream['broadcasterId']}'),
+          trailing: const Icon(Icons.circle, color: Colors.green, size: 12),
         );
       },
     );
@@ -407,68 +407,54 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextFormField(
+                    TextField(
                       controller: nameController,
                       decoration: const InputDecoration(
-                        labelText: 'Full Name',
-                        prefixIcon: Icon(Icons.person_outlined),
+                        labelText: 'Name',
+                        hintText: 'Enter user name',
                       ),
                     ),
                     const SizedBox(height: 16),
-                    TextFormField(
+                    TextField(
                       controller: emailController,
-                      keyboardType: TextInputType.emailAddress,
                       decoration: const InputDecoration(
                         labelText: 'Email',
-                        prefixIcon: Icon(Icons.email_outlined),
+                        hintText: 'Enter email address',
                       ),
+                      keyboardType: TextInputType.emailAddress,
                     ),
                     const SizedBox(height: 16),
-                    TextFormField(
+                    TextField(
                       controller: passwordController,
-                      obscureText: true,
                       decoration: const InputDecoration(
                         labelText: 'Password',
-                        prefixIcon: Icon(Icons.lock_outline),
+                        hintText: 'Enter password',
                       ),
+                      obscureText: true,
                     ),
                     const SizedBox(height: 16),
-                    const Text(
-                      'Select role:',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
+                    const Text('Role:'),
                     const SizedBox(height: 8),
-                    RadioListTile<UserRole>(
-                      title: const Text('Viewer'),
-                      value: UserRole.viewer,
-                      groupValue: selectedRole,
-                      onChanged: (UserRole? value) {
-                        setState(() {
-                          selectedRole = value ?? UserRole.viewer;
-                        });
-                      },
-                    ),
-                    RadioListTile<UserRole>(
-                      title: const Text('Broadcaster'),
-                      value: UserRole.broadcaster,
-                      groupValue: selectedRole,
-                      onChanged: (UserRole? value) {
-                        setState(() {
-                          selectedRole = value ?? UserRole.broadcaster;
-                        });
-                      },
-                    ),
-                    RadioListTile<UserRole>(
-                      title: const Text('Admin'),
-                      value: UserRole.admin,
-                      groupValue: selectedRole,
-                      onChanged: (UserRole? value) {
-                        setState(() {
-                          selectedRole = value ?? UserRole.admin;
-                        });
-                      },
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _createRoleChip(UserRole.viewer, selectedRole, (role) {
+                          setState(() {
+                            selectedRole = role;
+                          });
+                        }),
+                        _createRoleChip(UserRole.broadcaster, selectedRole, (role) {
+                          setState(() {
+                            selectedRole = role;
+                          });
+                        }),
+                        _createRoleChip(UserRole.admin, selectedRole, (role) {
+                          setState(() {
+                            selectedRole = role;
+                          });
+                        }),
+                      ],
                     ),
                   ],
                 ),
@@ -482,8 +468,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
                   onPressed: () {
                     Navigator.of(context).pop();
                     _createUser(
-                      nameController.text.trim(),
-                      emailController.text.trim(),
+                      nameController.text,
+                      emailController.text,
                       passwordController.text,
                       selectedRole,
                     );
@@ -494,6 +480,18 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
             );
           },
         );
+      },
+    );
+  }
+  
+  Widget _createRoleChip(UserRole role, UserRole selectedRole, Function(UserRole) onSelected) {
+    return ChoiceChip(
+      label: Text(_getRoleText(role)),
+      selected: role == selectedRole,
+      onSelected: (selected) {
+        if (selected) {
+          onSelected(role);
+        }
       },
     );
   }
@@ -515,12 +513,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
     });
     
     try {
-      await ref.read(currentUserProvider.notifier).createUser(
-        email,
-        password,
-        name,
-        role,
-      );
+      final authService = ref.read(authServiceProvider);
+      final userCredential = await authService.createUserWithEmailAndPassword(email, password);
+      await authService.createUserData(userCredential.user!.uid, email, name, role);
       
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -542,10 +537,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
           backgroundColor: Colors.red,
         ),
       );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
     }
   }
 } 

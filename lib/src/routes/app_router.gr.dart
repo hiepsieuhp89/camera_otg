@@ -27,12 +27,6 @@ abstract class _$AppRouter extends RootStackRouter {
         child: const BroadcastScreen(),
       );
     },
-    DevicePairingRoute.name: (routeData) {
-      return AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: const DevicePairingScreen(),
-      );
-    },
     LoginRoute.name: (routeData) {
       return AutoRoutePage<dynamic>(
         routeData: routeData,
@@ -84,20 +78,6 @@ class BroadcastRoute extends PageRouteInfo<void> {
         );
 
   static const String name = 'BroadcastRoute';
-
-  static const PageInfo<void> page = PageInfo<void>(name);
-}
-
-/// generated route for
-/// [DevicePairingScreen]
-class DevicePairingRoute extends PageRouteInfo<void> {
-  const DevicePairingRoute({List<PageRouteInfo>? children})
-      : super(
-          DevicePairingRoute.name,
-          initialChildren: children,
-        );
-
-  static const String name = 'DevicePairingRoute';
 
   static const PageInfo<void> page = PageInfo<void>(name);
 }

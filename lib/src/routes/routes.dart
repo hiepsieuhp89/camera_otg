@@ -7,7 +7,6 @@ class Routes {
   static const adminDashboardRoute = '/admin';
   static const broadcastRoute = '/broadcast';
   static const viewerRoute = '/viewer';
-  static const devicePairingRoute = '/device-pairing';
   static const uvcCameraRoute = '/uvc-camera';
 }
 
@@ -33,11 +32,6 @@ class ViewerRoute extends AutoRouter {
 }
 
 @RoutePage()
-class DevicePairingRoute extends AutoRouter {
-  const DevicePairingRoute({super.key});
-}
-
-@RoutePage()
 class UVCCameraRoute extends AutoRouter {
   const UVCCameraRoute({super.key});
 }
@@ -49,6 +43,5 @@ extension AppRouterNavigationHelpers on StackRouter {
   Future<void> navigateToAdmin() => navigateNamed(Routes.adminDashboardRoute);
   Future<void> navigateToBroadcast() => navigateNamed(Routes.broadcastRoute);
   Future<void> navigateToViewer() => navigateNamed(Routes.viewerRoute);
-  Future<void> navigateToDevicePairing() => navigateNamed(Routes.devicePairingRoute);
   Future<void> navigateToUVCCamera() => navigateNamed(Routes.uvcCameraRoute);
 } 
