@@ -573,8 +573,19 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
       var cameras = await navigator.mediaDevices.getSources();
       await logger.info('BroadcastScreen: Available devices: ${cameras.length}');
       
+      // Log toàn bộ cameras để debug
+      await logger.info('BroadcastScreen: Full cameras list: $cameras');
+      
       for (var camera in cameras) {
-        await logger.info('BroadcastScreen: Device - ID: ${camera.deviceId}, Kind: ${camera.kind}, Label: ${camera.label}');
+        // Log thông tin tất cả các keys và giá trị để debug
+        await logger.info('BroadcastScreen: Camera object type: ${camera.runtimeType}');
+        if (camera is Map) {
+          await logger.info('BroadcastScreen: Camera keys: ${camera.keys.toList()}');
+          await logger.info('BroadcastScreen: Camera full data: $camera');
+        }
+        
+        // Fix: Access properties safely with toString to avoid null errors
+        await logger.info('BroadcastScreen: Device - ID: ${camera['deviceId'] ?? 'unknown'}, Kind: ${camera['kind'] ?? 'unknown'}, Label: ${camera['label'] ?? 'unknown'}');
       }
       
       final completer = Completer<MediaStream?>();
