@@ -211,29 +211,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 children: [
                   // Logo
                   Container(
-                    width: 120,
-                    height: 120,
+                    width: 160,
+                    height: 160,
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.1),
-                          spreadRadius: 5,
-                          blurRadius: 10,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(20),
                       child: Image.asset(
                         'assets/icon/app_icon.png',
-                        fit: BoxFit.cover,
+                        fit: BoxFit.contain,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 20),
                   
                   // Title
                   const Text(

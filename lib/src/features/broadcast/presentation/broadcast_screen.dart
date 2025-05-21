@@ -4,8 +4,11 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:lavie/src/features/auth/data/auth_service.dart';
 import 'package:lavie/src/features/device/data/device_service.dart';
+import 'package:lavie/src/features/webrtc/data/webrtc_connection_service.dart';
+import 'package:lavie/src/features/webrtc/data/webrtc_background_service.dart';
 import 'package:lavie/src/theme/app_theme.dart';
 import 'package:uvccamera/uvccamera.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -28,10 +31,14 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
   UvcCameraController? _cameraController;
   UvcCameraDevice? _selectedDevice;
   Timer? _statusUpdateTimer;
+  WebRTCConnectionService? _webRTCService;
+  RTCVideoRenderer? _localRenderer;
+  MediaStream? _localStream;
   
   @override
   void initState() {
     super.initState();
+    _initializeWebRTC();
     _initializeCamera();
     _startListeningForSignals();
   }
@@ -39,9 +46,38 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
   @override
   void dispose() {
     _cleanupCamera();
+    _cleanupWebRTC();
     _signalSubscription?.cancel();
     _statusUpdateTimer?.cancel();
     super.dispose();
+  }
+  
+  Future<void> _initializeWebRTC() async {
+    _localRenderer = RTCVideoRenderer();
+    await _localRenderer!.initialize();
+    
+    final user = ref.read(currentUserProvider);
+    if (user != null) {
+      _webRTCService = ref.read(webRTCConnectionServiceProvider(
+        WebRTCConnectionParams(
+          userId: user.id,
+          isBroadcaster: true,
+        ),
+      ));
+      
+      // Start background service
+      final backgroundService = ref.read(webRTCBackgroundServiceProvider);
+      await backgroundService.startService();
+    }
+  }
+  
+  void _cleanupWebRTC() {
+    _localRenderer?.dispose();
+    _localRenderer = null;
+    _webRTCService?.dispose();
+    _webRTCService = null;
+    _localStream?.dispose();
+    _localStream = null;
   }
   
   void _cleanupCamera() {
@@ -90,6 +126,20 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
       _cameraController = UvcCameraController(device: _selectedDevice!);
       await _cameraController!.initialize();
       
+      // Get camera stream for WebRTC
+      _localStream = await navigator.mediaDevices.getUserMedia({
+        'audio': true,
+        'video': {
+          'deviceId': _selectedDevice!.name,
+          'width': {'ideal': 1280},
+          'height': {'ideal': 720}
+        }
+      });
+      
+      if (_localRenderer != null) {
+        _localRenderer!.srcObject = _localStream;
+      }
+      
       setState(() {
         _isCameraConnected = true;
       });
@@ -126,7 +176,6 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
         isBroadcasting: _isBroadcasting,
       );
     } catch (e) {
-      // Silently handle failure, will retry on next timer
       print('Failed to update device status: $e');
     }
   }
@@ -147,6 +196,10 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
       final user = ref.read(currentUserProvider);
       if (user == null || user.pairedDeviceId == null) {
         throw Exception('Chưa ghép nối với thiết bị');
+      }
+      
+      if (_webRTCService != null && _localStream != null) {
+        await _webRTCService!.startBroadcast(_localStream!, user.name);
       }
       
       // Update device status in Firestore
@@ -182,6 +235,10 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
         throw Exception('Chưa ghép nối với thiết bị');
       }
       
+      if (_webRTCService != null) {
+        await _webRTCService!.stopBroadcast();
+      }
+      
       // Update device status in Firestore
       final deviceService = ref.read(deviceServiceProvider);
       await deviceService.stopBroadcasting(user.pairedDeviceId!);
@@ -212,6 +269,10 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
     _signalSubscription = deviceService
         .vibrationSignalsStream(user.pairedDeviceId!)
         .listen(_handleVibrationSignal);
+        
+    if (_webRTCService != null) {
+      _webRTCService!.startListeningForVibrations();
+    }
   }
   
   void _handleVibrationSignal(List<VibrationSignal> signals) {
@@ -316,10 +377,13 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
               ),
               child: _isInitializing
                   ? const Center(child: CircularProgressIndicator())
-                  : _isCameraConnected && _cameraController != null && _cameraController!.value.isInitialized
+                  : _isCameraConnected && _localRenderer != null
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child: UvcCameraPreview(_cameraController!),
+                          child: RTCVideoView(
+                            _localRenderer!,
+                            objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                          ),
                         )
                       : Center(
                           child: Column(

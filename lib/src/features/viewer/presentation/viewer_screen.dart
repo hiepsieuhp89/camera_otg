@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:lavie/src/features/auth/data/auth_service.dart';
 import 'package:lavie/src/features/device/data/device_service.dart';
+import 'package:lavie/src/features/webrtc/data/webrtc_connection_service.dart';
 import 'package:lavie/src/theme/app_theme.dart';
 
 @RoutePage()
@@ -21,17 +23,50 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   bool _isConnecting = false;
   String? _errorMessage;
   bool _isStreamActive = false;
+  WebRTCConnectionService? _webRTCService;
+  RTCVideoRenderer? _remoteRenderer;
   
   @override
   void initState() {
     super.initState();
+    _initializeWebRTC();
     _checkForConnectedDevice();
   }
   
   @override
   void dispose() {
+    _cleanupWebRTC();
     _deviceStreamSubscription?.cancel();
     super.dispose();
+  }
+  
+  Future<void> _initializeWebRTC() async {
+    _remoteRenderer = RTCVideoRenderer();
+    await _remoteRenderer!.initialize();
+    
+    final user = ref.read(currentUserProvider);
+    if (user != null) {
+      _webRTCService = ref.read(webRTCConnectionServiceProvider(
+        WebRTCConnectionParams(
+          userId: user.id,
+          isBroadcaster: false,
+        ),
+      ));
+      
+      _webRTCService!.onRemoteStreamAvailable = (stream) {
+        if (_remoteRenderer != null) {
+          _remoteRenderer!.srcObject = stream;
+          setState(() {});
+        }
+      };
+    }
+  }
+  
+  void _cleanupWebRTC() {
+    _remoteRenderer?.dispose();
+    _remoteRenderer = null;
+    _webRTCService?.dispose();
+    _webRTCService = null;
   }
   
   Future<void> _checkForConnectedDevice() async {
@@ -75,7 +110,47 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         _connectedDevice = device;
         _isStreamActive = device.isBroadcasting;
       });
+      
+      // Connect to WebRTC stream if broadcasting started
+      if (device.isBroadcasting && !_isConnecting && _webRTCService != null) {
+        _connectToStream(device.id);
+      }
     });
+  }
+  
+  Future<void> _connectToStream(String broadcasterId) async {
+    if (_isConnecting) return;
+    
+    setState(() {
+      _isConnecting = true;
+      _errorMessage = null;
+    });
+    
+    try {
+      await _webRTCService!.startViewing(broadcasterId);
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Đã kết nối với phát sóng'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Lỗi kết nối: ${e.toString()}';
+      });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Lỗi kết nối: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      setState(() {
+        _isConnecting = false;
+      });
+    }
   }
   
   Future<void> _sendVibrationSignal(int count) async {
@@ -95,7 +170,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     });
     
     try {
-      await ref.read(deviceServiceProvider).sendVibrationSignal(_connectedDevice!.id, count);
+      await _webRTCService!.sendVibrationToBroadcaster(_connectedDevice!.id, count);
       
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -244,59 +319,38 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
             ),
           ),
         
-        // Video stream (placeholder since actual video would require WebRTC)
+        // Video stream
         Expanded(
           child: Container(
             color: Colors.black,
-            child: _isStreamActive
-                ? const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.videocam,
-                          size: 64,
-                          color: Colors.white54,
-                        ),
-                        SizedBox(height: 16),
-                        Text(
-                          'Phát trực tiếp',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                          ),
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          'Video sẽ xuất hiện ở đây',
-                          style: TextStyle(
-                            color: Colors.white70,
-                          ),
-                        ),
-                      ],
-                    ),
+            child: _isStreamActive && _remoteRenderer != null
+                ? RTCVideoView(
+                    _remoteRenderer!,
+                    objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
                   )
-                : const Center(
+                : Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          Icons.hourglass_empty,
+                          _isStreamActive ? Icons.videocam : Icons.hourglass_empty,
                           size: 64,
                           color: Colors.white54,
                         ),
-                        SizedBox(height: 16),
+                        const SizedBox(height: 16),
                         Text(
-                          'Đang chờ phát sóng',
-                          style: TextStyle(
+                          _isStreamActive ? 'Đang kết nối...' : 'Đang chờ phát sóng',
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 20,
                           ),
                         ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
                         Text(
-                          'Người phát sóng hiện đang ngoại tuyến',
-                          style: TextStyle(
+                          _isStreamActive
+                              ? 'Đang thiết lập kết nối video...'
+                              : 'Người phát sóng hiện đang ngoại tuyến',
+                          style: const TextStyle(
                             color: Colors.white70,
                           ),
                         ),
