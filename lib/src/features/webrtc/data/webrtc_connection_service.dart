@@ -102,6 +102,59 @@ class WebRTCConnectionService {
     debugPrint('Broadcast setup complete');
   }
 
+  /// Start broadcasting from the broadcaster device without media stream
+  Future<void> startBroadcastWithoutMedia(String broadcasterName) async {
+    debugPrint('Starting broadcast without media as $broadcasterName...');
+
+    debugPrint('Initializing peer connection...');
+    await _initPeerConnection();
+    
+    debugPrint('Creating WebRTC offer...');
+    RTCSessionDescription offer = await _peerConnection!.createOffer();
+    await _peerConnection!.setLocalDescription(offer);
+    
+    debugPrint('Registering broadcast in active streams (no media)...');
+    await _firestore.collection('activeStreams').doc(userId).set({
+      'broadcasterName': broadcasterName,
+      'broadcasterId': userId,
+      'offer': {
+        'type': offer.type,
+        'sdp': offer.sdp,
+      },
+      'timestamp': FieldValue.serverTimestamp(),
+      'isActive': true,
+      'noMedia': true,  // Flag indicating this is a no-media broadcast
+    });
+
+    debugPrint('Listening for answers from viewers...');
+    _answerSubscription = _firestore
+        .collection('broadcasters')
+        .doc(userId)
+        .collection('answers')
+        .snapshots()
+        .listen((snapshot) async {
+      for (final change in snapshot.docChanges) {
+        if (change.type == DocumentChangeType.added) {
+          final data = change.doc.data();
+          if (data != null) {
+            debugPrint('Answer received from viewer: ${data['viewerId']}');
+            final answer = RTCSessionDescription(
+              data['answer']['sdp'],
+              data['answer']['type'],
+            );
+            
+            await _peerConnection!.setRemoteDescription(answer);
+            debugPrint('Remote description set');
+          }
+        }
+      }
+    });
+
+    debugPrint('Listening for ICE candidates...');
+    _listenForIceCandidates();
+    debugPrint('No-media broadcast setup complete');
+  }
+
   /// Get list of active broadcasts
   Future<List<Map<String, dynamic>>> getActiveStreams() async {
     debugPrint('Getting active streams...');
