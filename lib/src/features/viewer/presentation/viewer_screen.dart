@@ -82,7 +82,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     if (_connectedDevice == null || !_isStreamActive) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Cannot send signal: No active broadcast'),
+          content: Text('Không thể gửi tín hiệu: Không có phát sóng đang hoạt động'),
           backgroundColor: Colors.red,
         ),
       );
@@ -99,18 +99,18 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Sent ${count == 1 ? 'single' : 'double'} vibration signal'),
+          content: Text('Đã gửi ${count == 1 ? 'một' : 'hai'} tín hiệu rung'),
           backgroundColor: Colors.green,
         ),
       );
     } catch (e) {
       setState(() {
-        _errorMessage = 'Failed to send signal: ${e.toString()}';
+        _errorMessage = 'Lỗi gửi tín hiệu: ${e.toString()}';
       });
       
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to send signal: ${e.toString()}'),
+          content: Text('Lỗi gửi tín hiệu: ${e.toString()}'),
           backgroundColor: Colors.red,
         ),
       );
@@ -128,14 +128,14 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     if (user == null) {
       return const Scaffold(
         body: Center(
-          child: Text('Not logged in'),
+          child: Text('Chưa đăng nhập'),
         ),
       );
     }
     
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Viewer'),
+        title: const Text('Người xem'),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -154,30 +154,24 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   }
   
   Widget _buildNoPairedDeviceView() {
-    return Center(
+    return const Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
+          Icon(
             Icons.videocam_off,
             size: 64,
             color: Colors.grey,
           ),
-          const SizedBox(height: 24),
-          const Text(
-            'No device paired',
+          SizedBox(height: 24),
+          Text(
+            'Chưa có phiên Live nào',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 16),
-          const Text(
-            'You need to pair with a broadcaster device first.',
+          SizedBox(height: 16),
+          Text(
+            'Hiện tại bạn chưa có phiên Live nào có thể xem được.',
             textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton.icon(
-            onPressed: () => context.router.pushNamed('/device-pairing'),
-            icon: const Icon(Icons.link),
-            label: const Text('Pair with Device'),
           ),
         ],
       ),
@@ -221,7 +215,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      _isStreamActive ? 'Broadcasting active' : 'Waiting for broadcast',
+                      _isStreamActive ? 'Đang phát sóng' : 'Đang chờ phát sóng',
                       style: TextStyle(
                         color: _isStreamActive ? Colors.green : Colors.grey,
                       ),
@@ -232,7 +226,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
               if (!_isStreamActive)
                 OutlinedButton(
                   onPressed: _checkForConnectedDevice,
-                  child: const Text('Refresh'),
+                  child: const Text('Làm mới'),
                 ),
             ],
           ),
@@ -266,7 +260,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
                         ),
                         SizedBox(height: 16),
                         Text(
-                          'Live Stream',
+                          'Phát trực tiếp',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 20,
@@ -274,7 +268,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
                         ),
                         SizedBox(height: 8),
                         Text(
-                          'Video stream would appear here',
+                          'Video sẽ xuất hiện ở đây',
                           style: TextStyle(
                             color: Colors.white70,
                           ),
@@ -293,7 +287,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
                         ),
                         SizedBox(height: 16),
                         Text(
-                          'Waiting for Broadcast',
+                          'Đang chờ phát sóng',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 20,
@@ -301,7 +295,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
                         ),
                         SizedBox(height: 8),
                         Text(
-                          'The broadcaster is currently offline',
+                          'Người phát sóng hiện đang ngoại tuyến',
                           style: TextStyle(
                             color: Colors.white70,
                           ),
@@ -320,7 +314,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Text(
-                'Send Signal to Broadcaster',
+                'Gửi tín hiệu đến người phát sóng',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -336,7 +330,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
                           ? () => _sendVibrationSignal(1)
                           : null,
                       icon: const Icon(Icons.vibration),
-                      label: const Text('Single Vibration'),
+                      label: const Text('Rung một lần'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.primaryColor,
                         foregroundColor: Colors.white,
@@ -351,7 +345,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
                           ? () => _sendVibrationSignal(2)
                           : null,
                       icon: const Icon(Icons.vibration),
-                      label: const Text('Double Vibration'),
+                      label: const Text('Rung hai lần'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.secondaryColor,
                         foregroundColor: Colors.white,
@@ -364,8 +358,8 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
               const SizedBox(height: 8),
               Text(
                 _isStreamActive
-                    ? 'Send a vibration signal to alert the broadcaster'
-                    : 'Wait for broadcast to start before sending signals',
+                    ? 'Gửi tín hiệu rung để thông báo cho người phát sóng'
+                    : 'Chờ phát sóng bắt đầu trước khi gửi tín hiệu',
                 style: TextStyle(
                   color: Colors.grey[600],
                   fontSize: 12,

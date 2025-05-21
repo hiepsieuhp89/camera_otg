@@ -46,7 +46,7 @@ class _DevicePairingScreenState extends ConsumerState<DevicePairingScreen> {
       final currentUser = ref.read(currentUserProvider);
       
       if (currentUser == null) {
-        throw Exception('User not logged in');
+        throw Exception('Chưa đăng nhập');
       }
       
       // For broadcasters, show all available devices
@@ -58,7 +58,7 @@ class _DevicePairingScreenState extends ConsumerState<DevicePairingScreen> {
       }
     } catch (e) {
       setState(() {
-        _errorMessage = 'Failed to load devices: ${e.toString()}';
+        _errorMessage = 'Lỗi tải danh sách thiết bị: ${e.toString()}';
       });
     } finally {
       if (mounted) {
@@ -78,7 +78,7 @@ class _DevicePairingScreenState extends ConsumerState<DevicePairingScreen> {
     try {
       final currentUser = ref.read(currentUserProvider);
       if (currentUser == null) {
-        throw Exception('User not logged in');
+        throw Exception('Chưa đăng nhập');
       }
       
       // Update user's paired device
@@ -97,7 +97,7 @@ class _DevicePairingScreenState extends ConsumerState<DevicePairingScreen> {
       }
     } catch (e) {
       setState(() {
-        _errorMessage = 'Failed to pair with device: ${e.toString()}';
+        _errorMessage = 'Lỗi ghép nối thiết bị: ${e.toString()}';
       });
     } finally {
       if (mounted) {
@@ -111,7 +111,7 @@ class _DevicePairingScreenState extends ConsumerState<DevicePairingScreen> {
   Future<void> _registerNewDevice() async {
     if (_deviceIdController.text.isEmpty || _deviceNameController.text.isEmpty) {
       setState(() {
-        _errorMessage = 'Please enter both device ID and name';
+        _errorMessage = 'Vui lòng nhập ID và tên thiết bị';
       });
       return;
     }
@@ -126,7 +126,7 @@ class _DevicePairingScreenState extends ConsumerState<DevicePairingScreen> {
       final currentUser = ref.read(currentUserProvider);
       
       if (currentUser == null) {
-        throw Exception('User not logged in');
+        throw Exception('Chưa đăng nhập');
       }
       
       // Register the new device
@@ -145,7 +145,7 @@ class _DevicePairingScreenState extends ConsumerState<DevicePairingScreen> {
       }
     } catch (e) {
       setState(() {
-        _errorMessage = 'Failed to register device: ${e.toString()}';
+        _errorMessage = 'Lỗi đăng ký thiết bị: ${e.toString()}';
       });
     } finally {
       if (mounted) {
@@ -162,7 +162,7 @@ class _DevicePairingScreenState extends ConsumerState<DevicePairingScreen> {
         child: Padding(
           padding: EdgeInsets.all(24.0),
           child: Text(
-            'No devices available. Register a new device or try again later.',
+            'Không có thiết bị khả dụng. Đăng ký thiết bị mới hoặc thử lại sau.',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 16),
           ),
@@ -183,7 +183,7 @@ class _DevicePairingScreenState extends ConsumerState<DevicePairingScreen> {
             subtitle: Text('ID: ${device.id}'),
             trailing: ElevatedButton(
               onPressed: _isLoading ? null : () => _pairWithDevice(device),
-              child: const Text('Connect'),
+              child: const Text('Kết nối'),
             ),
           ),
         );
@@ -207,23 +207,23 @@ class _DevicePairingScreenState extends ConsumerState<DevicePairingScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Text(
-              'Register New Device',
+              'Đăng ký thiết bị mới',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: _deviceIdController,
               decoration: const InputDecoration(
-                labelText: 'Device ID',
-                hintText: 'Enter device identifier',
+                labelText: 'ID thiết bị',
+                hintText: 'Nhập định danh thiết bị',
               ),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: _deviceNameController,
               decoration: const InputDecoration(
-                labelText: 'Device Name',
-                hintText: 'Enter a name for your device',
+                labelText: 'Tên thiết bị',
+                hintText: 'Nhập tên cho thiết bị của bạn',
               ),
             ),
             const SizedBox(height: 24),
@@ -238,7 +238,7 @@ class _DevicePairingScreenState extends ConsumerState<DevicePairingScreen> {
                         color: Colors.white,
                       ),
                     )
-                  : const Text('Register & Connect'),
+                  : const Text('Đăng ký & Kết nối'),
             ),
           ],
         ),
@@ -252,7 +252,7 @@ class _DevicePairingScreenState extends ConsumerState<DevicePairingScreen> {
     
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Device Pairing'),
+        title: const Text('Ghép nối thiết bị'),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -261,7 +261,7 @@ class _DevicePairingScreenState extends ConsumerState<DevicePairingScreen> {
         ],
       ),
       body: currentUser == null
-          ? const Center(child: Text('Please log in first'))
+          ? const Center(child: Text('Vui lòng đăng nhập trước'))
           : RefreshIndicator(
               onRefresh: _loadAvailableDevices,
               child: SingleChildScrollView(
@@ -280,7 +280,7 @@ class _DevicePairingScreenState extends ConsumerState<DevicePairingScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Hello, ${currentUser.name}',
+                              'Xin chào, ${currentUser.name}',
                               style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -288,7 +288,7 @@ class _DevicePairingScreenState extends ConsumerState<DevicePairingScreen> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'You are logged in as a ${_getRoleText(currentUser.role)}',
+                              'Bạn đang đăng nhập với vai trò ${_getRoleText(currentUser.role)}',
                               style: const TextStyle(
                                 fontSize: 14,
                               ),
@@ -299,7 +299,7 @@ class _DevicePairingScreenState extends ConsumerState<DevicePairingScreen> {
                                 children: [
                                   const Icon(Icons.link, color: AppTheme.primaryColor),
                                   const SizedBox(width: 8),
-                                  const Text('Currently paired with device: '),
+                                  const Text('Đang kết nối với thiết bị: '),
                                   Text(
                                     currentUser.pairedDeviceId!,
                                     style: const TextStyle(fontWeight: FontWeight.bold),
@@ -312,7 +312,7 @@ class _DevicePairingScreenState extends ConsumerState<DevicePairingScreen> {
                                   ref.read(currentUserProvider.notifier).removePairedDevice();
                                 },
                                 icon: const Icon(Icons.link_off),
-                                label: const Text('Disconnect'),
+                                label: const Text('Ngắt kết nối'),
                               ),
                             ],
                           ],
@@ -339,7 +339,7 @@ class _DevicePairingScreenState extends ConsumerState<DevicePairingScreen> {
                     
                     // Available devices section
                     const Text(
-                      'Available Devices',
+                      'Thiết bị khả dụng',
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
@@ -368,7 +368,7 @@ class _DevicePairingScreenState extends ConsumerState<DevicePairingScreen> {
                         }
                       },
                       icon: const Icon(Icons.logout),
-                      label: const Text('Sign Out'),
+                      label: const Text('Đăng xuất'),
                     ),
                   ],
                 ),
@@ -380,11 +380,11 @@ class _DevicePairingScreenState extends ConsumerState<DevicePairingScreen> {
   String _getRoleText(UserRole role) {
     switch (role) {
       case UserRole.admin:
-        return 'Administrator';
+        return 'Quản trị viên';
       case UserRole.broadcaster:
-        return 'Broadcaster';
+        return 'Người phát sóng';
       case UserRole.viewer:
-        return 'Viewer';
+        return 'Người xem';
     }
   }
 } 

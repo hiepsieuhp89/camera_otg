@@ -336,6 +336,24 @@ class CurrentUserNotifier extends StateNotifier<UserModel?> {
       rethrow;
     }
   }
+
+  // Add updateUserRole method
+  Future<void> updateUserRole(UserRole newRole) async {
+    if (state == null) return;
+    
+    try {
+      await _authService.updateUser(state!.id, {
+        'role': newRole.toString().split('.').last,
+      });
+      
+      // Update local state
+      final updatedUser = await _authService.getUserData(state!.id);
+      state = updatedUser;
+    } catch (e) {
+      _logger.error("Update role error: ${e.toString()}");
+      rethrow;
+    }
+  }
 }
 
 // Current user provider

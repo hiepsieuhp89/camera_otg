@@ -61,20 +61,20 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
       if (!cameraStatus.isGranted) {
         cameraStatus = await Permission.camera.request();
         if (!cameraStatus.isGranted) {
-          throw Exception('Camera permission denied');
+          throw Exception('Quyền truy cập camera bị từ chối');
         }
       }
       
       // Check if UVC camera is supported
       final isSupported = await UvcCamera.isSupported();
       if (!isSupported) {
-        throw Exception('UVC camera not supported on this device');
+        throw Exception('Thiết bị không hỗ trợ camera UVC');
       }
       
       // Get list of cameras
       final devices = await UvcCamera.getDevices();
       if (devices.isEmpty) {
-        throw Exception('No UVC cameras found');
+        throw Exception('Không tìm thấy camera UVC');
       }
       
       // Use the first camera
@@ -83,7 +83,7 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
       // Request device permission
       final hasPermission = await UvcCamera.requestDevicePermission(_selectedDevice!);
       if (!hasPermission) {
-        throw Exception('Device permission denied');
+        throw Exception('Quyền truy cập thiết bị bị từ chối');
       }
       
       // Initialize camera controller
@@ -98,7 +98,7 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
       _startStatusUpdates();
     } catch (e) {
       setState(() {
-        _errorMessage = 'Failed to initialize camera: ${e.toString()}';
+        _errorMessage = 'Lỗi khởi tạo camera: ${e.toString()}';
         _isCameraConnected = false;
       });
     } finally {
@@ -134,7 +134,7 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
   Future<void> _startBroadcasting() async {
     if (!_isCameraConnected || _cameraController == null || !_cameraController!.value.isInitialized) {
       setState(() {
-        _errorMessage = 'Camera not connected or not initialized';
+        _errorMessage = 'Camera chưa được kết nối hoặc khởi tạo';
       });
       return;
     }
@@ -146,7 +146,7 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
     try {
       final user = ref.read(currentUserProvider);
       if (user == null || user.pairedDeviceId == null) {
-        throw Exception('No paired device found');
+        throw Exception('Chưa ghép nối với thiết bị');
       }
       
       // Update device status in Firestore
@@ -160,13 +160,13 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
       
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Broadcasting started'),
+          content: Text('Đã bắt đầu phát sóng'),
           backgroundColor: Colors.green,
         ),
       );
     } catch (e) {
       setState(() {
-        _errorMessage = 'Failed to start broadcasting: ${e.toString()}';
+        _errorMessage = 'Lỗi khi bắt đầu phát sóng: ${e.toString()}';
       });
     }
   }
@@ -179,7 +179,7 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
     try {
       final user = ref.read(currentUserProvider);
       if (user == null || user.pairedDeviceId == null) {
-        throw Exception('No paired device found');
+        throw Exception('Chưa ghép nối với thiết bị');
       }
       
       // Update device status in Firestore
@@ -193,13 +193,13 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
       
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Broadcasting stopped'),
+          content: Text('Đã dừng phát sóng'),
           backgroundColor: Colors.orange,
         ),
       );
     } catch (e) {
       setState(() {
-        _errorMessage = 'Failed to stop broadcasting: ${e.toString()}';
+        _errorMessage = 'Lỗi khi dừng phát sóng: ${e.toString()}';
       });
     }
   }
@@ -255,7 +255,7 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'Received ${signal.count} vibration${signal.count > 1 ? 's' : ''}', 
+          'Đã nhận ${signal.count} rung', 
         ),
         backgroundColor: Colors.blue,
         duration: const Duration(seconds: 2),
@@ -271,20 +271,20 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
     if (hasNoDevice) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Broadcast'),
+          title: const Text('Phát sóng'),
         ),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Text(
-                'No device paired',
+                'Chưa ghép nối thiết bị',
                 style: TextStyle(fontSize: 18),
               ),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => context.router.pushNamed('/device-pairing'),
-                child: const Text('Pair a Device'),
+                child: const Text('Ghép nối thiết bị'),
               ),
             ],
           ),
@@ -294,7 +294,7 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
     
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Broadcast'),
+        title: const Text('Phát sóng'),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -332,13 +332,13 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
                               ),
                               const SizedBox(height: 16),
                               const Text(
-                                'Camera not connected',
+                                'Camera chưa kết nối',
                                 style: TextStyle(color: Colors.white),
                               ),
                               const SizedBox(height: 16),
                               ElevatedButton(
                                 onPressed: _initializeCamera,
-                                child: const Text('Reconnect'),
+                                child: const Text('Kết nối lại'),
                               ),
                             ],
                           ),
@@ -380,7 +380,7 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          'Status: ${_isBroadcasting ? 'Broadcasting' : 'Offline'}',
+                          'Trạng thái: ${_isBroadcasting ? 'Đang phát sóng' : 'Ngoại tuyến'}',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -391,7 +391,7 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Device: ${user.pairedDeviceId}',
+                      'Thiết bị: ${user.pairedDeviceId}',
                       style: const TextStyle(fontSize: 14),
                     ),
                     if (_selectedDevice != null) ...[
@@ -410,7 +410,7 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
                             child: ElevatedButton.icon(
                               onPressed: _stopBroadcasting,
                               icon: const Icon(Icons.stop),
-                              label: const Text('Stop Broadcasting'),
+                              label: const Text('Dừng phát sóng'),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.red,
                                 foregroundColor: Colors.white,
@@ -423,7 +423,7 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
                             child: ElevatedButton.icon(
                               onPressed: _isCameraConnected ? _startBroadcasting : null,
                               icon: const Icon(Icons.play_arrow),
-                              label: const Text('Start Broadcasting'),
+                              label: const Text('Bắt đầu phát sóng'),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.green,
                                 foregroundColor: Colors.white,
@@ -442,7 +442,7 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
             // Recent signals
             const SizedBox(height: 24),
             const Text(
-              'Recent Signals',
+              'Tín hiệu gần đây',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
@@ -451,7 +451,7 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
                     child: Padding(
                       padding: EdgeInsets.all(16),
                       child: Text(
-                        'No signals received yet. When a viewer sends a vibration, it will appear here.',
+                        'Chưa nhận được tín hiệu nào. Khi người xem gửi rung, nó sẽ xuất hiện ở đây.',
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -468,7 +468,7 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
                           child: Text(signal.count.toString()),
                         ),
                         title: Text(
-                          '${signal.count} vibration${signal.count > 1 ? 's' : ''}',
+                          '${signal.count} rung',
                         ),
                         subtitle: Text(
                           _formatTimestamp(signal.timestamp),
@@ -487,13 +487,13 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
     final difference = now.difference(timestamp);
     
     if (difference.inSeconds < 60) {
-      return 'Just now';
+      return 'Vừa xong';
     } else if (difference.inMinutes < 60) {
-      return '${difference.inMinutes} minutes ago';
+      return '${difference.inMinutes} phút trước';
     } else if (difference.inHours < 24) {
-      return '${difference.inHours} hours ago';
+      return '${difference.inHours} giờ trước';
     } else {
-      return '${difference.inDays} days ago';
+      return '${difference.inDays} ngày trước';
     }
   }
 } 
