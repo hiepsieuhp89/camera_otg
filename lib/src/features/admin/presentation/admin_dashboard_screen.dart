@@ -292,6 +292,12 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
                 ),
               ],
             ),
+      floatingActionButton: _tabController.index == 0 
+          ? FloatingActionButton(
+              onPressed: _showCreateUserDialog,
+              child: const Icon(Icons.person_add),
+            )
+          : null,
     );
   }
   
@@ -382,6 +388,164 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
           backgroundColor: Colors.red,
         ),
       );
+    }
+  }
+
+  void _showCreateUserDialog() {
+    final nameController = TextEditingController();
+    final emailController = TextEditingController();
+    final passwordController = TextEditingController();
+    UserRole selectedRole = UserRole.viewer;
+    
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Create New User'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextFormField(
+                      controller: nameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Full Name',
+                        prefixIcon: Icon(Icons.person_outlined),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: const InputDecoration(
+                        labelText: 'Email',
+                        prefixIcon: Icon(Icons.email_outlined),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: passwordController,
+                      obscureText: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Password',
+                        prefixIcon: Icon(Icons.lock_outline),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Select role:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    RadioListTile<UserRole>(
+                      title: const Text('Viewer'),
+                      value: UserRole.viewer,
+                      groupValue: selectedRole,
+                      onChanged: (UserRole? value) {
+                        setState(() {
+                          selectedRole = value ?? UserRole.viewer;
+                        });
+                      },
+                    ),
+                    RadioListTile<UserRole>(
+                      title: const Text('Broadcaster'),
+                      value: UserRole.broadcaster,
+                      groupValue: selectedRole,
+                      onChanged: (UserRole? value) {
+                        setState(() {
+                          selectedRole = value ?? UserRole.broadcaster;
+                        });
+                      },
+                    ),
+                    RadioListTile<UserRole>(
+                      title: const Text('Admin'),
+                      value: UserRole.admin,
+                      groupValue: selectedRole,
+                      onChanged: (UserRole? value) {
+                        setState(() {
+                          selectedRole = value ?? UserRole.admin;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    _createUser(
+                      nameController.text.trim(),
+                      emailController.text.trim(),
+                      passwordController.text,
+                      selectedRole,
+                    );
+                  },
+                  child: const Text('Create'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+  
+  Future<void> _createUser(String name, String email, String password, UserRole role) async {
+    if (name.isEmpty || email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please fill in all fields'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+    
+    try {
+      await ref.read(currentUserProvider.notifier).createUser(
+        email,
+        password,
+        name,
+        role,
+      );
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('User created successfully'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      
+      _loadData();
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Failed to create user: ${e.toString()}';
+        _isLoading = false;
+      });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to create user: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 } 
