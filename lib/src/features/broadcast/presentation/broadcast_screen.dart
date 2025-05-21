@@ -236,15 +236,14 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
       // Dừng timer nếu đã tồn tại
       _staticNoiseTimer?.cancel();
       
-      // Tạo luồng giả với chỉ video, không có audio để tránh crash
-      final Map<String, dynamic> videoOnlyConstraints = {
-        'audio': false,
-        'video': true
+      // Tạo luồng giả với âm thanh nhưng video đen (không video)
+      final Map<String, dynamic> audioOnlyConstraints = {
+        'audio': true,
+        'video': false
       };
       
       try {
-        await logger.info('BroadcastScreen: Creating fallback stream with video-only constraints: $videoOnlyConstraints');
-        _localStream = await navigator.mediaDevices.getUserMedia(videoOnlyConstraints);
+        _localStream = await navigator.mediaDevices.getUserMedia(audioOnlyConstraints);
         
         // Bắt đầu timer để làm mới giao diện chế độ nhiễu
         _staticNoiseTimer = Timer.periodic(Duration(milliseconds: 200), (_) {
@@ -260,7 +259,7 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
         
         await logger.info('BroadcastScreen: Fallback stream created successfully');
       } catch (e) {
-        await logger.error('BroadcastScreen: Error creating video fallback stream - $e');
+        await logger.error('BroadcastScreen: Error creating audio fallback stream - $e');
         
         // Tạo dummy stream không có media track
         await logger.info('BroadcastScreen: Creating no-media fallback mode...');
@@ -437,6 +436,7 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
 
       // Kiểm tra lại quyền CAMERA và MICROPHONE trước khi tiếp tục
       bool hasCamera = await Permission.camera.status.isGranted;
+      bool hasMic = await Permission.microphone.status.isGranted;
       
       if (!hasCamera) {
         await logger.error('BroadcastScreen: Camera permission not granted');
@@ -449,13 +449,13 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
         throw Exception('Thiết bị camera không được kết nối');
       }
 
-      await logger.info('BroadcastScreen: Getting user media (video only)...');
+      await logger.info('BroadcastScreen: Getting user media... Microphone permission: $hasMic');
       
       // Bọc getUserMedia trong try-catch riêng để xử lý lỗi cụ thể
       try {
         // Sử dụng deviceId exact và thiết lập kích thước hợp lý
         Map<String, dynamic> mediaConstraints = {
-          'audio': false, // Vô hiệu hóa audio để tránh crash
+          'audio': hasMic, // Chỉ yêu cầu audio nếu có quyền
           'video': {
             'deviceId': {'exact': _selectedDevice!.name},
             'width': {'ideal': 640, 'max': 1280}, // Giảm xuống để ổn định hơn
@@ -463,7 +463,7 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
           }
         };
         
-        await logger.info('BroadcastScreen: Requesting media with video-only constraints: $mediaConstraints');
+        await logger.info('BroadcastScreen: Requesting media with constraints: $mediaConstraints');
         
         // Thêm timeout để tránh treo
         _localStream = await _getUserMediaWithTimeout(mediaConstraints, const Duration(seconds: 5));
@@ -576,12 +576,6 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
       // Log toàn bộ cameras để debug
       await logger.info('BroadcastScreen: Full cameras list: $cameras');
       
-      // Lọc chỉ lấy camera video để tránh lỗi
-      var videoDevices = cameras.where((camera) => 
-        camera is Map && camera['kind'] == 'videoinput').toList();
-      
-      await logger.info('BroadcastScreen: Found ${videoDevices.length} video devices');
-      
       for (var camera in cameras) {
         // Log thông tin tất cả các keys và giá trị để debug
         await logger.info('BroadcastScreen: Camera object type: ${camera.runtimeType}');
@@ -594,7 +588,6 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
         await logger.info('BroadcastScreen: Device - ID: ${camera['deviceId'] ?? 'unknown'}, Kind: ${camera['kind'] ?? 'unknown'}, Label: ${camera['label'] ?? 'unknown'}');
       }
       
-      // Tạo completer
       final completer = Completer<MediaStream?>();
       
       // Tạo timer cho timeout
@@ -620,18 +613,7 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
       // Gọi getUserMedia trong try-catch với nhiều thông tin debug
       try {
         await logger.info('BroadcastScreen: Calling navigator.mediaDevices.getUserMedia()...');
-        
-        // Điều chỉnh constraints để chỉ yêu cầu video mà không cần audio
-        // Điều này có thể tránh được lỗi crash liên quan đến audio
-        Map<String, dynamic> safeConstraints = {
-          'audio': false, // Vô hiệu hóa audio để tránh crash
-          'video': true   // Chỉ yêu cầu video
-        };
-        
-        // Log constraints mới
-        await logger.info('BroadcastScreen: Using safe constraints (video-only): $safeConstraints');
-        
-        final stream = await navigator.mediaDevices.getUserMedia(safeConstraints);
+        final stream = await navigator.mediaDevices.getUserMedia(constraints);
         
         // Kiểm tra stream đã nhận được
         int videoTracks = stream.getVideoTracks().length;
@@ -1198,8 +1180,9 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
       await logger.info('BroadcastScreen: Checking permission status before broadcast...');
       
       final cameraPermission = await Permission.camera.status;
+      final micPermission = await Permission.microphone.status;
       
-      await logger.info('BroadcastScreen: Current permissions - Camera: $cameraPermission');
+      await logger.info('BroadcastScreen: Current permissions - Camera: $cameraPermission, Microphone: $micPermission');
       
       if (!cameraPermission.isGranted) {
         await logger.error('BroadcastScreen: Cannot start broadcasting - camera permission not granted');
@@ -1214,22 +1197,23 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
         }
       }
       
-      // Kiểm tra các thiết bị video có sẵn trước khi tiếp tục
-      try {
-        await logger.info('BroadcastScreen: Checking available video devices before broadcasting...');
-        var devices = await navigator.mediaDevices.getSources();
-        var videoDevices = devices.where((device) => 
-          device is Map && device['kind'] == 'videoinput').toList();
+      if (!micPermission.isGranted) {
+        await logger.warning('BroadcastScreen: Microphone permission not granted - will broadcast without audio');
         
-        await logger.info('BroadcastScreen: Found ${videoDevices.length} video devices');
-        
-        if (videoDevices.isEmpty) {
-          await logger.error('BroadcastScreen: No video devices found');
-          throw Exception('Không tìm thấy thiết bị video nào. Vui lòng kết nối camera và thử lại.');
+        // Yêu cầu quyền truy cập microphone (nhưng có thể tiếp tục nếu không được cấp)
+        final newStatus = await _requestMicrophonePermission();
+        if (!newStatus) {
+          // Thông báo cho người dùng nhưng vẫn tiếp tục
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Không có quyền truy cập microphone. Phát sóng sẽ không có âm thanh.'),
+                backgroundColor: Colors.orange,
+                duration: Duration(seconds: 3),
+              ),
+            );
+          }
         }
-      } catch (e) {
-        await logger.error('BroadcastScreen: Error checking video devices - $e');
-        // Tiếp tục mặc dù có lỗi kiểm tra - chúng ta sẽ xử lý trong các bước sau
       }
 
       await logger.info('BroadcastScreen: Starting broadcast with validated permissions...');
@@ -1250,7 +1234,7 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
       // 4. Tạo media stream với catch toàn diện
       bool mediaStreamSuccess = false;
       try {
-        await logger.info('BroadcastScreen: Attempting to create media stream with video only');
+        await logger.info('BroadcastScreen: Attempting to create media stream with full video+audio');
         await _createMediaStreamForBroadcasting();
         mediaStreamSuccess = _localStream != null || _isUsingFallbackStream;
       } catch (streamError) {
