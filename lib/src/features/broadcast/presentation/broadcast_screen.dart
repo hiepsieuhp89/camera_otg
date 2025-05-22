@@ -455,7 +455,8 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
       try {
         // Sử dụng deviceId exact và thiết lập kích thước hợp lý
         Map<String, dynamic> mediaConstraints = {
-          'audio': hasMic, // Chỉ yêu cầu audio nếu có quyền
+          // Ưu tiên chỉ sử dụng video nếu microphone không cần thiết cho stream UVC
+          'audio': false, // Mặc định tắt audio trước
           'video': {
             'deviceId': {'exact': _selectedDevice!.name},
             'width': {'ideal': 640, 'max': 1280}, // Giảm xuống để ổn định hơn
@@ -501,9 +502,8 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
           
           // Thử kiểm tra lại quyền và thông báo
           final cameraStatus = await Permission.camera.status;
-          final micStatus = await Permission.microphone.status;
           
-          await logger.info('BroadcastScreen: Current permission status - Camera: $cameraStatus, Microphone: $micStatus');
+          await logger.info('BroadcastScreen: Current permission status - Camera: $cameraStatus');
           
           if (!cameraStatus.isGranted) {
             await logger.error('BroadcastScreen: Camera permission is not granted (status: $cameraStatus)');
@@ -576,18 +576,30 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
       // Log toàn bộ cameras để debug
       await logger.info('BroadcastScreen: Full cameras list: $cameras');
       
+      // Đếm số thiết bị camera video thực sự
+      int videoCameraCount = 0;
+      
       for (var camera in cameras) {
         // Log thông tin tất cả các keys và giá trị để debug
         await logger.info('BroadcastScreen: Camera object type: ${camera.runtimeType}');
         if (camera is Map) {
           await logger.info('BroadcastScreen: Camera keys: ${camera.keys.toList()}');
           await logger.info('BroadcastScreen: Camera full data: $camera');
+          
+          // Đếm thiết bị video
+          if (camera['kind'] == 'videoinput') {
+            videoCameraCount++;
+          }
         }
         
         // Fix: Access properties safely with toString to avoid null errors
         await logger.info('BroadcastScreen: Device - ID: ${camera['deviceId'] ?? 'unknown'}, Kind: ${camera['kind'] ?? 'unknown'}, Label: ${camera['label'] ?? 'unknown'}');
       }
       
+      // Kiểm tra xem có thiết bị video nào không
+      await logger.info('BroadcastScreen: Found $videoCameraCount video devices');
+      
+      // Tạo completer và timer
       final completer = Completer<MediaStream?>();
       
       // Tạo timer cho timeout
@@ -610,10 +622,19 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
         throw Exception('Không có quyền truy cập camera');
       }
       
+      // Điều chỉnh constraints dựa trên thiết bị có sẵn
+      Map<String, dynamic> adjustedConstraints = {...constraints};
+      
+      // Nếu không cần audio cho stream UVC, hoặc không có quyền mic, hãy tắt audio
+      if (!micPermission.isGranted) {
+        await logger.info('BroadcastScreen: Microphone permission not granted, disabling audio in constraints');
+        adjustedConstraints['audio'] = false;
+      }
+      
       // Gọi getUserMedia trong try-catch với nhiều thông tin debug
       try {
-        await logger.info('BroadcastScreen: Calling navigator.mediaDevices.getUserMedia()...');
-        final stream = await navigator.mediaDevices.getUserMedia(constraints);
+        await logger.info('BroadcastScreen: Calling navigator.mediaDevices.getUserMedia() with adjusted constraints: $adjustedConstraints');
+        final stream = await navigator.mediaDevices.getUserMedia(adjustedConstraints);
         
         // Kiểm tra stream đã nhận được
         int videoTracks = stream.getVideoTracks().length;
@@ -641,13 +662,33 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
             completer.completeError(Exception('Không có quyền truy cập: $e - Camera: $postErrorCameraStatus, Mic: $postErrorMicStatus'));
           } else if (errorMessage.contains('NotFoundError') || errorMessage.contains('Requested device not found')) {
             await logger.error('BroadcastScreen: NotFoundError in getUserMedia - Device not found');
-            completer.completeError(Exception('Không tìm thấy thiết bị camera: $e'));
+            
+            // Thử lại với chỉ audio nếu lỗi không tìm thấy thiết bị video
+            try {
+              await logger.info('BroadcastScreen: Trying fallback to audio-only stream');
+              final audioStream = await navigator.mediaDevices.getUserMedia({'audio': true, 'video': false});
+              completer.complete(audioStream);
+              return null;
+            } catch (audioError) {
+              await logger.error('BroadcastScreen: Audio-only fallback failed: $audioError');
+              completer.completeError(Exception('Không tìm thấy thiết bị camera và không thể tạo stream chỉ có audio: $e'));
+            }
           } else if (errorMessage.contains('NotReadableError') || errorMessage.contains('Could not start video source')) {
             await logger.error('BroadcastScreen: NotReadableError in getUserMedia - Hardware error');
             completer.completeError(Exception('Không thể khởi động thiết bị camera - đã bị sử dụng bởi ứng dụng khác hoặc bị lỗi: $e'));
           } else if (errorMessage.contains('OverconstrainedError')) {
             await logger.error('BroadcastScreen: OverconstrainedError in getUserMedia - Constraints cannot be satisfied');
-            completer.completeError(Exception('Thiết bị camera không hỗ trợ các thiết lập yêu cầu: $e'));
+            
+            // Thử lại với ràng buộc đơn giản hơn
+            try {
+              await logger.info('BroadcastScreen: Trying with simpler video constraints');
+              final simpleStream = await navigator.mediaDevices.getUserMedia({'audio': adjustedConstraints['audio'], 'video': true});
+              completer.complete(simpleStream);
+              return null;
+            } catch (simpleError) {
+              await logger.error('BroadcastScreen: Simple constraints also failed: $simpleError');
+              completer.completeError(Exception('Thiết bị camera không hỗ trợ các thiết lập yêu cầu: $e'));
+            }
           } else if (errorMessage.contains('TypeError')) {
             await logger.error('BroadcastScreen: TypeError in getUserMedia - Invalid constraints');
             completer.completeError(Exception('Lỗi định dạng yêu cầu truy cập camera: $e'));
@@ -1083,7 +1124,7 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
                 ),
               );
             }
-            return;
+            return null;
     } catch (e) {
             logger.error('BroadcastScreen: Failed to create fallback stream during recovery - $e');
           }
