@@ -63,6 +63,10 @@ dependencies:
   flutter_foreground_task: ^9.1.0
   flutter_local_notifications: ^19.2.1
   webrtc_interface: ^1.2.2+hotfix.2
+  
+  # Screen capture and saving
+  screenshot: ^3.0.0
+  gal: ^2.1.4
 
 dev_dependencies:
   flutter_test:

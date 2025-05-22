@@ -6,14 +6,17 @@ import 'dart:ui' as ui;
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
+import 'package:gal/gal.dart';
 import 'package:lavie/src/core/providers/logger_provider.dart';
 import 'package:lavie/src/features/auth/data/auth_service.dart';
 import 'package:lavie/src/features/device/data/device_service.dart';
 import 'package:lavie/src/features/webrtc/data/webrtc_connection_service.dart';
 import 'package:lavie/src/theme/app_theme.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:screenshot/screenshot.dart';
 import 'package:uvccamera/uvccamera.dart';
 import 'package:vibration/vibration.dart';
 
@@ -23,6 +26,99 @@ class BroadcastScreen extends ConsumerStatefulWidget {
 
   @override
   ConsumerState<BroadcastScreen> createState() => _BroadcastScreenState();
+}
+
+// Lớp chuyển đổi frame từ camera thành WebRTC video track
+class CameraFrameConverter {
+  final ScreenshotController screenshotController;
+  final Function(String) logError;
+  
+  MediaStreamTrack? _videoTrack;
+  RTCPeerConnection? _peerConnection;
+  Timer? _frameTimer;
+  final int _frameRate = 15; // FPS
+  
+  CameraFrameConverter({
+    required this.screenshotController, 
+    required this.logError
+  });
+  
+  // Khởi tạo converter và trả về video track
+  Future<MediaStreamTrack?> initialize() async {
+    try {
+      // Tạo peer connection cho local use
+      Map<String, dynamic> configuration = {
+        'sdpSemantics': 'unified-plan'
+      };
+      
+      _peerConnection = await createPeerConnection(configuration);
+      
+      // Tạo video track trống ban đầu
+      final stream = await createLocalMediaStream('camera_stream');
+      
+      // Tạo một video track giả
+      final videoTracks = stream.getVideoTracks();
+      
+      if (videoTracks.isEmpty) {
+        logError('Không thể tạo video track giả');
+        return null;
+      }
+      
+      _videoTrack = videoTracks.first;
+      
+      // Bắt đầu capture từ camera với frame rate được chỉ định
+      _startCapture();
+      
+      return _videoTrack;
+    } catch (e) {
+      logError('Khởi tạo camera frame converter thất bại: $e');
+      return null;
+    }
+  }
+  
+  // Bắt đầu quá trình capture frames
+  void _startCapture() {
+    _frameTimer?.cancel();
+    
+    // Tạo timer để capture frame từ camera ở tốc độ frame cố định
+    _frameTimer = Timer.periodic(
+      Duration(milliseconds: (1000 / _frameRate).round()), 
+      (_) => _captureFrame()
+    );
+  }
+  
+  // Capture một frame từ camera và cập nhật video track
+  Future<void> _captureFrame() async {
+    try {
+      final Uint8List? imageBytes = await screenshotController.capture();
+      
+      if (imageBytes != null && _videoTrack != null) {
+        // Convert bytes thành video frame
+        // Lưu ý: Đây là nơi cần thêm code tùy chỉnh để gửi frame tới video track
+        // Nhưng hiện tại Flutter WebRTC không có API trực tiếp để làm điều này
+        
+        // TODO: Khi WebRTC hỗ trợ việc cập nhật frames, sẽ thêm code ở đây
+        // Hiện tại, chỉ có thể sử dụng getUserMedia hoặc getDisplayMedia
+        
+        // Với triển khai hiện tại, chúng ta chỉ có thể lưu ảnh vào thư viện
+        // như một workaround để debug
+      }
+    } catch (e) {
+      logError('Lỗi khi capture frame: $e');
+    }
+  }
+  
+  // Dừng và giải phóng tài nguyên
+  void dispose() {
+    _frameTimer?.cancel();
+    _frameTimer = null;
+    
+    _videoTrack?.stop();
+    _videoTrack = null;
+    
+    _peerConnection?.close();
+    _peerConnection = null;
+  }
 }
 
 class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
@@ -53,7 +149,16 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
   bool _isUsingFallbackStream = false;
   Timer? _staticNoiseTimer;
   Random _random = Random();
-
+  
+  // Thêm các biến cần thiết để capture video
+  final ScreenshotController _screenshotController = ScreenshotController();
+  GlobalKey _previewKey = GlobalKey();
+  Timer? _captureTimer;
+  bool _isCaptureEnabled = false;
+  
+  // Thêm biến converter
+  CameraFrameConverter? _frameConverter;
+  
   @override
   void initState() {
     super.initState();
@@ -63,6 +168,7 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
   Future<void> _initializeWithLogging() async {
     final logger = ref.read(loggerProvider);
     try {
+      // Giữ lại log khởi tạo lớn
       await logger.info('BroadcastScreen: Initializing...');
       await _initializeWebRTCRenderer();
       await _loadAvailableDevices();
@@ -79,6 +185,8 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
   @override
   void dispose() {
     _cleanupWithLogging();
+    _captureTimer?.cancel();
+    _frameConverter?.dispose();
     super.dispose();
   }
 
@@ -141,49 +249,36 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
 
   Future<void> _setupWebRTCForBroadcasting() async {
     final logger = ref.read(loggerProvider);
-    
-    // Đảm bảo không gọi lại khi WebRTC service đã được khởi tạo
     if (_webRTCService != null) {
+      // Giữ lại log reuse instance
       await logger.info('BroadcastScreen: WebRTC service already exists, reusing existing instance');
       return;
     }
-    
     try {
       await logger.info('BroadcastScreen: Setting up WebRTC for broadcasting...');
-      
-      // 1. Kiểm tra người dùng đã đăng nhập chưa
       final user = ref.read(currentUserProvider);
       if (user == null) {
         await logger.error('BroadcastScreen: No logged in user');
         throw Exception('Chưa đăng nhập');
       }
-      
-      // 2. Tạo WebRTC service với retry
       int retryCount = 0;
       const maxRetries = 2;
-      
       while (retryCount <= maxRetries) {
         try {
-          await logger.info('BroadcastScreen: Creating WebRTC service (attempt ${retryCount+1}/${maxRetries+1}) for user ${user.id}');
-          
-        _webRTCService = ref.read(webRTCConnectionServiceProvider(
-          WebRTCConnectionParams(
-            userId: user.id,
-            isBroadcaster: true,
-          ),
-        ));
-          
-          // Kiểm tra service đã được khởi tạo đúng
+          await logger.info('BroadcastScreen: Creating WebRTC service (attempt [36m${retryCount+1}/${maxRetries+1}[0m) for user ${user.id}');
+          _webRTCService = ref.read(webRTCConnectionServiceProvider(
+            WebRTCConnectionParams(
+              userId: user.id,
+              isBroadcaster: true,
+            ),
+          ));
           if (_webRTCService == null) {
             throw Exception('WebRTC service creation returned null');
-      }
-          
+          }
           await logger.info('BroadcastScreen: WebRTC service created successfully');
-          return; // Thoát sớm nếu thành công
-    } catch (e) {
+          return;
+        } catch (e) {
           await logger.warning('BroadcastScreen: Failed to create WebRTC service (attempt ${retryCount+1}/${maxRetries+1}) - $e');
-          
-          // Dọn dẹp tài nguyên nếu có
           if (_webRTCService != null) {
             try {
               _webRTCService!.dispose();
@@ -192,22 +287,16 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
             }
             _webRTCService = null;
           }
-          
-          // Đã thử hết số lần retry
           if (retryCount >= maxRetries) {
             await logger.error('BroadcastScreen: Failed all attempts to create WebRTC service');
             throw Exception('Không thể khởi tạo dịch vụ WebRTC sau nhiều lần thử: $e');
           }
-          
-          // Chờ giữa các lần retry
           await Future.delayed(Duration(milliseconds: 500 * (retryCount + 1)));
           retryCount++;
         }
       }
     } catch (e) {
       await logger.error('BroadcastScreen: WebRTC setup error - $e');
-      
-      // Đảm bảo dọn dẹp tài nguyên
       if (_webRTCService != null) {
         try {
           _webRTCService!.dispose();
@@ -216,7 +305,6 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
         }
         _webRTCService = null;
       }
-      
       throw Exception('Lỗi thiết lập WebRTC: $e');
     }
   }
@@ -224,64 +312,41 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
   Future<void> _createFallbackStream() async {
     final logger = ref.read(loggerProvider);
     try {
+      // Giữ lại log tạo fallback stream
       await logger.info('BroadcastScreen: Creating fallback stream...');
-      
-      // Dọn dẹp stream hiện tại nếu có
       if (_localStream != null) {
         _localStream!.getTracks().forEach((track) => track.stop());
         _localStream!.dispose();
         _localStream = null;
       }
-      
-      // Dừng timer nếu đã tồn tại
       _staticNoiseTimer?.cancel();
-      
-      // Tạo luồng giả với âm thanh nhưng video đen (không video)
       final Map<String, dynamic> audioOnlyConstraints = {
         'audio': true,
         'video': false
       };
-      
       try {
         _localStream = await navigator.mediaDevices.getUserMedia(audioOnlyConstraints);
-        
-        // Bắt đầu timer để làm mới giao diện chế độ nhiễu
         _staticNoiseTimer = Timer.periodic(Duration(milliseconds: 200), (_) {
           if (mounted) setState(() {/* trigger UI update để vẽ lại nhiễu */});
         });
-        
         if (_localRenderer != null) {
-          await logger.info('BroadcastScreen: Setting fallback stream to renderer...');
           _localRenderer!.srcObject = _localStream;
           _isStreamInitialized = true;
           _isUsingFallbackStream = true;
         }
-        
-        await logger.info('BroadcastScreen: Fallback stream created successfully');
+        // Không cần log info chi tiết ở đây
       } catch (e) {
         await logger.error('BroadcastScreen: Error creating audio fallback stream - $e');
-        
-        // Tạo dummy stream không có media track
-        await logger.info('BroadcastScreen: Creating no-media fallback mode...');
-        
         try {
-          // Tạo một dummy stream trống
           _localStream = await createLocalMediaStream('dummy_fallback');
-          
-          // Bắt đầu timer để cập nhật UI nhiễu
           _staticNoiseTimer = Timer.periodic(Duration(milliseconds: 200), (_) {
             if (mounted) setState(() {/* trigger UI update */});
           });
-          
           if (_localRenderer != null) {
             _localRenderer!.srcObject = _localStream;
           }
-          
-          // Đánh dấu là đang dùng fallback UI
           _isUsingFallbackStream = true;
           _isStreamInitialized = true;
-          
-          await logger.info('BroadcastScreen: No-media fallback mode created successfully');
         } catch (dummyError) {
           await logger.error('BroadcastScreen: Failed to create no-media fallback - $dummyError');
           throw Exception('Không thể tạo luồng dự phòng: $e');
@@ -392,17 +457,14 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
 
   Future<void> _createMediaStreamForBroadcasting() async {
     final logger = ref.read(loggerProvider);
-    
     try {
       await logger.info('BroadcastScreen: Creating media stream for broadcasting...');
       
-      // Kiểm tra camera controller
       if (_cameraController == null || !_cameraController!.value.isInitialized) {
         await logger.error('BroadcastScreen: Cannot create media stream - camera not initialized');
         throw Exception('Camera chưa được khởi tạo');
       }
       
-      // Kiểm tra thiết bị
       if (_selectedDevice == null) {
         await logger.error('BroadcastScreen: Cannot create media stream - no device selected');
         throw Exception('Không có thiết bị camera được chọn');
@@ -411,7 +473,6 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
       // Dọn dẹp stream hiện tại nếu có
       if (_localStream != null) {
         try {
-          await logger.info('BroadcastScreen: Cleaning up existing stream...');
           _localStream!.getTracks().forEach((track) {
             try {
               track.stop();
@@ -431,10 +492,7 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
       _staticNoiseTimer?.cancel();
       _staticNoiseTimer = null;
 
-      // Add a small delay to ensure the camera is fully ready
-      await Future.delayed(const Duration(milliseconds: 300));
-
-      // Kiểm tra lại quyền CAMERA và MICROPHONE trước khi tiếp tục
+      // Kiểm tra quyền truy cập
       bool hasCamera = await Permission.camera.status.isGranted;
       bool hasMic = await Permission.microphone.status.isGranted;
       
@@ -443,116 +501,68 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
         throw Exception('Không có quyền truy cập camera, vui lòng cấp quyền và thử lại');
       }
       
-      // Kiểm tra lại trạng thái kết nối
+      // Kiểm tra trạng thái kết nối
       if (!_isDeviceAttached || !_isDeviceConnected) {
         await logger.error('BroadcastScreen: Device not connected');
         throw Exception('Thiết bị camera không được kết nối');
       }
-
-      await logger.info('BroadcastScreen: Getting user media... Microphone permission: $hasMic');
       
-      // Bọc getUserMedia trong try-catch riêng để xử lý lỗi cụ thể
       try {
-        // Sử dụng deviceId exact và thiết lập kích thước hợp lý
-        Map<String, dynamic> mediaConstraints = {
-          // Ưu tiên chỉ sử dụng video nếu microphone không cần thiết cho stream UVC
-          'audio': false, // Mặc định tắt audio trước
-          'video': {
-            'deviceId': {'exact': _selectedDevice!.name},
-            'width': {'ideal': 640, 'max': 1280}, // Giảm xuống để ổn định hơn
-            'height': {'ideal': 480, 'max': 720}
-          }
+        // 1. Tạo audio stream
+        await logger.info('BroadcastScreen: Creating audio stream...');
+        Map<String, dynamic> audioConstraints = {
+          'audio': hasMic,
+          'video': false
         };
         
-        await logger.info('BroadcastScreen: Requesting media with constraints: $mediaConstraints');
+        _localStream = await navigator.mediaDevices.getUserMedia(audioConstraints);
         
-        // Thêm timeout để tránh treo
-        _localStream = await _getUserMediaWithTimeout(mediaConstraints, const Duration(seconds: 5));
-        
-        if (_localStream == null) {
-          throw Exception('Không nhận được stream từ camera');
-        }
-        
-        // Kiểm tra stream đã nhận
-        final videoTracks = _localStream!.getVideoTracks();
-        final audioTracks = _localStream!.getAudioTracks();
-        
-        await logger.info('BroadcastScreen: Media stream obtained - Video tracks: ${videoTracks.length}, Audio tracks: ${audioTracks.length}');
-        
-        // Nếu không có video track, báo lỗi
-        if (videoTracks.isEmpty) {
-          throw Exception('Không nhận được video track từ camera');
-        }
-        
-        // Log thông tin về các track
-        for (var track in videoTracks) {
-          await logger.info('BroadcastScreen: Video track - ID: ${track.id}, Kind: ${track.kind}, Enabled: ${track.enabled}');
-        }
-        
-        for (var track in audioTracks) {
-          await logger.info('BroadcastScreen: Audio track - ID: ${track.id}, Kind: ${track.kind}, Enabled: ${track.enabled}');
-        }
-      } catch (e) {
-        await logger.error('BroadcastScreen: Error getting user media - $e');
-        
-        // Phân tích lỗi cụ thể
-        String errorMessage = e.toString();
-        if (errorMessage.contains('NotAllowedError') || errorMessage.contains('Permission denied')) {
-          await logger.error('BroadcastScreen: Permission error detected in getUserMedia - attempting to recheck permissions');
-          
-          // Thử kiểm tra lại quyền và thông báo
-          final cameraStatus = await Permission.camera.status;
-          
-          await logger.info('BroadcastScreen: Current permission status - Camera: $cameraStatus');
-          
-          if (!cameraStatus.isGranted) {
-            await logger.error('BroadcastScreen: Camera permission is not granted (status: $cameraStatus)');
-            throw Exception('Không có quyền truy cập camera. Vui lòng vào Cài đặt để cấp quyền và khởi động lại ứng dụng');
-          } else {
-            // Có thể là lỗi khác trong quá trình khởi tạo camera
-            throw Exception('Lỗi truy cập camera: $e. Thử khởi động lại ứng dụng');
-          }
-        }
-        
-        // Sử dụng _handleBroadcastingError để xử lý lỗi này thay vì tự xử lý
-        await _handleBroadcastingError(
-          e is Exception ? e : Exception(e.toString()), 
-          contextMessage: 'khi truy cập camera'
+        // 2. Tạo frame converter để chuyển đổi frames từ camera thành video track
+        await logger.info('BroadcastScreen: Initializing camera frame converter...');
+        _frameConverter?.dispose();
+        _frameConverter = CameraFrameConverter(
+          screenshotController: _screenshotController,
+          logError: (message) => logger.error(message)
         );
-        return;
-      }
-
-      if (_localStream == null) {
-        await logger.error('BroadcastScreen: Local stream is null after initialization');
         
-        // Sử dụng _handleBroadcastingError
-        await _handleBroadcastingError(
-          Exception('Stream null sau khi khởi tạo'), 
-          contextMessage: 'camera stream trống'
-        );
-        return;
-      }
-
-      if (_localRenderer != null) {
-        try {
+        // 3. Khởi tạo converter và lấy video track
+        final videoTrack = await _frameConverter?.initialize();
+        
+        // 4. Nếu có video track, thêm vào stream
+        if (videoTrack != null) {
+          await logger.info('BroadcastScreen: Adding video track to stream...');
+          _localStream!.addTrack(videoTrack);
+        } else {
+          await logger.warning('BroadcastScreen: Could not create video track from camera frames');
+        }
+        
+        // 5. Thiết lập stream cho renderer
+        if (_localRenderer != null) {
           await logger.info('BroadcastScreen: Setting stream to renderer...');
           _localRenderer!.srcObject = _localStream;
-        } catch (e) {
-          await logger.error('BroadcastScreen: Error setting stream to renderer - $e');
-          // Không gây crash ở đây, tiếp tục với stream đã có
         }
-      } else {
-        await logger.warning('BroadcastScreen: Local renderer is null, cannot attach stream');
+        
+        _isStreamInitialized = true;
+        await logger.info('BroadcastScreen: Media stream setup complete');
+        
+      } catch (e) {
+        await logger.error('BroadcastScreen: Error creating stream - $e');
+        
+        // Nếu không thể tạo stream chính, chuyển sang fallback
+        try {
+          await logger.warning('BroadcastScreen: Using fallback stream...');
+          await _createFallbackStream();
+        } catch (fallbackError) {
+          await logger.error('BroadcastScreen: Fallback stream also failed - $fallbackError');
+          await _handleBroadcastingError(
+            Exception('Không thể tạo stream: $e. Fallback cũng thất bại: $fallbackError'), 
+            contextMessage: 'khởi tạo media stream'
+          );
+          return;
+        }
       }
-
-      _isStreamInitialized = true;
-      _isUsingFallbackStream = false;
-      
-      await logger.info('BroadcastScreen: Media stream created successfully');
     } catch (e) {
       await logger.error('BroadcastScreen: Media stream creation error - $e');
-      
-      // Sử dụng _handleBroadcastingError để xử lý lỗi toàn diện
       await _handleBroadcastingError(
         e is Exception ? e : Exception(e.toString()), 
         contextMessage: 'khởi tạo media stream'
@@ -1017,13 +1027,10 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
       
       // Initialize with explicit try-catch for better error handling
       try {
-        await logger.info('BroadcastScreen: Calling initialize on camera controller...');
       await _cameraController!.initialize();
-        await logger.info('BroadcastScreen: Camera controller initialize completed');
       } catch (e) {
         // Kiểm tra xem có phải lỗi "already initialized" không
         if (e.toString().contains('already initialized')) {
-          logger.warning('BroadcastScreen: Camera already initialized, continuing...');
         } else {
           await logger.error('BroadcastScreen: Camera initialize failed - $e');
           _cameraController = null;
@@ -1038,9 +1045,6 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
         _isCameraConnected = true;
         _selectedDeviceId = _selectedDevice!.name;
       });
-
-      // Camera đã khởi tạo xong - chúng ta không cần tạo MediaStream ngay
-      logger.info('BroadcastScreen: Camera controller initialized successfully');
     } catch (e) {
       logger.error('BroadcastScreen: Camera controller initialization error - $e');
       setState(() {
@@ -1899,6 +1903,76 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
     }
   }
 
+  // Thêm phương thức để ghi hình từ UvcCameraPreview
+  Future<void> _capturePreviewFrame() async {
+    final logger = ref.read(loggerProvider);
+    try {
+      await logger.info('BroadcastScreen: Capturing preview frame...');
+      
+      // Yêu cầu quyền lưu vào bộ nhớ và thư viện ảnh
+      final storageStatus = await Permission.storage.request();
+      final photoStatus = await Permission.photos.request();
+      
+      if (!storageStatus.isGranted && !photoStatus.isGranted) {
+        await logger.error('BroadcastScreen: Storage/Photos permission denied');
+        throw Exception('Không thể lưu ảnh: Cần quyền truy cập bộ nhớ hoặc thư viện ảnh');
+      }
+      
+      // Chụp màn hình từ widget controller
+      final Uint8List? imageBytes = await _screenshotController.capture();
+      if (imageBytes == null) {
+        await logger.error('BroadcastScreen: Failed to capture screenshot');
+        throw Exception('Không thể chụp màn hình preview');
+      }
+      
+      // Lưu ảnh vào thư viện sử dụng Gal.putImageBytes
+      final fileName = "lavie_capture_${DateTime.now().millisecondsSinceEpoch}.jpg";
+      await Gal.putImageBytes(imageBytes);
+      
+      await logger.info('BroadcastScreen: Saved capture to gallery: $fileName');
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Đã lưu hình ảnh vào thư viện'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      await logger.error('BroadcastScreen: Frame capture error - $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi lưu hình ảnh: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+  
+  // Bắt đầu/dừng chụp liên tục
+  void _toggleContinuousCapture() {
+    final logger = ref.read(loggerProvider);
+    setState(() {
+      _isCaptureEnabled = !_isCaptureEnabled;
+    });
+    
+    if (_isCaptureEnabled) {
+      logger.info('BroadcastScreen: Starting continuous capture');
+      // Chụp mỗi 2 giây
+      _captureTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
+        _capturePreviewFrame();
+      });
+    } else {
+      logger.info('BroadcastScreen: Stopping continuous capture');
+      _captureTimer?.cancel();
+      _captureTimer = null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
@@ -1921,6 +1995,11 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _loadAvailableDevices,
+          ),
+          // Thêm nút capture
+          IconButton(
+            icon: const Icon(Icons.camera_alt),
+            onPressed: _capturePreviewFrame,
           ),
         ],
       ),
@@ -1994,16 +2073,20 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
                                         objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
                                       )
                                     : _cameraController != null && _cameraController!.value.isInitialized
-                                        ? UvcCameraPreview(
-                                            _cameraController!,
+                                        ? Screenshot(
+                                            controller: _screenshotController,
+                                            child: UvcCameraPreview(
+                                              _cameraController!,
+                                              key: _previewKey,
+                                            ),
                                           )
                                         : _isUsingFallbackStream
                                             ? Stack(
                                                 children: [
-                                                  CustomPaint(
-                                                    size: Size(300, 300),
-                                                    painter: StaticNoisePainter(_random),
-                                                  ),
+                                                  // CustomPaint(
+                                                  //   size: Size(300, 300),
+                                                  //   painter: StaticNoisePainter(_random),
+                                                  // ),
                                                   // Fallback mode warning
                                                   Positioned.fill(
                                                     child: Center(
@@ -2277,6 +2360,17 @@ class _BroadcastScreenState extends ConsumerState<BroadcastScreen> {
                         );
                       },
                     ),
+              // Thêm nút để bật/tắt continuous capture
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: _toggleContinuousCapture,
+                icon: Icon(_isCaptureEnabled ? Icons.stop : Icons.play_arrow),
+                label: Text(_isCaptureEnabled ? 'Dừng chụp liên tục' : 'Bắt đầu chụp liên tục'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _isCaptureEnabled ? Colors.red : Colors.blue,
+                  foregroundColor: Colors.white,
+                ),
+              ),
             ],
           ],
         ),
